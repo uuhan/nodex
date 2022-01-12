@@ -2,7 +2,7 @@
   'targets': [
     {
       'target_name': 'api-rs-native',
-      'sources': [ 'src/api.cc' ],
+      'sources': [ 'api.cc' ],
       'include_dirs': ["<!@(node -p \"require('node-addon-api').include\")"],
       'dependencies': ["<!(node -p \"require('node-addon-api').gyp\")"],
       'cflags!': [ '-fno-exceptions' ],
