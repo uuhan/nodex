@@ -1,6 +1,6 @@
 [package]
 name = "node-api-rs"
-version = "0.1.0-alpha.0"
+version = "0.1.0-alpha.1"
 edition = "2018"
 readme = "./README.md"
 repository = "https://github.com/uuhan/node-api-rs"
