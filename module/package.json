@@ -1,0 +1,32 @@
+{
+    "main": "lib/binding.js",
+    "dependencies": {
+        "node-addon-api": "^1.1.0"
+    },
+    "scripts": {
+        "pretest": "tsc",
+        "test": "node --napi-modules ./test/test_binding.js"
+    },
+    "gypfile": true,
+    "name": "api-rs",
+    "description": "napi module",
+    "version": "1.0.0",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/uuhan/node-api-rs.git"
+    },
+    "keywords": [
+        "rust",
+        "ffi"
+    ],
+    "author": "uuhan",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/uuhan/node-api-rs/issues"
+    },
+    "homepage": "https://github.com/uuhan/node-api-rs#readme",
+    "devDependencies": {
+        "@types/node": "^7.0.22",
+        "typescript": "^4.5"
+    }
+}
