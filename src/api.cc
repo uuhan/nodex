@@ -1,4 +1,5 @@
 #include <napi.h>
+#include "api.h"
 
 using namespace Napi;
 
