@@ -1,17 +1,20 @@
-#include <napi.h>
 #include "api.h"
 
 using namespace Napi;
 
-Napi::String Method(const Napi::CallbackInfo& info) {
-  Napi::Env env = info.Env();
-  return Napi::String::New(env, "world");
+Napi::String
+Method(const Napi::CallbackInfo& info)
+{
+    Napi::Env env = info.Env();
+    return Napi::String::New(env, "world");
 }
 
-Napi::Object Init(Napi::Env env, Napi::Object exports) {
-  exports.Set(Napi::String::New(env, "ApiRs"),
-              Napi::Function::New(env, Method));
-  return exports;
+Napi::Object
+Init(Napi::Env env, Napi::Object exports)
+{
+    exports.Set(Napi::String::New(env, "ApiRs"),
+                Napi::Function::New(env, Method));
+    return exports;
 }
 
 NODE_API_MODULE(addon, Init)
