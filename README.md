@@ -1,12 +1,17 @@
-### node-api-rs
+## node-api-rs
 
 Rust crate for [napi](https://github.com/nodejs/node-api-headers).
 
-### Examples
+## Examples
 
-TODO
+### Init Module
 
-### License
+```rust
+use node_api_rs::api;
+// TODO
+```
+
+## License
 
 Licensed under either of
 
