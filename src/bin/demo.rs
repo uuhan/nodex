@@ -1,7 +1,7 @@
-use node_api_rs::api;
+// use node_api_rs::api;
 
 pub fn main() {
-    unsafe {
+    // unsafe {
         // api::napi_module_register(todo!());
-    }
+    // }
 }
