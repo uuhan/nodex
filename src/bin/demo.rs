@@ -1,3 +1,5 @@
+#![allow(unreachable_code)]
+
 use node_api_rs::api;
 
 pub fn main() {
