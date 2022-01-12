@@ -20,7 +20,5 @@ pub fn main() {
 }
 
 fn api_header() -> Vec<String> {
-    vec![
-        "-I./api/include".into(),
-    ]
+    vec!["-I./api/include".into()]
 }
