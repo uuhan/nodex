@@ -1,6 +1,10 @@
 ## node-api-rs
 
-Rust crate for [napi](https://github.com/nodejs/node-api-headers).
+Yet another crate to create native nodejs addons :)
+
+This crate aims to make creating native nodejs addons very easy and comfortable.
+
+It is in a very early stage and heavy development is making.
 
 ## Examples
 
