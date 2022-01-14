@@ -1,6 +1,7 @@
 [package]
 name = "nodex"
 version = "0.1.0-alpha.0"
+readme = "../../README.md"
 edition = "2021"
 repository = "https://github.com/uuhan/nodex"
 homepage = "https://github.com/uuhan/nodex"
