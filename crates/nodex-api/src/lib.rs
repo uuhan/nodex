@@ -127,7 +127,7 @@ pub mod env;
 pub mod value;
 
 // useful macros
-pub use node_api_macros::init;
+pub use nodex_macros::init;
 
 #[cfg(test)]
 mod tests {

@@ -1,0 +1,12 @@
+[package]
+name = "nodex"
+version = "0.1.0-alpha.0"
+edition = "2021"
+repository = "https://github.com/uuhan/nodex"
+homepage = "https://github.com/uuhan/nodex"
+license = "MIT"
+authors = ["uuhan <xuminhui189@gmail.com>"]
+description = "nodex for ease of creating nodejs native addon."
+
+[dependencies.nodex-api]
+path = "../nodex-api"

@@ -1,11 +1,11 @@
 [package]
-name = "node-api-macros"
+name = "nodex-macros"
 version = "0.1.0"
 edition = "2021"
-repository = "https://github.com/uuhan/node-api-rs"
-homepage = "https://github.com/uuhan/node-api-rs"
+repository = "https://github.com/uuhan/nodex"
+homepage = "https://github.com/uuhan/nodex"
 license = "MIT"
-description = "useful macros for node-api-rs"
+description = "nodex macros"
 authors = ["uuhan <xuminhui189@gmail.com>"]
 
 [lib]

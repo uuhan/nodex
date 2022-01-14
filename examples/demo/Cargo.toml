@@ -6,5 +6,5 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib"]
 
-[dependencies.node-api-rs]
-path = "../../crates/api"
+[dependencies.nodex-api]
+path = "../../crates/nodex-api"

@@ -1,4 +1,4 @@
-## node-api-rs
+## nodex
 
 Yet another crate to create native nodejs addons :)
 
@@ -11,7 +11,7 @@ It is in a very early stage and heavy development is making.
 ### Init Module
 
 ```rust
-use node_api_rs::api;
+use nodex_api::api;
 // TODO
 ```
 

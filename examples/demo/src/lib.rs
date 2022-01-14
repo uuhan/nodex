@@ -1,6 +1,6 @@
-use node_api_rs::api;
+use nodex_api::api;
 
-node_api_rs::init!(init);
+nodex_api::init!(init);
 
 fn init(_env: api::napi_env, _exports: api::napi_value) {
     todo!()

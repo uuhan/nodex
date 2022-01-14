@@ -150,7 +150,7 @@ dependencies = [
 name = "demo"
 version = "0.1.0"
 dependencies = [
- "node-api-rs",
+ "nodex-api",
 ]
 
 [[package]]
@@ -261,7 +261,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
 
 [[package]]
-name = "node-api-macros"
+name = "nodex"
+version = "0.1.0-alpha.0"
+dependencies = [
+ "nodex-api",
+]
+
+[[package]]
+name = "nodex-api"
+version = "0.1.0-alpha.2"
+dependencies = [
+ "bindgen",
+ "cc",
+ "nodex-macros",
+]
+
+[[package]]
+name = "nodex-macros"
 version = "0.1.0"
 dependencies = [
  "darling",
@@ -269,15 +285,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "node-api-rs"
-version = "0.1.0-alpha.2"
-dependencies = [
- "bindgen",
- "cc",
- "node-api-macros",
 ]
 
 [[package]]

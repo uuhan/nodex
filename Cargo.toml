@@ -1,6 +1,7 @@
 [workspace]
 members = [
-  "crates/api",
+  "crates/nodex",
+  "crates/nodex-api",
   "crates/macros",
   "crates/cli",
 
@@ -9,5 +10,6 @@ members = [
 ]
 
 [patch.crates-io]
-node-api-macros = { path = "./crates/macros" }
-node-api-rs = { path = "./crates/api" }
+nodex = { path = "./crates/nodex" }
+nodex-macros = { path = "./crates/macros" }
+nodex-api = { path = "./crates/nodex-api" }
