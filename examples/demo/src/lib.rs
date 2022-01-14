@@ -11,6 +11,17 @@ fn init(env: Env, exports: JsValue) -> NapiResult<()> {
 
         obj.set(JsString::new(env, "a")?, JsString::new(env, "b")?)?;
 
+        let version = env.node_version()?;
+
+        println!(
+            "{}.{}.{}-{} {}",
+            version.major,
+            version.minor,
+            version.patch,
+            std::ffi::CStr::from_ptr(version.release).to_str().unwrap(),
+            env.napi_version()?,
+        );
+
         let desc = api::napi_property_descriptor {
             utf8name: name.as_ptr(),
             name: std::ptr::null_mut(),

@@ -1,6 +1,9 @@
 use std::{marker::PhantomData, mem::MaybeUninit};
 
-use crate::{api, prelude::*};
+use crate::{
+    api::{self, napi_node_version},
+    prelude::*,
+};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Env<'a>(napi_env, PhantomData<&'a napi_env>);
@@ -22,6 +25,7 @@ impl<'a> Env<'a> {
         self.0
     }
 
+    /// get current global object
     pub fn global(&self) -> NapiResult<JsValue> {
         let value = unsafe {
             let mut result = MaybeUninit::uninit();
@@ -35,5 +39,34 @@ impl<'a> Env<'a> {
         };
 
         Ok(JsValue::from_raw(*self, value))
+    }
+
+    /// get node version
+    /// the returned buffer is statically allocated and does not need to be freed.
+    pub fn node_version(&self) -> NapiResult<napi_node_version> {
+        unsafe {
+            let mut result = MaybeUninit::uninit();
+            let status = api::napi_get_node_version(self.raw(), result.as_mut_ptr());
+
+            if status.err() {
+                return Err(status);
+            }
+
+            Ok(std::ptr::read(result.assume_init()))
+        }
+    }
+
+    /// get napi version
+    pub fn napi_version(&self) -> NapiResult<u32> {
+        unsafe {
+            let mut result = MaybeUninit::uninit();
+            let status = api::napi_get_version(self.raw(), result.as_mut_ptr());
+
+            if status.err() {
+                return Err(status);
+            }
+
+            Ok(result.assume_init())
+        }
     }
 }
