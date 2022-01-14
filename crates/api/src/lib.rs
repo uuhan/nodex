@@ -7,6 +7,13 @@ pub mod api {
     include!(concat!(env!("OUT_DIR"), "/api.rs"));
 }
 
+/// napi_boolean
+#[repr(u32)]
+pub enum NapiBoolean {
+    True = api::true_,
+    False = api::false_,
+}
+
 /// napi_property_attributes
 #[repr(u32)]
 pub enum NapiPropertyAttributes {
