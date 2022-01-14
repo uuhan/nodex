@@ -76,14 +76,16 @@ pub enum NapiKeyConversion {
     NumbersToStrings = api::napi_key_conversion_napi_key_numbers_to_strings,
 }
 
-/// napi_threadsafe_function_release_mode
+#[cfg(feature = "v4")]
+#[doc = "napi_threadsafe_function_release_mode"]
 #[repr(u32)]
 pub enum NapiThreadsafeFunctionReleaseMode {
     Release = api::napi_threadsafe_function_release_mode_napi_tsfn_release,
     Abort = api::napi_threadsafe_function_release_mode_napi_tsfn_abort,
 }
 
-/// napi_threadsafe_function_call_mode
+#[cfg(feature = "v4")]
+#[doc = "napi_threadsafe_function_call_mode"]
 #[repr(u32)]
 pub enum NapiThreadsafeFunctionCallMode {
     Nonblocking = api::napi_threadsafe_function_call_mode_napi_tsfn_nonblocking,

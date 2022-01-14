@@ -758,15 +758,20 @@ extern "C" {
         adjusted_value: *mut i64,
     ) -> NapiStatus;
 }
+
+#[cfg(feature = "v5")]
 extern "C" {
     pub fn napi_create_date(env: napi_env, time: f64, result: *mut napi_value) -> NapiStatus;
 }
+#[cfg(feature = "v5")]
 extern "C" {
     pub fn napi_is_date(env: napi_env, value: napi_value, is_date: *mut bool) -> NapiStatus;
 }
+#[cfg(feature = "v5")]
 extern "C" {
     pub fn napi_get_date_value(env: napi_env, value: napi_value, result: *mut f64) -> NapiStatus;
 }
+#[cfg(feature = "v5")]
 extern "C" {
     pub fn napi_add_finalizer(
         env: napi_env,
@@ -777,6 +782,8 @@ extern "C" {
         result: *mut napi_ref,
     ) -> NapiStatus;
 }
+
+#[cfg(feature = "v6")]
 extern "C" {
     pub fn napi_create_bigint_int64(
         env: napi_env,
@@ -784,6 +791,7 @@ extern "C" {
         result: *mut napi_value,
     ) -> NapiStatus;
 }
+#[cfg(feature = "v6")]
 extern "C" {
     pub fn napi_create_bigint_uint64(
         env: napi_env,
@@ -791,6 +799,7 @@ extern "C" {
         result: *mut napi_value,
     ) -> NapiStatus;
 }
+#[cfg(feature = "v6")]
 extern "C" {
     pub fn napi_create_bigint_words(
         env: napi_env,
@@ -800,6 +809,7 @@ extern "C" {
         result: *mut napi_value,
     ) -> NapiStatus;
 }
+#[cfg(feature = "v6")]
 extern "C" {
     pub fn napi_get_value_bigint_int64(
         env: napi_env,
@@ -808,6 +818,7 @@ extern "C" {
         lossless: *mut bool,
     ) -> NapiStatus;
 }
+#[cfg(feature = "v6")]
 extern "C" {
     pub fn napi_get_value_bigint_uint64(
         env: napi_env,
@@ -816,6 +827,7 @@ extern "C" {
         lossless: *mut bool,
     ) -> NapiStatus;
 }
+#[cfg(feature = "v6")]
 extern "C" {
     pub fn napi_get_value_bigint_words(
         env: napi_env,
@@ -825,6 +837,7 @@ extern "C" {
         words: *mut u64,
     ) -> NapiStatus;
 }
+#[cfg(feature = "v6")]
 extern "C" {
     pub fn napi_get_all_property_names(
         env: napi_env,
@@ -835,6 +848,7 @@ extern "C" {
         result: *mut napi_value,
     ) -> NapiStatus;
 }
+#[cfg(feature = "v6")]
 extern "C" {
     pub fn napi_set_instance_data(
         env: napi_env,
@@ -843,15 +857,19 @@ extern "C" {
         finalize_hint: *mut ::std::os::raw::c_void,
     ) -> NapiStatus;
 }
+#[cfg(feature = "v6")]
 extern "C" {
     pub fn napi_get_instance_data(
         env: napi_env,
         data: *mut *mut ::std::os::raw::c_void,
     ) -> NapiStatus;
 }
+
+#[cfg(feature = "v7")]
 extern "C" {
     pub fn napi_detach_arraybuffer(env: napi_env, arraybuffer: napi_value) -> NapiStatus;
 }
+#[cfg(feature = "v7")]
 extern "C" {
     pub fn napi_is_detached_arraybuffer(
         env: napi_env,
@@ -859,6 +877,8 @@ extern "C" {
         result: *mut bool,
     ) -> NapiStatus;
 }
+
+#[cfg(feature = "v8")]
 extern "C" {
     pub fn napi_type_tag_object(
         env: napi_env,
@@ -866,6 +886,7 @@ extern "C" {
         type_tag: *const napi_type_tag,
     ) -> NapiStatus;
 }
+#[cfg(feature = "v8")]
 extern "C" {
     pub fn napi_check_object_type_tag(
         env: napi_env,
@@ -874,12 +895,15 @@ extern "C" {
         result: *mut bool,
     ) -> NapiStatus;
 }
+#[cfg(feature = "v8")]
 extern "C" {
     pub fn napi_object_freeze(env: napi_env, object: napi_value) -> NapiStatus;
 }
+#[cfg(feature = "v8")]
 extern "C" {
     pub fn napi_object_seal(env: napi_env, object: napi_value) -> NapiStatus;
 }
+
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct napi_callback_scope__ {
@@ -898,27 +922,39 @@ pub struct napi_async_work__ {
     _unused: [u8; 0],
 }
 pub type napi_async_work = *mut napi_async_work__;
+
+#[cfg(feature = "v4")]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct napi_threadsafe_function__ {
     _unused: [u8; 0],
 }
+#[cfg(feature = "v4")]
 pub type napi_threadsafe_function = *mut napi_threadsafe_function__;
+#[cfg(feature = "v4")]
 pub const napi_threadsafe_function_release_mode_napi_tsfn_release:
     napi_threadsafe_function_release_mode = 0;
+#[cfg(feature = "v4")]
 pub const napi_threadsafe_function_release_mode_napi_tsfn_abort:
     napi_threadsafe_function_release_mode = 1;
+#[cfg(feature = "v4")]
 pub type napi_threadsafe_function_release_mode = ::std::os::raw::c_uint;
+#[cfg(feature = "v4")]
 pub const napi_threadsafe_function_call_mode_napi_tsfn_nonblocking:
     napi_threadsafe_function_call_mode = 0;
+#[cfg(feature = "v4")]
 pub const napi_threadsafe_function_call_mode_napi_tsfn_blocking:
     napi_threadsafe_function_call_mode = 1;
+#[cfg(feature = "v4")]
 pub type napi_threadsafe_function_call_mode = ::std::os::raw::c_uint;
+
 pub type napi_async_execute_callback =
     ::std::option::Option<unsafe extern "C" fn(env: napi_env, data: *mut ::std::os::raw::c_void)>;
 pub type napi_async_complete_callback = ::std::option::Option<
     unsafe extern "C" fn(env: napi_env, status: NapiStatus, data: *mut ::std::os::raw::c_void),
 >;
+
+#[cfg(feature = "v4")]
 pub type napi_threadsafe_function_call_js = ::std::option::Option<
     unsafe extern "C" fn(
         env: napi_env,
@@ -927,6 +963,7 @@ pub type napi_threadsafe_function_call_js = ::std::option::Option<
         data: *mut ::std::os::raw::c_void,
     ),
 >;
+
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct napi_node_version {
@@ -935,15 +972,20 @@ pub struct napi_node_version {
     pub patch: u32,
     pub release: *const ::std::os::raw::c_char,
 }
+
+#[cfg(feature = "v8")]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct napi_async_cleanup_hook_handle__ {
     _unused: [u8; 0],
 }
+#[cfg(feature = "v8")]
 pub type napi_async_cleanup_hook_handle = *mut napi_async_cleanup_hook_handle__;
+#[cfg(feature = "v8")]
 pub type napi_async_cleanup_hook = ::std::option::Option<
     unsafe extern "C" fn(handle: napi_async_cleanup_hook_handle, data: *mut ::std::os::raw::c_void),
 >;
+
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct uv_loop_s {
@@ -1059,12 +1101,17 @@ extern "C" {
         version: *mut *const napi_node_version,
     ) -> NapiStatus;
 }
+
+#[cfg(feature = "v2")]
 extern "C" {
     pub fn napi_get_uv_event_loop(env: napi_env, loop_: *mut *mut uv_loop_s) -> NapiStatus;
 }
+
+#[cfg(feature = "v3")]
 extern "C" {
     pub fn napi_fatal_exception(env: napi_env, err: napi_value) -> NapiStatus;
 }
+#[cfg(feature = "v3")]
 extern "C" {
     pub fn napi_add_env_cleanup_hook(
         env: napi_env,
@@ -1072,6 +1119,7 @@ extern "C" {
         arg: *mut ::std::os::raw::c_void,
     ) -> NapiStatus;
 }
+#[cfg(feature = "v3")]
 extern "C" {
     pub fn napi_remove_env_cleanup_hook(
         env: napi_env,
@@ -1079,6 +1127,7 @@ extern "C" {
         arg: *mut ::std::os::raw::c_void,
     ) -> NapiStatus;
 }
+#[cfg(feature = "v3")]
 extern "C" {
     pub fn napi_open_callback_scope(
         env: napi_env,
@@ -1087,9 +1136,12 @@ extern "C" {
         result: *mut napi_callback_scope,
     ) -> NapiStatus;
 }
+#[cfg(feature = "v3")]
 extern "C" {
     pub fn napi_close_callback_scope(env: napi_env, scope: napi_callback_scope) -> NapiStatus;
 }
+
+#[cfg(feature = "v4")]
 extern "C" {
     pub fn napi_create_threadsafe_function(
         env: napi_env,
@@ -1105,12 +1157,14 @@ extern "C" {
         result: *mut napi_threadsafe_function,
     ) -> NapiStatus;
 }
+#[cfg(feature = "v4")]
 extern "C" {
     pub fn napi_get_threadsafe_function_context(
         func: napi_threadsafe_function,
         result: *mut *mut ::std::os::raw::c_void,
     ) -> NapiStatus;
 }
+#[cfg(feature = "v4")]
 extern "C" {
     pub fn napi_call_threadsafe_function(
         func: napi_threadsafe_function,
@@ -1118,27 +1172,33 @@ extern "C" {
         is_blocking: napi_threadsafe_function_call_mode,
     ) -> NapiStatus;
 }
+#[cfg(feature = "v4")]
 extern "C" {
     pub fn napi_acquire_threadsafe_function(func: napi_threadsafe_function) -> NapiStatus;
 }
+#[cfg(feature = "v4")]
 extern "C" {
     pub fn napi_release_threadsafe_function(
         func: napi_threadsafe_function,
         mode: napi_threadsafe_function_release_mode,
     ) -> NapiStatus;
 }
+#[cfg(feature = "v4")]
 extern "C" {
     pub fn napi_unref_threadsafe_function(
         env: napi_env,
         func: napi_threadsafe_function,
     ) -> NapiStatus;
 }
+#[cfg(feature = "v4")]
 extern "C" {
     pub fn napi_ref_threadsafe_function(
         env: napi_env,
         func: napi_threadsafe_function,
     ) -> NapiStatus;
 }
+
+#[cfg(feature = "v8")]
 extern "C" {
     pub fn napi_add_async_cleanup_hook(
         env: napi_env,
@@ -1147,17 +1207,9 @@ extern "C" {
         remove_handle: *mut napi_async_cleanup_hook_handle,
     ) -> NapiStatus;
 }
+#[cfg(feature = "v8")]
 extern "C" {
     pub fn napi_remove_async_cleanup_hook(
         remove_handle: napi_async_cleanup_hook_handle,
     ) -> NapiStatus;
-}
-pub type __builtin_va_list = [__va_list_tag; 1usize];
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct __va_list_tag {
-    pub gp_offset: ::std::os::raw::c_uint,
-    pub fp_offset: ::std::os::raw::c_uint,
-    pub overflow_arg_area: *mut ::std::os::raw::c_void,
-    pub reg_save_area: *mut ::std::os::raw::c_void,
 }

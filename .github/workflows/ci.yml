@@ -42,11 +42,53 @@ jobs:
           toolchain: stable
           override: true
 
-      - name: Run cargo test
+      - name: Run cargo test - v1
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: -p nodex-api
+          args: -p nodex-api --no-default-features --features=v1
+
+      - name: Run cargo test - v2
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: -p nodex-api --no-default-features --features=v2
+
+      - name: Run cargo test - v3
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: -p nodex-api --no-default-features --features=v3
+
+      - name: Run cargo test - v4
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: -p nodex-api --no-default-features --features=v4
+
+      - name: Run cargo test - v5
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: -p nodex-api --no-default-features --features=v5
+
+      - name: Run cargo test - v6
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: -p nodex-api --no-default-features --features=v6
+
+      - name: Run cargo test - v7
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: -p nodex-api --no-default-features --features=v7
+
+      - name: Run cargo test - v8
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: -p nodex-api --no-default-features --features=v8
 
   lints:
     name: Lints
