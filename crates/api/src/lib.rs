@@ -7,6 +7,8 @@ pub mod api {
     include!(concat!(env!("OUT_DIR"), "/api.rs"));
 }
 
+pub mod env;
+
 // useful macros
 pub use node_api_macros::init;
 
