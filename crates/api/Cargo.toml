@@ -1,8 +1,8 @@
 [package]
 name = "node-api-rs"
 version = "0.1.0-alpha.2"
-edition = "2018"
-readme = "./README.md"
+edition = "2021"
+readme = "../README.md"
 repository = "https://github.com/uuhan/node-api-rs"
 homepage = "https://github.com/uuhan/node-api-rs"
 license = "MIT"
@@ -11,7 +11,7 @@ description = "rust binding to node_api.h"
 include = ["src/**/*", "api/include/*", "Cargo.toml", "build.rs"]
 
 [dependencies.node-api-macros]
-path = "../macros"
+version = "0"
 
 [build-dependencies]
 bindgen = "0.59.2"
