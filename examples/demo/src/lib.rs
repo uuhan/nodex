@@ -25,7 +25,7 @@ fn init(env: api::napi_env, exports: api::napi_value) {
             method: None,
             getter: None,
             setter: None,
-            value: value,
+            value,
             attributes: NapiPropertyAttributes::Default.bits(),
             data: std::ptr::null_mut(),
         };
