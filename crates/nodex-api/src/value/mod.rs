@@ -22,3 +22,22 @@ impl<'a> Value<'a> {
         self.value
     }
 }
+
+pub mod array;
+pub mod arraybuffer;
+pub mod bigint;
+pub mod boolean;
+pub mod buffer;
+pub mod dataview;
+pub mod date;
+pub mod external;
+pub mod function;
+pub mod null;
+pub mod number;
+pub mod object;
+pub mod string;
+pub mod symbol;
+pub mod typedarray;
+pub mod undefined;
+
+pub use string::JsString;

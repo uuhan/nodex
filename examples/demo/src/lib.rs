@@ -1,23 +1,13 @@
-use nodex_api::{api, NapiPropertyAttributes, NapiStatus};
-use std::{mem::MaybeUninit, os::raw::c_char};
+use nodex_api::{api, prelude::*};
 
 nodex_api::init!(init);
 
 fn init(env: api::napi_env, exports: api::napi_value) {
     unsafe {
+        let env = Env::from_raw(env);
         let name = std::ffi::CString::new("hello").unwrap();
 
-        let value = {
-            let mut result = MaybeUninit::uninit();
-            let _ = api::napi_create_string_utf8(
-                env,
-                "world".as_ptr() as *const c_char,
-                5,
-                result.as_mut_ptr(),
-            );
-
-            result.assume_init()
-        };
+        let value = JsString::new(env, "world").unwrap();
 
         let desc = api::napi_property_descriptor {
             utf8name: name.as_ptr(),
@@ -25,11 +15,11 @@ fn init(env: api::napi_env, exports: api::napi_value) {
             method: None,
             getter: None,
             setter: None,
-            value,
+            value: value.raw(),
             attributes: NapiPropertyAttributes::Default.bits(),
             data: std::ptr::null_mut(),
         };
-        let status = api::napi_define_properties(env, exports, 1, &desc);
+        let status = api::napi_define_properties(env.raw(), exports, 1, &desc);
         assert_eq!(status, NapiStatus::Ok);
     }
 }

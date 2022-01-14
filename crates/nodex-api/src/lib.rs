@@ -105,9 +105,20 @@ pub use nodex_macros::init;
 pub mod prelude {
     use super::*;
 
+    pub use super::NapiKeyCollectionMode;
+    pub use super::NapiKeyConversion;
+    pub use super::NapiKeyFilter;
+    pub use super::NapiPropertyAttributes;
+    #[cfg(feature = "v4")]
+    pub use super::NapiThreadsafeFunctionCallMode;
+    #[cfg(feature = "v4")]
+    pub use super::NapiThreadsafeFunctionReleaseMode;
+    pub use super::NapiTypedarrayType;
+    pub use super::NapiValuetype;
+
     pub use env::Env;
     pub use error::{NapiResult, NapiStatus};
-    pub use value::Value;
+    pub use value::{JsString, Value};
 
     pub use api::{napi_env, napi_value};
 }
