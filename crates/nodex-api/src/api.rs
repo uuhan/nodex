@@ -6,7 +6,7 @@ use crate::{
 #[cfg(feature = "v4")]
 use crate::{NapiThreadsafeFunctionCallMode, NapiThreadsafeFunctionReleaseMode};
 
-pub type size_t = ::std::os::raw::c_ulong;
+pub type size_t = usize;
 pub type char16_t = u16;
 
 #[repr(C)]

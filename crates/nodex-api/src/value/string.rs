@@ -28,7 +28,7 @@ impl<'a> JsString<'a> {
             let status = api::napi_create_string_utf8(
                 env.raw(),
                 value.as_ref().as_ptr() as *const c_char,
-                value.as_ref().len() as u64,
+                value.as_ref().len(),
                 result.as_mut_ptr(),
             );
 
