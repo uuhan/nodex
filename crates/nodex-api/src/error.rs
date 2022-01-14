@@ -50,4 +50,16 @@ pub enum NapiStatus {
     WouldDeadlock = api::napi_status_napi_would_deadlock,
 }
 
+impl NapiStatus {
+    /// check if this napi_status is ok
+    pub fn ok(&self) -> bool {
+        *self == Self::Ok
+    }
+
+    /// check if this napi_status is err
+    pub fn err(&self) -> bool {
+        *self != Self::Ok
+    }
+}
+
 pub type NapiResult<T> = Result<T, NapiStatus>;

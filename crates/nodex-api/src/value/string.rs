@@ -32,7 +32,7 @@ impl<'a> JsString<'a> {
                 result.as_mut_ptr(),
             );
 
-            if status != NapiStatus::Ok {
+            if status.err() {
                 return Err(status);
             }
 

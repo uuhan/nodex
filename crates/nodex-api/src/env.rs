@@ -27,7 +27,7 @@ impl<'a> Env<'a> {
             let mut result = MaybeUninit::uninit();
             let status = api::napi_get_global(self.raw(), result.as_mut_ptr());
 
-            if status != NapiStatus::Ok {
+            if status.err() {
                 return Err(status);
             }
 
