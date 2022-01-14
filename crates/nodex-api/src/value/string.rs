@@ -1,15 +1,15 @@
-use std::{mem::MaybeUninit, os::raw::c_char};
-
 use crate::{api, prelude::*};
+use std::{mem::MaybeUninit, os::raw::c_char};
 
 #[derive(Copy, Clone, Debug)]
 pub struct JsString<'a>(pub(crate) JsValue<'a>);
 
 impl<'a> JsString<'a> {
-    pub fn from_value(value: JsValue) -> JsString {
+    pub(crate) fn from_value(value: JsValue) -> JsString {
         JsString(value)
     }
 
+    /// create a string
     pub fn new(env: Env<'a>, value: impl AsRef<str>) -> NapiResult<JsString<'a>> {
         let value = unsafe {
             let mut result = MaybeUninit::uninit();

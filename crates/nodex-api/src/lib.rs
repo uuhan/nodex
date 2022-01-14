@@ -22,6 +22,7 @@ bitflags::bitflags! {
 
 /// napi_valuetype
 #[repr(u32)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum NapiValuetype {
     Undefined = api::napi_valuetype_napi_undefined,
     Null = api::napi_valuetype_napi_null,
@@ -37,6 +38,7 @@ pub enum NapiValuetype {
 
 /// napi_typedarray_type
 #[repr(u32)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum NapiTypedarrayType {
     Int8Array = api::napi_typedarray_type_napi_int8_array,
     Uint8Array = api::napi_typedarray_type_napi_uint8_array,
@@ -53,6 +55,7 @@ pub enum NapiTypedarrayType {
 
 /// napi_key_collection_mode
 #[repr(u32)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum NapiKeyCollectionMode {
     KeyIncludePrototypes = api::napi_key_collection_mode_napi_key_include_prototypes,
     KeyOwnOnly = api::napi_key_collection_mode_napi_key_own_only,
@@ -60,6 +63,7 @@ pub enum NapiKeyCollectionMode {
 
 /// napi_key_filter
 #[repr(u32)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum NapiKeyFilter {
     KeyAllProperties = api::napi_key_filter_napi_key_all_properties,
     Writable = api::napi_key_filter_napi_key_writable,
@@ -79,6 +83,7 @@ pub enum NapiKeyConversion {
 #[cfg(feature = "v4")]
 #[doc = "napi_threadsafe_function_release_mode"]
 #[repr(u32)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum NapiThreadsafeFunctionReleaseMode {
     Release = api::napi_threadsafe_function_release_mode_napi_tsfn_release,
     Abort = api::napi_threadsafe_function_release_mode_napi_tsfn_abort,
@@ -87,6 +92,7 @@ pub enum NapiThreadsafeFunctionReleaseMode {
 #[cfg(feature = "v4")]
 #[doc = "napi_threadsafe_function_call_mode"]
 #[repr(u32)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum NapiThreadsafeFunctionCallMode {
     Nonblocking = api::napi_threadsafe_function_call_mode_napi_tsfn_nonblocking,
     Blocking = api::napi_threadsafe_function_call_mode_napi_tsfn_blocking,
