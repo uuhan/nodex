@@ -2,6 +2,7 @@
 members = [
   "crates/api",
   "crates/macros",
+  "crates/cli",
 
   # examples
   "examples/demo",
