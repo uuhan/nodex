@@ -9,7 +9,7 @@ pub struct JsValue<'a> {
 
 impl<'a> JsValue<'a> {
     /// create `JsValue` from raw napi_value
-    pub(crate) fn from_raw(env: Env<'a>, value: napi_value) -> JsValue<'a> {
+    pub fn from_raw(env: Env<'a>, value: napi_value) -> JsValue<'a> {
         JsValue { env, value }
     }
 

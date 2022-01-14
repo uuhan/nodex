@@ -15,8 +15,18 @@ fn init_impl(input: proc_macro2::TokenStream) -> syn::Result<proc_macro2::TokenS
             env: nodex_api::api::napi_env,
             exports: nodex_api::api::napi_value
         ) -> nodex_api::api::napi_value {
-            let _ = std::panic::catch_unwind(|| #input(env, exports));
-            exports
+            let env = nodex_api::env::Env::from_raw(env);
+            let exports = nodex_api::value::JsValue::from_raw(env, exports);
+
+            // TODO: deal with exception
+            match std::panic::catch_unwind(|| #input(env, exports)) {
+                Ok(r) => {
+                }
+                Err(e) => {
+                }
+            }
+
+            exports.raw()
         }
     })
 }
