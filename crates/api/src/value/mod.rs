@@ -8,4 +8,3 @@ impl AsRef<napi_value> for Value {
         &self.0
     }
 }
-
