@@ -134,7 +134,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_napi_true_() {
-        assert_eq!(api::true_, 1);
+    fn test_napi_boolean() {
+        assert_eq!(NapiBoolean::True as u32, 1);
+        assert_eq!(NapiBoolean::False as u32, 0);
     }
 }
