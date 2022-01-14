@@ -1,17 +1,12 @@
-[package]
-name = "node-api-rs"
-version = "0.1.0-alpha.1"
-edition = "2018"
-readme = "./README.md"
-repository = "https://github.com/uuhan/node-api-rs"
-homepage = "https://github.com/uuhan/node-api-rs"
-license = "MIT"
-authors = ["uuhan <xuminhui189@gmail.com>"]
-description = "rust binding to node_api.h"
-include = ["src/**/*", "api/include/*", "Cargo.toml", "build.rs"]
+[workspace]
+members = [
+  "crates/api",
+  "crates/macros",
 
-[dependencies]
+  # examples
+  "examples/demo",
+]
 
-[build-dependencies]
-bindgen = "0.59.2"
-cc = "1.0.72"
+[patch.crates-io]
+node-api-macros = { path = "./crates/macros" }
+node-api-rs = { path = "./crates/api" }

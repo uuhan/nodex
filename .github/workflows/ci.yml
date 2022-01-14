@@ -46,6 +46,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
+          args: -p node-api-rs
 
   lints:
     name: Lints
