@@ -10,7 +10,8 @@ authors = ["uuhan <xuminhui189@gmail.com>"]
 description = "rust binding to node_api.h"
 include = ["src/**/*", "api/include/*", "Cargo.toml", "build.rs"]
 
-[dependencies]
+[dependencies.node-api-macros]
+path = "./macros"
 
 [build-dependencies]
 bindgen = "0.59.2"
