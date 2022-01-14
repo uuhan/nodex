@@ -14,16 +14,18 @@ pub enum NapiBoolean {
     False = api::false_,
 }
 
-/// napi_property_attributes
-#[repr(u32)]
-pub enum NapiPropertyAttributes {
-    Default = api::napi_property_attributes_napi_default,
-    Writable = api::napi_property_attributes_napi_writable,
-    Enumerable = api::napi_property_attributes_napi_enumerable,
-    Configurable = api::napi_property_attributes_napi_configurable,
-    Static = api::napi_property_attributes_napi_static,
-    DefaultMethod = api::napi_property_attributes_napi_default_method,
-    DefaultJsproperty = api::napi_property_attributes_napi_default_jsproperty,
+bitflags::bitflags! {
+    /// napi_property_attributes
+    #[repr(C)]
+    pub struct NapiPropertyAttributes: u32 {
+        const Default = api::napi_property_attributes_napi_default;
+        const Writable = api::napi_property_attributes_napi_writable;
+        const Enumerable = api::napi_property_attributes_napi_enumerable;
+        const Configurable = api::napi_property_attributes_napi_configurable;
+        const Static = api::napi_property_attributes_napi_static;
+        const DefaultMethod = api::napi_property_attributes_napi_default_method;
+        const DefaultJsproperty = api::napi_property_attributes_napi_default_jsproperty;
+    }
 }
 
 /// napi_valuetype
