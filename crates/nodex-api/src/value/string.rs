@@ -10,7 +10,7 @@ impl<'a> JsString<'a> {
     }
 
     /// create a string
-    pub fn new(env: Env<'a>, value: impl AsRef<str>) -> NapiResult<JsString<'a>> {
+    pub fn new(env: NapiEnv<'a>, value: impl AsRef<str>) -> NapiResult<JsString<'a>> {
         let value = unsafe {
             let mut result = MaybeUninit::uninit();
             let status = api::napi_create_string_utf8(

@@ -1,20 +1,20 @@
-use crate::{api, env::Env, prelude::*};
+use crate::{api, env::NapiEnv, prelude::*};
 use std::mem::MaybeUninit;
 
 #[derive(Clone, Copy, Debug)]
 pub struct JsValue<'a> {
-    env: Env<'a>,
+    env: NapiEnv<'a>,
     value: napi_value,
 }
 
 impl<'a> JsValue<'a> {
     /// create `JsValue` from raw napi_value
-    pub fn from_raw(env: Env<'a>, value: napi_value) -> JsValue<'a> {
+    pub fn from_raw(env: NapiEnv<'a>, value: napi_value) -> JsValue<'a> {
         JsValue { env, value }
     }
 
-    /// `Env` of this `JsValue`
-    pub fn env(&self) -> Env<'a> {
+    /// `NapiEnv` of this `JsValue`
+    pub fn env(&self) -> NapiEnv<'a> {
         self.env
     }
 
@@ -71,8 +71,8 @@ pub trait ValueInner {
     /// downcast to inner `JsValue` type
     fn downcast(&self) -> JsValue;
 
-    /// the `Env` of current value
-    fn env(&self) -> Env {
+    /// the `NapiEnv` of current value
+    fn env(&self) -> NapiEnv {
         self.downcast().env()
     }
 

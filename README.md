@@ -16,7 +16,7 @@ use nodex_api::{api, prelude::*};
 
 nodex_api::init!(init);
 
-fn init(env: Env, exports: JsValue) -> NapiResult<()> {
+fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
     Ok(())
 }
 ```

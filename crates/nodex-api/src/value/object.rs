@@ -9,7 +9,7 @@ impl<'a> JsObject<'a> {
         JsObject(value)
     }
 
-    pub fn new(env: Env<'a>) -> NapiResult<JsObject<'a>> {
+    pub fn new(env: NapiEnv<'a>) -> NapiResult<JsObject<'a>> {
         let value = unsafe {
             let mut result = MaybeUninit::uninit();
             let status = api::napi_create_object(env.raw(), result.as_mut_ptr());

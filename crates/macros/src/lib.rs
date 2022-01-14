@@ -16,7 +16,7 @@ fn init_impl(input: proc_macro2::TokenStream) -> syn::Result<proc_macro2::TokenS
             env: nodex_api::api::napi_env,
             exports: nodex_api::api::napi_value
         ) -> nodex_api::api::napi_value {
-            let env = nodex_api::env::Env::from_raw(env);
+            let env = nodex_api::env::NapiEnv::from_raw(env);
             let exports = nodex_api::value::JsValue::from_raw(env, exports);
 
             // TODO: deal with exception

@@ -122,7 +122,7 @@ pub mod prelude {
     pub use super::NapiTypedarrayType;
     pub use super::NapiValuetype;
 
-    pub use env::Env;
+    pub use env::NapiEnv;
     pub use error::{NapiResult, NapiStatus};
 
     pub use value::*;

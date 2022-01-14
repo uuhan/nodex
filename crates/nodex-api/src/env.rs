@@ -6,21 +6,21 @@ use crate::{
 };
 
 #[derive(Clone, Copy, Debug)]
-pub struct Env<'a>(napi_env, PhantomData<&'a napi_env>);
+pub struct NapiEnv<'a>(napi_env, PhantomData<&'a napi_env>);
 
-impl<'a> AsRef<napi_env> for Env<'a> {
+impl<'a> AsRef<napi_env> for NapiEnv<'a> {
     fn as_ref(&self) -> &napi_env {
         &self.0
     }
 }
 
-impl<'a> Env<'a> {
-    /// create `Env` from raw napi_env
-    pub fn from_raw(env: napi_env) -> Env<'a> {
-        Env(env, PhantomData)
+impl<'a> NapiEnv<'a> {
+    /// create `NapiEnv` from raw napi_env
+    pub fn from_raw(env: napi_env) -> NapiEnv<'a> {
+        NapiEnv(env, PhantomData)
     }
 
-    /// access raw napi_env from `Env`
+    /// access raw napi_env from `NapiEnv`
     pub fn raw(&self) -> napi_env {
         self.0
     }
