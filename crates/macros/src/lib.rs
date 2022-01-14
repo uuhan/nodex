@@ -1,4 +1,5 @@
 use proc_macro::TokenStream;
+use quote::quote;
 
 #[proc_macro]
 pub fn init(input: TokenStream) -> TokenStream {
@@ -9,7 +10,7 @@ pub fn init(input: TokenStream) -> TokenStream {
 
 fn init_impl(input: proc_macro2::TokenStream) -> syn::Result<proc_macro2::TokenStream> {
     let input: syn::Ident = syn::parse2(input)?;
-    Ok(quote::quote! {
+    Ok(quote! {
         #[no_mangle]
         pub unsafe extern "C" fn napi_register_module_v1(
             env: nodex_api::api::napi_env,
