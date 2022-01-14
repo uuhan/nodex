@@ -7,6 +7,11 @@ pub mod api {
     include!(concat!(env!("OUT_DIR"), "/api.rs"));
 }
 
+// useful macros
+pub use node_api_macros::{
+    init,
+};
+
 #[cfg(test)]
 mod tests {
     use super::*;

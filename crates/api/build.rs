@@ -6,7 +6,7 @@ use std::path::PathBuf;
 pub fn main() {
     let bindings = bindgen::Builder::default()
         .clang_args(&["-x", "c"])
-        .clang_args(&["-Iapi/include"])
+        .clang_args(&["-I../../api/include"])
         .clang_args(api_version())
         .rust_target(bindgen::RustTarget::Nightly)
         .layout_tests(false)
