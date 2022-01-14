@@ -1,0 +1,3 @@
+[submodule "crates/nodex-api/api"]
+	path = crates/nodex-api/api
+	url = https://github.com/nodejs/node-api-headers
