@@ -11,8 +11,28 @@ It is in a very early stage and heavy development is making.
 ### Init Module
 
 ```rust
-use nodex_api::api;
+// lib.rs
+use nodex_api::{api, prelude::*};
+
+nodex_api::init!(init);
+
+fn init(env: Env, exports: JsValue) -> NapiResult<()> {
+    Ok(())
+}
 // TODO
+```
+
+## How to participate in
+
+## Code of conduct
+
+```bash
+cat >> .git/hooks/pre-push << EOF
+#!/bin/sh
+
+cargo fmt || exit
+cargo clippy -- -D warnings || exit
+EOF
 ```
 
 ## License
