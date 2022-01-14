@@ -1,6 +1,11 @@
 [package]
-name = "cargo-nodejs"
+name = "cargo-nodex"
 version = "0.1.0-alpha.0"
 edition = "2021"
+repository = "https://github.com/uuhan/node-api-rs"
+homepage = "https://github.com/uuhan/node-api-rs"
+license = "MIT"
+authors = ["uuhan <xuminhui189@gmail.com>"]
+description = "cargo tool for creating nodejs native addon."
 
 [dependencies]
