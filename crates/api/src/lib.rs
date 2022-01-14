@@ -8,9 +8,7 @@ pub mod api {
 }
 
 // useful macros
-pub use node_api_macros::{
-    init,
-};
+pub use node_api_macros::init;
 
 #[cfg(test)]
 mod tests {

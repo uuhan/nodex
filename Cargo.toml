@@ -2,6 +2,9 @@
 members = [
   "crates/api",
   "crates/macros",
+
+  # examples
+  "examples/demo",
 ]
 
 [patch.crates-io]
