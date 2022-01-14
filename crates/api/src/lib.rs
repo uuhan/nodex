@@ -77,6 +77,45 @@ pub enum NapiStatus {
     WouldDeadlock = api::napi_status_napi_would_deadlock,
 }
 
+/// napi_key_collection_mode
+#[repr(u32)]
+pub enum NapiKeyCollectionMode {
+    KeyIncludePrototypes = api::napi_key_collection_mode_napi_key_include_prototypes,
+    KeyOwnOnly = api::napi_key_collection_mode_napi_key_own_only,
+}
+
+/// napi_key_filter
+#[repr(u32)]
+pub enum NapiKeyFilter {
+    KeyAllProperties = api::napi_key_filter_napi_key_all_properties,
+    Writable = api::napi_key_filter_napi_key_writable,
+    Enumerable = api::napi_key_filter_napi_key_enumerable,
+    Configurable = api::napi_key_filter_napi_key_configurable,
+    SkipStrings = api::napi_key_filter_napi_key_skip_strings,
+    SkipSymbols = api::napi_key_filter_napi_key_skip_symbols,
+}
+
+/// napi_key_conversion
+#[repr(u32)]
+pub enum NapiKeyConversion {
+    KeepNumbers = api::napi_key_conversion_napi_key_keep_numbers,
+    NumbersToStrings = api::napi_key_conversion_napi_key_numbers_to_strings,
+}
+
+/// napi_threadsafe_function_release_mode
+#[repr(u32)]
+pub enum NapiThreadsafeFunctionReleaseMode {
+    Release = api::napi_threadsafe_function_release_mode_napi_tsfn_release,
+    Abort = api::napi_threadsafe_function_release_mode_napi_tsfn_abort,
+}
+
+/// napi_threadsafe_function_call_mode
+#[repr(u32)]
+pub enum NapiThreadsafeFunctionCallMode {
+    Nonblocking = api::napi_threadsafe_function_call_mode_napi_tsfn_nonblocking,
+    Blocking = api::napi_threadsafe_function_call_mode_napi_tsfn_blocking,
+}
+
 pub mod env;
 pub mod value;
 
