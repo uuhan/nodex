@@ -65,6 +65,36 @@ impl<'a> JsValue<'a> {
             Err(NapiStatus::StringExpected)
         }
     }
+
+    /// check if it is an array
+    pub fn is_array(&self) -> NapiResult<bool> {
+        unsafe {
+            let mut result = MaybeUninit::uninit();
+            let status = api::napi_is_array(self.env().raw(), self.raw(), result.as_mut_ptr());
+            if status.err() {
+                return Err(NapiStatus::ArrayExpected);
+            }
+
+            Ok(result.assume_init())
+        }
+    }
+
+    /// view it as an array, may fail if it is not an array value
+    pub fn as_array(&self) -> NapiResult<JsArray> {
+        if self.is_array()? {
+            Ok(JsArray::from_value(*self))
+        } else {
+            Err(NapiStatus::ArrayExpected)
+        }
+    }
+
+    pub fn is_null(&self) -> NapiResult<bool> {
+        Ok(self.value_type()? == NapiValuetype::Null)
+    }
+
+    pub fn is_undefined(&self) -> NapiResult<bool> {
+        Ok(self.value_type()? == NapiValuetype::Undefined)
+    }
 }
 
 pub trait ValueInner {
@@ -99,6 +129,7 @@ mod symbol;
 mod typedarray;
 mod undefined;
 
+pub use array::JsArray;
 pub use null::JsNull;
 pub use object::JsObject;
 pub use string::JsString;
