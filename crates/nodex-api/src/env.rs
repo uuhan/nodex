@@ -1,6 +1,4 @@
-use std::{
-    marker::PhantomData,
-};
+use std::marker::PhantomData;
 
 use crate::api::napi_env;
 
