@@ -1,25 +1,28 @@
 #![allow(unreachable_code)]
 
-use std::env;
-use std::path::PathBuf;
-
 pub fn main() {
-    let bindings = bindgen::Builder::default()
-        .clang_args(&["-x", "c"])
-        .clang_args(&["-Iapi/include"])
-        .clang_args(api_version())
-        .rust_target(bindgen::RustTarget::Nightly)
-        .layout_tests(false)
-        .generate_inline_functions(false)
-        .derive_debug(true)
-        .header("src/api.h")
-        .generate()
-        .expect("unable to generate api.h bindings!");
+    #[cfg(feature = "gen-api")]
+    {
+        use std::env;
+        use std::path::PathBuf;
 
-    let out = PathBuf::from(env::var("OUT_DIR").unwrap());
-    bindings
-        .write_to_file(out.join("api.rs"))
-        .expect("could not write bindings!");
+        let bindings = bindgen::Builder::default()
+            .clang_args(&["-x", "c"])
+            .clang_args(&["-Iapi/include"])
+            .clang_args(api_version())
+            .rust_target(bindgen::RustTarget::Nightly)
+            .layout_tests(false)
+            .generate_inline_functions(false)
+            .derive_debug(true)
+            .header("src/api.h")
+            .generate()
+            .expect("unable to generate api.h bindings!");
+
+        let out = PathBuf::from("./src");
+        bindings
+            .write_to_file(out.join("out.rs"))
+            .expect("could not write bindings!");
+    }
 
     // NB: macos link options
     #[cfg(target_os = "macos")]
@@ -30,6 +33,7 @@ pub fn main() {
     }
 }
 
+#[cfg(feature = "gen-api")]
 fn api_version<'a>() -> &'a [&'a str] {
     #[cfg(feature = "v8")]
     return &["-DNAPI_VERSION=8"];

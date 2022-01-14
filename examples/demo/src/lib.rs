@@ -30,6 +30,6 @@ fn init(env: api::napi_env, exports: api::napi_value) {
             data: std::ptr::null_mut(),
         };
         let status = api::napi_define_properties(env, exports, 1, &desc);
-        assert_eq!(status, NapiStatus::Ok as u32);
+        assert_eq!(status, NapiStatus::Ok);
     }
 }

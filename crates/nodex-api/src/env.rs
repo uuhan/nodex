@@ -1,6 +1,6 @@
-use std::marker::PhantomData;
+use std::{marker::PhantomData, mem::MaybeUninit};
 
-use crate::api::napi_env;
+use crate::{api, prelude::*};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Env<'a>(napi_env, PhantomData<&'a napi_env>);
@@ -20,5 +20,20 @@ impl<'a> Env<'a> {
     /// access raw napi_env from `Env`
     pub fn raw(&self) -> napi_env {
         self.0
+    }
+
+    pub fn global(&self) -> NapiResult<Value> {
+        let value = unsafe {
+            let mut result = MaybeUninit::uninit();
+            let status = api::napi_get_global(self.raw(), result.as_mut_ptr());
+
+            if status != NapiStatus::Ok {
+                return Err(status);
+            }
+
+            result.assume_init()
+        };
+
+        Ok(Value::from_raw(*self, value))
     }
 }

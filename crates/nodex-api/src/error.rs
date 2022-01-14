@@ -2,7 +2,7 @@ use crate::api;
 
 /// napi_status
 #[repr(u32)]
-#[derive(thiserror::Error, Debug)]
+#[derive(thiserror::Error, Debug, Copy, Clone, PartialEq, Eq)]
 pub enum NapiStatus {
     #[error("napi ok")]
     Ok = api::napi_status_napi_ok,

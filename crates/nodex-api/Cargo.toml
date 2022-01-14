@@ -21,11 +21,12 @@ thiserror = "1.0.30"
 version = "0"
 
 [build-dependencies]
-bindgen = "0.59.2"
-cc = "1.0.72"
+bindgen = { version = "0.59.2", optional = true }
+cc = { version = "1.0.72", optional = true }
 
 [features]
 default = ["v8"]
+gen-api = ["bindgen", "cc"]
 v1 = []
 v2 = ["v1"]
 v3 = ["v1", "v2"]
