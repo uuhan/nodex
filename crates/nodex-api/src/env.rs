@@ -22,7 +22,7 @@ impl<'a> Env<'a> {
         self.0
     }
 
-    pub fn global(&self) -> NapiResult<Value> {
+    pub fn global(&self) -> NapiResult<JsValue> {
         let value = unsafe {
             let mut result = MaybeUninit::uninit();
             let status = api::napi_get_global(self.raw(), result.as_mut_ptr());
@@ -34,6 +34,6 @@ impl<'a> Env<'a> {
             result.assume_init()
         };
 
-        Ok(Value::from_raw(*self, value))
+        Ok(JsValue::from_raw(*self, value))
     }
 }

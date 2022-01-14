@@ -3,10 +3,10 @@ use std::{mem::MaybeUninit, os::raw::c_char};
 use crate::{api, prelude::*};
 
 #[derive(Copy, Clone, Debug)]
-pub struct JsString<'a>(pub(crate) Value<'a>);
+pub struct JsString<'a>(pub(crate) JsValue<'a>);
 
 impl<'a> JsString<'a> {
-    pub fn from_value(value: Value) -> JsString {
+    pub fn from_value(value: JsValue) -> JsString {
         JsString(value)
     }
 
@@ -27,12 +27,12 @@ impl<'a> JsString<'a> {
             result.assume_init()
         };
 
-        Ok(JsString(Value::from_raw(env, value)))
+        Ok(JsString(JsValue::from_raw(env, value)))
     }
 }
 
 impl<'a> ValueInner for JsString<'a> {
-    fn downcast(&self) -> Value {
+    fn downcast(&self) -> JsValue {
         self.0
     }
 }

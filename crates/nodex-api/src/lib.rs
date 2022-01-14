@@ -118,7 +118,8 @@ pub mod prelude {
 
     pub use env::Env;
     pub use error::{NapiResult, NapiStatus};
-    pub use value::{JsString, Value, ValueInner};
+
+    pub use value::*;
 
     pub use api::{napi_env, napi_value};
 }
