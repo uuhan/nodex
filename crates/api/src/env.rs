@@ -1,6 +1,6 @@
 use crate::api::napi_env;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Debug)]
 pub struct Env(napi_env);
 
 impl AsRef<napi_env> for Env {

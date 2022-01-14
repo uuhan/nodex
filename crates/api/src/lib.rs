@@ -8,6 +8,7 @@ pub mod api {
 }
 
 pub mod env;
+pub mod value;
 
 // useful macros
 pub use node_api_macros::init;
