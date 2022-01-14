@@ -10,18 +10,6 @@ impl<'a> JsString<'a> {
         JsString(value)
     }
 
-    pub fn env(&self) -> Env<'a> {
-        self.0.env()
-    }
-
-    pub fn raw(&self) -> napi_value {
-        self.0.raw()
-    }
-
-    pub fn value(&self) -> Value<'a> {
-        self.0
-    }
-
     pub fn new(env: Env<'a>, value: impl AsRef<str>) -> NapiResult<JsString<'a>> {
         let value = unsafe {
             let mut result = MaybeUninit::uninit();
@@ -40,5 +28,11 @@ impl<'a> JsString<'a> {
         };
 
         Ok(JsString(Value::from_raw(env, value)))
+    }
+}
+
+impl<'a> ValueInner for JsString<'a> {
+    fn downcast(&self) -> Value {
+        self.0
     }
 }

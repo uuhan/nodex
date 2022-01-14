@@ -23,6 +23,21 @@ impl<'a> Value<'a> {
     }
 }
 
+pub trait ValueInner {
+    /// downcast to inner `Value` type
+    fn downcast(&self) -> Value;
+
+    /// the `Env` of current value
+    fn env(&self) -> Env {
+        self.downcast().env()
+    }
+
+    /// the raw-handle of current value
+    fn raw(&self) -> napi_value {
+        self.downcast().raw()
+    }
+}
+
 pub mod array;
 pub mod arraybuffer;
 pub mod bigint;
