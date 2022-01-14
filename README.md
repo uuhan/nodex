@@ -19,7 +19,6 @@ nodex_api::init!(init);
 fn init(env: Env, exports: JsValue) -> NapiResult<()> {
     Ok(())
 }
-// TODO
 ```
 
 ## How to participate in
