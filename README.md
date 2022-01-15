@@ -1,4 +1,4 @@
-## nodex
+## nodex 🥳
 
 Yet another crate to create native nodejs addons :)
 
