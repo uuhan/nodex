@@ -69,4 +69,16 @@ impl<'a> NapiEnv<'a> {
             Ok(result.assume_init())
         }
     }
+
+    /// This API creates a JavaScript string value from a UTF8-encoded C string. The native string is copied.
+    /// The JavaScript string type is described in Section 6.1.4 of the ECMAScript Language Specification.
+    pub fn string(&self, s: impl AsRef<str>) -> NapiResult<JsString> {
+        JsString::new(*self, s)
+    }
+
+    /// This API allocates a default JavaScript Object. It is the equivalent of doing new Object() in JavaScript.
+    /// The JavaScript Object type is described in Section 6.1.7 of the ECMAScript Language Specification.
+    pub fn object(&self) -> NapiResult<JsObject> {
+        JsObject::new(*self)
+    }
 }

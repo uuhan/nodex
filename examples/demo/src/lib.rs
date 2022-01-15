@@ -3,11 +3,11 @@ use nodex_api::{api, prelude::*};
 nodex_api::init!(init);
 
 fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
-    let mut obj = JsObject::new(env)?;
+    let mut obj = env.object()?;
     let mut times = 0;
 
     obj.set(
-        JsString::new(env, "func")?,
+        env.string("func")?,
         JsFunction::with(env, "func", move || {
             times += 1;
             println!("[{}] called", times);

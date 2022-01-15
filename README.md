@@ -29,13 +29,11 @@ use nodex_api::{api, prelude::*};
 nodex_api::init!(init);
 
 fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
-    let name = std::ffi::CString::new("utils").unwrap();
-
-    let mut obj = JsObject::new(env)?;
+    let mut obj = env.object()?;
     let mut times = 0;
 
     obj.set(
-        JsString::new(env, "func")?,
+        env.string("func")?,
         JsFunction::with(env, "func", move || {
             times += 1;
             println!("[{}] called", times);
@@ -53,18 +51,13 @@ fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
     //     env.napi_version()?,
     // );
 
-    let desc = api::napi_property_descriptor {
-        utf8name: name.as_ptr(),
-        name: std::ptr::null_mut(),
-        method: None,
-        getter: None,
-        setter: None,
-        value: obj.raw(),
-        attributes: NapiPropertyAttributes::Default.bits(),
-        data: std::ptr::null_mut(),
-    };
+    let desc = DescriptorBuilder::new()
+        .with_name(JsString::new(env, "utils")?)
+        .with_value(obj)
+        .build()
+        .unwrap();
 
-    let status = unsafe { api::napi_define_properties(env.raw(), exports.raw(), 1, &desc) };
+    let status = unsafe { api::napi_define_properties(env.raw(), exports.raw(), 1, desc.raw()) };
     assert_eq!(status, NapiStatus::Ok);
 
     Ok(())
