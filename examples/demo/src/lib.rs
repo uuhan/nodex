@@ -26,7 +26,7 @@ fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
     // );
 
     let desc = DescriptorBuilder::new()
-        .with_name(JsString::new(env, "utils")?)
+        .with_name(env.string("utils")?)
         .with_value(obj)
         .build()
         .unwrap();
