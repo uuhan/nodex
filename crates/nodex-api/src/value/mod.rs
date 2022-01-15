@@ -102,6 +102,125 @@ impl<'a> JsValue<'a> {
         }
     }
 
+    /// check if it is a typed_array
+    pub fn is_typedarray(&self) -> NapiResult<bool> {
+        unsafe {
+            let mut result = MaybeUninit::uninit();
+            let status = api::napi_is_typedarray(self.env().raw(), self.raw(), result.as_mut_ptr());
+            if status.err() {
+                return Err(NapiStatus::GenericFailure);
+            }
+
+            Ok(result.assume_init())
+        }
+    }
+
+    /// view it as a typed_array, may fail if it is not a typed_array value
+    pub fn as_typedarray(&self) -> NapiResult<JsTypedArray> {
+        if self.is_typedarray()? {
+            Ok(JsTypedArray::from_value(*self))
+        } else {
+            Err(NapiStatus::GenericFailure)
+        }
+    }
+
+    /// check if it is an arraybuffer
+    pub fn is_arraybuffer(&self) -> NapiResult<bool> {
+        unsafe {
+            let mut result = MaybeUninit::uninit();
+            let status =
+                api::napi_is_arraybuffer(self.env().raw(), self.raw(), result.as_mut_ptr());
+            if status.err() {
+                return Err(NapiStatus::ArraybufferExpected);
+            }
+
+            Ok(result.assume_init())
+        }
+    }
+
+    /// view it as an array_buffer, may faile if it is not an array_buffer value
+    pub fn as_arraybuffer(&self) -> NapiResult<JsArrayBuffer> {
+        if self.is_arraybuffer()? {
+            Ok(JsArrayBuffer::from_value(*self))
+        } else {
+            Err(NapiStatus::ArraybufferExpected)
+        }
+    }
+
+    /// check if it is a buffer
+    pub fn is_buffer(&self) -> NapiResult<bool> {
+        unsafe {
+            let mut result = MaybeUninit::uninit();
+            let status =
+                api::napi_is_buffer(self.env().raw(), self.raw(), result.as_mut_ptr());
+            if status.err() {
+                return Err(NapiStatus::GenericFailure);
+            }
+
+            Ok(result.assume_init())
+        }
+    }
+
+    /// view it as a buffer, may faile if it is not a buffer value
+    pub fn as_buffer(&self) -> NapiResult<JsBuffer> {
+        if self.is_buffer()? {
+            Ok(JsBuffer::from_value(*self))
+        } else {
+            Err(NapiStatus::GenericFailure)
+        }
+    }
+
+    /// check if it is a dataview
+    pub fn is_dataview(&self) -> NapiResult<bool> {
+        unsafe {
+            let mut result = MaybeUninit::uninit();
+            let status =
+                api::napi_is_dataview(self.env().raw(), self.raw(), result.as_mut_ptr());
+            if status.err() {
+                return Err(NapiStatus::GenericFailure);
+            }
+
+            Ok(result.assume_init())
+        }
+    }
+
+    /// view it as a dataview, may faile if it is not a dataview value
+    pub fn as_dataview(&self) -> NapiResult<JsDataView> {
+        if self.is_buffer()? {
+            Ok(JsDataView::from_value(*self))
+        } else {
+            Err(NapiStatus::GenericFailure)
+        }
+    }
+
+    /// check if it is an external
+    pub fn is_external(&self) -> NapiResult<bool> {
+        Ok(self.value_type()? == NapiValuetype::External)
+    }
+
+    /// view it as an external, may fail if it is not an external value
+    pub fn as_external<T>(&self) -> NapiResult<JsExternal<T>> {
+        if self.is_external()? {
+            Ok(JsExternal::from_value(*self))
+        } else {
+            Err(NapiStatus::GenericFailure)
+        }
+    }
+
+    /// check if it is a function
+    pub fn is_function(&self) -> NapiResult<bool> {
+        Ok(self.value_type()? == NapiValuetype::Function)
+    }
+
+    /// view it as a number, may fail if it is not a number value
+    pub fn as_function(&self) -> NapiResult<JsFunction> {
+        if self.is_function()? {
+            Ok(JsFunction::from_value(*self))
+        } else {
+            Err(NapiStatus::FunctionExpected)
+        }
+    }
+
     /// check if it is a number
     pub fn is_number(&self) -> NapiResult<bool> {
         Ok(self.value_type()? == NapiValuetype::Number)
@@ -163,29 +282,6 @@ impl<'a> JsValue<'a> {
             Ok(JsDate::from_value(*self))
         } else {
             Err(NapiStatus::DateExpected)
-        }
-    }
-
-    /// check if it is an arraybuffer
-    pub fn is_arraybuffer(&self) -> NapiResult<bool> {
-        unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status =
-                api::napi_is_arraybuffer(self.env().raw(), self.raw(), result.as_mut_ptr());
-            if status.err() {
-                return Err(NapiStatus::ArraybufferExpected);
-            }
-
-            Ok(result.assume_init())
-        }
-    }
-
-    /// view it as an array_buffer, may faile if it is not an array_buffer value
-    pub fn as_arraybuffer(&self) -> NapiResult<JsArrayBuffer> {
-        if self.is_arraybuffer()? {
-            Ok(JsArrayBuffer::from_value(*self))
-        } else {
-            Err(NapiStatus::ArraybufferExpected)
         }
     }
 
