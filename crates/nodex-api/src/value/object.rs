@@ -67,10 +67,7 @@ impl<'a> JsObject<'a> {
     #[doc = "Object.freeze()"]
     pub fn freeze(&mut self) -> NapiResult<()> {
         unsafe {
-            let status = api::napi_object_freeze(
-                self.env().raw(),
-                self.raw(),
-            );
+            let status = api::napi_object_freeze(self.env().raw(), self.raw());
 
             if status.err() {
                 return Err(status);
@@ -84,10 +81,7 @@ impl<'a> JsObject<'a> {
     #[doc = "Object.seal()"]
     pub fn seal(&mut self) -> NapiResult<()> {
         unsafe {
-            let status = api::napi_object_seal(
-                self.env().raw(),
-                self.raw(),
-            );
+            let status = api::napi_object_seal(self.env().raw(), self.raw());
 
             if status.err() {
                 return Err(status);
