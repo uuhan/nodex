@@ -62,6 +62,40 @@ impl<'a> JsObject<'a> {
             Ok(())
         }
     }
+
+    #[cfg(feature = "v8")]
+    #[doc = "Object.freeze()"]
+    pub fn freeze(&mut self) -> NapiResult<()> {
+        unsafe {
+            let status = api::napi_object_freeze(
+                self.env().raw(),
+                self.raw(),
+            );
+
+            if status.err() {
+                return Err(status);
+            }
+
+            Ok(())
+        }
+    }
+
+    #[cfg(feature = "v8")]
+    #[doc = "Object.seal()"]
+    pub fn seal(&mut self) -> NapiResult<()> {
+        unsafe {
+            let status = api::napi_object_seal(
+                self.env().raw(),
+                self.raw(),
+            );
+
+            if status.err() {
+                return Err(status);
+            }
+
+            Ok(())
+        }
+    }
 }
 
 impl<'a> ValueInner for JsObject<'a> {
