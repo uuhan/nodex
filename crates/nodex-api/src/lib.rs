@@ -103,6 +103,8 @@ pub mod descriptor;
 pub mod env;
 mod error;
 pub mod handle;
+pub mod mac;
+pub mod rt;
 pub mod value;
 
 // napi status and result type
