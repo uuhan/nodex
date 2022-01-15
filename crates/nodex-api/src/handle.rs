@@ -1,7 +1,7 @@
 use crate::{api, prelude::*};
 use std::mem::MaybeUninit;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub struct NapiHandleScope<'a> {
     env: NapiEnv<'a>,
     handle: napi_handle_scope,
@@ -47,5 +47,11 @@ impl<'a> NapiHandleScope<'a> {
 
             Ok(())
         }
+    }
+}
+
+impl<'a> Drop for NapiHandleScope<'a> {
+    fn drop(&mut self) {
+        self.close();
     }
 }
