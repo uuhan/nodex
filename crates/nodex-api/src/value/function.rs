@@ -64,7 +64,7 @@ impl<'a> JsFunction<'a> {
                 );
 
                 // NB: this cb is leaked, should collect the box when the function is destroyed
-                let func: &mut Box<dyn FnMut()> = std::mem::transmute(data);
+                let func: &mut Box<dyn FnMut()> = std::mem::transmute(data.assume_init());
 
                 (
                     argc.assume_init(),

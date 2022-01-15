@@ -3,14 +3,17 @@ use nodex_api::{api, prelude::*};
 nodex_api::init!(init);
 
 fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
-    let name = std::ffi::CString::new("hello").unwrap();
+    let name = std::ffi::CString::new("utils").unwrap();
 
     let mut obj = JsObject::new(env)?;
-    let _value = JsString::new(env, "world")?;
+    let mut times = 0;
 
     obj.set(
-        JsString::new(env, "a")?,
-        JsFunction::with(env, "b", || println!("called"))?,
+        JsString::new(env, "func")?,
+        JsFunction::with(env, "func", move || {
+            times += 1;
+            println!("[{}] called", times);
+        })?,
     )?;
 
     // let version = env.node_version()?;
