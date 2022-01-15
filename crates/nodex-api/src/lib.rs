@@ -138,8 +138,8 @@ pub mod prelude {
     pub use work::NapiAsyncWork;
 
     pub use api::{
-        napi_async_context, napi_async_work, napi_callback, napi_callback_info, napi_env,
-        napi_handle_scope, napi_property_descriptor, napi_value,
+        napi_async_context, napi_async_work, napi_callback, napi_callback_info, napi_deferred,
+        napi_env, napi_handle_scope, napi_property_descriptor, napi_value,
     };
 }
 

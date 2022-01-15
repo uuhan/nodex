@@ -71,6 +71,16 @@ impl<'a> NapiEnv<'a> {
         }
     }
 
+    /// Return null object
+    pub fn null(&self) -> NapiResult<JsNull> {
+        JsNull::new(*self)
+    }
+
+    /// Return undefined object
+    pub fn undefined(&self) -> NapiResult<JsUndefined> {
+        JsUndefined::new(*self)
+    }
+
     /// This API is used to convert from the C double type to the JavaScript number type.
     /// The JavaScript number type is described in Section 6.1.6 of the ECMAScript Language Specification.
     pub fn number(&self, value: f64) -> NapiResult<JsNumber> {

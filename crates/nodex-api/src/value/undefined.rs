@@ -9,7 +9,7 @@ impl<'a> JsUndefined<'a> {
         JsUndefined(value)
     }
 
-    pub fn new(env: NapiEnv<'a>, value: impl AsRef<str>) -> NapiResult<JsUndefined<'a>> {
+    pub fn new(env: NapiEnv<'a>) -> NapiResult<JsUndefined<'a>> {
         let value = unsafe {
             let mut result = MaybeUninit::uninit();
             let status = api::napi_get_undefined(env.raw(), result.as_mut_ptr());

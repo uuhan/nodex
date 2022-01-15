@@ -9,7 +9,7 @@ impl<'a> JsNull<'a> {
         JsNull(value)
     }
 
-    pub fn new(env: NapiEnv<'a>, value: impl AsRef<str>) -> NapiResult<JsNull<'a>> {
+    pub fn new(env: NapiEnv<'a>) -> NapiResult<JsNull<'a>> {
         let value = unsafe {
             let mut result = MaybeUninit::uninit();
             let status = api::napi_get_null(env.raw(), result.as_mut_ptr());

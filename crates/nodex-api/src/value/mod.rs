@@ -292,6 +292,20 @@ impl<'a> JsValue<'a> {
     pub fn is_undefined(&self) -> NapiResult<bool> {
         Ok(self.value_type()? == NapiValuetype::Undefined)
     }
+
+    /// check if it is an promise
+    pub fn is_promise(&self) -> NapiResult<bool> {
+        unsafe {
+            let mut result = MaybeUninit::uninit();
+            let status = api::napi_is_promise(self.env().raw(), self.raw(), result.as_mut_ptr());
+
+            if status.err() {
+                return Err(NapiStatus::GenericFailure);
+            }
+
+            Ok(result.assume_init())
+        }
+    }
 }
 
 impl<'a> ValueInner for JsValue<'a> {
@@ -352,6 +366,7 @@ mod function;
 mod null;
 mod number;
 mod object;
+mod promise;
 mod string;
 mod symbol;
 mod typedarray;
@@ -369,6 +384,7 @@ pub use function::JsFunction;
 pub use null::JsNull;
 pub use number::JsNumber;
 pub use object::JsObject;
+pub use promise::JsPromise;
 pub use string::JsString;
 pub use symbol::JsSymbol;
 pub use typedarray::JsTypedArray;
