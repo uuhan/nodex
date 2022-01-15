@@ -294,6 +294,12 @@ impl<'a> JsValue<'a> {
     }
 }
 
+impl<'a> ValueInner for JsValue<'a> {
+    fn downcast(&self) -> JsValue {
+        *self
+    }
+}
+
 pub trait ValueInner {
     /// downcast to inner `JsValue` type
     fn downcast(&self) -> JsValue;

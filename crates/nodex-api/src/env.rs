@@ -92,4 +92,25 @@ impl<'a> NapiEnv<'a> {
     pub fn context(&self, name: impl AsRef<str>) -> NapiResult<NapiAsyncContext<'a>> {
         NapiAsyncContext::new(*self, name)
     }
+
+    pub fn define_properties(
+        &self,
+        object: impl ValueInner,
+        properties: impl AsRef<[NapiPropertyDescriptor]>,
+    ) -> NapiResult<()> {
+        unsafe {
+            let status = api::napi_define_properties(
+                self.raw(),
+                object.raw(),
+                properties.as_ref().len(),
+                properties.as_ref().as_ptr() as *const _,
+            );
+
+            if status.err() {
+                return Err(status);
+            }
+
+            Ok(())
+        }
+    }
 }

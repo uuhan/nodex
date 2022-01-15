@@ -1,4 +1,4 @@
-use nodex_api::{api, prelude::*};
+use nodex_api::prelude::*;
 
 nodex_api::init!(init);
 
@@ -27,14 +27,19 @@ fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
     //     env.napi_version()?,
     // );
 
-    let desc = DescriptorBuilder::new()
-        .with_name(env.string("utils")?)
-        .with_value(obj)
-        .build()
-        .unwrap();
-
-    let status = unsafe { api::napi_define_properties(env.raw(), exports.raw(), 1, desc.raw()) };
-    assert_eq!(status, NapiStatus::Ok);
+    env.define_properties(
+        exports,
+        &[
+            DescriptorBuilder::new()
+                .with_name(env.string("utils")?)
+                .with_value(obj)
+                .build()?,
+            DescriptorBuilder::new()
+                .with_name(env.string("key1")?)
+                .with_value(env.number(100.)?)
+                .build()?,
+        ],
+    )?;
 
     Ok(())
 }

@@ -6,4 +6,6 @@ cat << EOF | node --napi-modules -
 
   console.log(demo.utils.func())
   console.log(demo.utils.func())
+
+  console.log(demo.key1)
 EOF

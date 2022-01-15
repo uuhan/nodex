@@ -1,6 +1,7 @@
 use crate::{api, prelude::*};
 
 #[derive(Clone, Debug)]
+#[repr(C)]
 pub struct NapiPropertyDescriptor(napi_property_descriptor);
 
 impl AsRef<napi_property_descriptor> for NapiPropertyDescriptor {
@@ -109,18 +110,18 @@ impl DescriptorBuilder {
     }
 
     /// build finale `NapiPropertyDescriptor`
-    pub fn build(mut self) -> Option<NapiPropertyDescriptor> {
+    pub fn build(mut self) -> NapiResult<NapiPropertyDescriptor> {
         let utf8name = if let Some(name) = self.utf8name {
-            std::ffi::CString::new(name).ok()?.as_ptr()
+            name.as_ptr() as *const std::os::raw::c_char
         } else {
             std::ptr::null()
         };
 
         let name = self.name;
 
-        // utf8name or name must not be null both
+        // NB: panic if utf8name and name is both null
         if (utf8name.is_null() && name.is_null()) {
-            return None;
+            return Err(NapiStatus::InvalidArg);
         }
 
         let method = self.method.take();
@@ -130,7 +131,7 @@ impl DescriptorBuilder {
         let attributes = self.attributes.bits();
         let mut data = self.data;
 
-        Some(NapiPropertyDescriptor(napi_property_descriptor {
+        Ok(NapiPropertyDescriptor(napi_property_descriptor {
             utf8name,
             name,
             method,
