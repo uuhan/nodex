@@ -1,4 +1,4 @@
-## nodex 🥳
+## Nodex - Nodejs eXtersion 🥳
 
 Yet another crate to create native nodejs addons :)
 
