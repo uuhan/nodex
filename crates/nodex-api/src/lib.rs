@@ -106,6 +106,7 @@ pub mod handle;
 pub mod mac;
 pub mod rt;
 pub mod value;
+pub mod work;
 
 // napi status and result type
 pub use error::{NapiResult, NapiStatus};
@@ -134,10 +135,11 @@ pub mod prelude {
     pub use descriptor::{DescriptorBuilder, NapiPropertyDescriptor};
     pub use handle::NapiHandleScope;
     pub use value::*;
+    pub use work::NapiAsyncWork;
 
     pub use api::{
-        napi_async_context, napi_callback, napi_callback_info, napi_env, napi_handle_scope,
-        napi_property_descriptor, napi_value,
+        napi_async_context, napi_async_work, napi_callback, napi_callback_info, napi_env,
+        napi_handle_scope, napi_property_descriptor, napi_value,
     };
 }
 
