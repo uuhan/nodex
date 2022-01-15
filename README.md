@@ -75,6 +75,12 @@ Run:
 
 ```bash
 bash demo.sh
+
+# output
+# [1] called
+# { func: [Function: func] }
+# [2] called
+# { func: [Function: func] }
 ```
 
 ## How to participate in
