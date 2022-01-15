@@ -88,6 +88,16 @@ impl<'a> JsValue<'a> {
         }
     }
 
+    /// check if it is an arraybuffer
+    pub fn is_arraybuffer(&self) -> NapiResult<bool> {
+        todo!()
+    }
+
+    /// view it as an array_buffer, may faile if it is not an array_buffer value
+    pub fn as_arraybuffer(&self) -> NapiResult<JsArrayBuffer> {
+        todo!()
+    }
+
     pub fn is_null(&self) -> NapiResult<bool> {
         Ok(self.value_type()? == NapiValuetype::Null)
     }
@@ -130,6 +140,7 @@ mod typedarray;
 mod undefined;
 
 pub use array::JsArray;
+pub use arraybuffer::JsArrayBuffer;
 pub use null::JsNull;
 pub use object::JsObject;
 pub use string::JsString;
