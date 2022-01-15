@@ -8,7 +8,10 @@ fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
     let mut obj = JsObject::new(env)?;
     let _value = JsString::new(env, "world")?;
 
-    obj.set(JsString::new(env, "a")?, JsString::new(env, "b")?)?;
+    obj.set(
+        JsString::new(env, "a")?,
+        JsFunction::with(env, "b", || println!("called"))?,
+    )?;
 
     // let version = env.node_version()?;
     //

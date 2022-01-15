@@ -141,7 +141,17 @@ mod undefined;
 
 pub use array::JsArray;
 pub use arraybuffer::JsArrayBuffer;
+pub use bigint::JsBigInt;
+pub use boolean::JsBoolean;
+pub use buffer::JsBuffer;
+pub use dataview::JsDataView;
+pub use date::JsDate;
+pub use external::JsExternal;
+pub use function::JsFunction;
 pub use null::JsNull;
+pub use number::JsNumber;
 pub use object::JsObject;
 pub use string::JsString;
+pub use symbol::JsSymbol;
+pub use typedarray::JsTypedArray;
 pub use undefined::JsUndefined;

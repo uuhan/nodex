@@ -127,7 +127,7 @@ pub mod prelude {
 
     pub use value::*;
 
-    pub use api::{napi_env, napi_value};
+    pub use api::{napi_callback, napi_callback_info, napi_env, napi_value};
 }
 
 #[cfg(test)]

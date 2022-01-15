@@ -5,7 +5,7 @@ use std::{mem::MaybeUninit, os::raw::c_char};
 pub struct JsArrayBuffer<'a>(pub(crate) JsValue<'a>);
 
 impl<'a> JsArrayBuffer<'a> {
-    pub fn from_value(value: JsValue) -> JsArrayBuffer {
+    pub(crate) fn from_value(value: JsValue) -> JsArrayBuffer {
         JsArrayBuffer(value)
     }
 
