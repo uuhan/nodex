@@ -104,7 +104,7 @@ impl DescriptorBuilder {
 
     /// The attributes associated with the particular property. See napi_property_attributes.
     pub fn with_attribute(mut self, attribute: NapiPropertyAttributes) -> Self {
-        self.attributes = (self.attributes | attribute);
+        self.attributes |= attribute;
         self
     }
 
@@ -140,5 +140,11 @@ impl DescriptorBuilder {
             attributes,
             data,
         }))
+    }
+}
+
+impl Default for DescriptorBuilder {
+    fn default() -> Self {
+        Self::new()
     }
 }
