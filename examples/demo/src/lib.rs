@@ -27,19 +27,16 @@ fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
     //     env.napi_version()?,
     // );
 
-    env.define_properties(
-        exports,
-        &[
-            DescriptorBuilder::new()
-                .with_name(env.string("utils")?)
-                .with_value(obj)
-                .build()?,
-            DescriptorBuilder::new()
-                .with_name(env.string("key1")?)
-                .with_value(env.number(100.)?)
-                .build()?,
-        ],
-    )?;
+    exports.define_properties(&[
+        DescriptorBuilder::new()
+            .with_name(env.string("utils")?)
+            .with_value(obj)
+            .build()?,
+        DescriptorBuilder::new()
+            .with_name(env.string("key1")?)
+            .with_value(env.number(100.)?)
+            .build()?,
+    ])?;
 
     Ok(())
 }

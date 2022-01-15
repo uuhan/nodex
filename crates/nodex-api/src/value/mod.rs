@@ -313,6 +313,31 @@ pub trait ValueInner {
     fn raw(&self) -> napi_value {
         self.downcast().raw()
     }
+
+    /// This method allows the efficient definition of multiple properties on a given object. The
+    /// properties are defined using property descriptors (see napi_property_descriptor). Given an
+    /// array of such property descriptors, this API will set the properties on the object one at a
+    /// time, as defined by DefineOwnProperty() (described in Section 9.1.6 of the ECMA-262
+    /// specification).
+    fn define_properties(
+        &self,
+        properties: impl AsRef<[NapiPropertyDescriptor]>,
+    ) -> NapiResult<()> {
+        unsafe {
+            let status = api::napi_define_properties(
+                self.env().raw(),
+                self.raw(),
+                properties.as_ref().len(),
+                properties.as_ref().as_ptr() as *const _,
+            );
+
+            if status.err() {
+                return Err(status);
+            }
+
+            Ok(())
+        }
+    }
 }
 
 mod array;
