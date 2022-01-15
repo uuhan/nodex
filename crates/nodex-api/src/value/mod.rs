@@ -66,6 +66,20 @@ impl<'a> JsValue<'a> {
         }
     }
 
+    /// check if it is a symbol
+    pub fn is_symbol(&self) -> NapiResult<bool> {
+        Ok(self.value_type()? == NapiValuetype::Symbol)
+    }
+
+    /// view it as a symbol, may fail if it is not a symbol value
+    pub fn as_symbol(&self) -> NapiResult<JsSymbol> {
+        if self.is_symbol()? {
+            Ok(JsSymbol::from_value(*self))
+        } else {
+            Err(NapiStatus::GenericFailure)
+        }
+    }
+
     /// check if it is an array
     pub fn is_array(&self) -> NapiResult<bool> {
         unsafe {
@@ -88,14 +102,91 @@ impl<'a> JsValue<'a> {
         }
     }
 
+    /// check if it is a number
+    pub fn is_number(&self) -> NapiResult<bool> {
+        Ok(self.value_type()? == NapiValuetype::Number)
+    }
+
+    /// view it as a number, may fail if it is not a number value
+    pub fn as_number(&self) -> NapiResult<JsNumber> {
+        if self.is_number()? {
+            Ok(JsNumber::from_value(*self))
+        } else {
+            Err(NapiStatus::NumberExpected)
+        }
+    }
+
+    /// check if it is a bigint
+    pub fn is_bigint(&self) -> NapiResult<bool> {
+        Ok(self.value_type()? == NapiValuetype::Bigint)
+    }
+
+    /// view it as a bigint, may fail if it is not a bigint value
+    pub fn as_bigint(&self) -> NapiResult<JsBigInt> {
+        if self.is_bigint()? {
+            Ok(JsBigInt::from_value(*self))
+        } else {
+            Err(NapiStatus::BigintExpected)
+        }
+    }
+
+    /// check if it is a boolean
+    pub fn is_boolean(&self) -> NapiResult<bool> {
+        Ok(self.value_type()? == NapiValuetype::Boolean)
+    }
+
+    /// view it as a boolean, may fail if it is not a boolean value
+    pub fn as_boolean(&self) -> NapiResult<JsBoolean> {
+        if self.is_boolean()? {
+            Ok(JsBoolean::from_value(*self))
+        } else {
+            Err(NapiStatus::BooleanExpected)
+        }
+    }
+
+    /// check if it is a date
+    pub fn is_date(&self) -> NapiResult<bool> {
+        unsafe {
+            let mut result = MaybeUninit::uninit();
+            let status = api::napi_is_date(self.env().raw(), self.raw(), result.as_mut_ptr());
+            if status.err() {
+                return Err(NapiStatus::DateExpected);
+            }
+
+            Ok(result.assume_init())
+        }
+    }
+
+    /// view it as a date, may fail if it is not a date value
+    pub fn as_date(&self) -> NapiResult<JsDate> {
+        if self.is_date()? {
+            Ok(JsDate::from_value(*self))
+        } else {
+            Err(NapiStatus::DateExpected)
+        }
+    }
+
     /// check if it is an arraybuffer
     pub fn is_arraybuffer(&self) -> NapiResult<bool> {
-        todo!()
+        unsafe {
+            let mut result = MaybeUninit::uninit();
+            let status =
+                api::napi_is_arraybuffer(self.env().raw(), self.raw(), result.as_mut_ptr());
+            if status.err() {
+                return Err(NapiStatus::ArraybufferExpected);
+            }
+
+            Ok(result.assume_init())
+        }
     }
 
     /// view it as an array_buffer, may faile if it is not an array_buffer value
     pub fn as_arraybuffer(&self) -> NapiResult<JsArrayBuffer> {
-        todo!()
+        if self.is_arraybuffer()? {
+            Ok(JsArrayBuffer::from_value(*self))
+        } else {
+            Err(NapiStatus::ArraybufferExpected)
+        }
     }
 
     pub fn is_null(&self) -> NapiResult<bool> {
