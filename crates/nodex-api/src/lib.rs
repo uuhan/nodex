@@ -98,6 +98,7 @@ pub enum NapiThreadsafeFunctionCallMode {
     Blocking = api::napi_threadsafe_function_call_mode_napi_tsfn_blocking,
 }
 
+pub mod context;
 pub mod descriptor;
 pub mod env;
 mod error;
@@ -127,13 +128,14 @@ pub mod prelude {
     pub use env::NapiEnv;
     pub use error::{NapiResult, NapiStatus};
 
+    pub use context::NapiAsyncContext;
     pub use descriptor::{DescriptorBuilder, NapiPropertyDescriptor};
     pub use handle::NapiHandleScope;
     pub use value::*;
 
     pub use api::{
-        napi_callback, napi_callback_info, napi_env, napi_handle_scope, napi_property_descriptor,
-        napi_value,
+        napi_async_context, napi_callback, napi_callback_info, napi_env, napi_handle_scope,
+        napi_property_descriptor, napi_value,
     };
 }
 

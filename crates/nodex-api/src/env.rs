@@ -70,6 +70,12 @@ impl<'a> NapiEnv<'a> {
         }
     }
 
+    /// This API is used to convert from the C double type to the JavaScript number type.
+    /// The JavaScript number type is described in Section 6.1.6 of the ECMAScript Language Specification.
+    pub fn number(&self, value: f64) -> NapiResult<JsNumber> {
+        JsNumber::new(*self, value)
+    }
+
     /// This API creates a JavaScript string value from a UTF8-encoded C string. The native string is copied.
     /// The JavaScript string type is described in Section 6.1.4 of the ECMAScript Language Specification.
     pub fn string(&self, s: impl AsRef<str>) -> NapiResult<JsString> {
@@ -80,5 +86,10 @@ impl<'a> NapiEnv<'a> {
     /// The JavaScript Object type is described in Section 6.1.7 of the ECMAScript Language Specification.
     pub fn object(&self) -> NapiResult<JsObject> {
         JsObject::new(*self)
+    }
+
+    /// The async context
+    pub fn context(&self, name: impl AsRef<str>) -> NapiResult<NapiAsyncContext<'a>> {
+        NapiAsyncContext::new(*self, name)
     }
 }

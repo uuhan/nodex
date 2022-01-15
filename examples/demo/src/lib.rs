@@ -6,6 +6,8 @@ fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
     let mut obj = env.object()?;
     let mut times = 0;
 
+    // env.context("my-async-context")?;
+
     obj.set(
         env.string("func")?,
         JsFunction::with(env, "func", move || {

@@ -42,7 +42,7 @@ impl<'a> JsFunction<'a> {
         name: impl AsRef<str>,
         func: impl FnMut(),
     ) -> NapiResult<JsFunction<'a>> {
-        // NB: first leak the func closure
+        // NB: leak the func closure
         let func: Box<Box<dyn FnMut()>> = Box::new(Box::new(func));
 
         // TODO: it just works but not very useful by current design
@@ -64,6 +64,7 @@ impl<'a> JsFunction<'a> {
                 );
 
                 // NB: this cb is leaked, should collect the box when the function is destroyed
+                // restore the closure from data
                 let func: &mut Box<dyn FnMut()> = std::mem::transmute(data);
 
                 (
@@ -87,6 +88,7 @@ impl<'a> JsFunction<'a> {
                 name.as_ref().as_ptr() as *const c_char,
                 name.as_ref().len(),
                 Some(trampoline),
+                // pass closure to trampoline function
                 Box::into_raw(func) as _,
                 result.as_mut_ptr(),
             );
