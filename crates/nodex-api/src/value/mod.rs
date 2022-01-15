@@ -151,8 +151,7 @@ impl<'a> JsValue<'a> {
     pub fn is_buffer(&self) -> NapiResult<bool> {
         unsafe {
             let mut result = MaybeUninit::uninit();
-            let status =
-                api::napi_is_buffer(self.env().raw(), self.raw(), result.as_mut_ptr());
+            let status = api::napi_is_buffer(self.env().raw(), self.raw(), result.as_mut_ptr());
             if status.err() {
                 return Err(NapiStatus::GenericFailure);
             }
@@ -174,8 +173,7 @@ impl<'a> JsValue<'a> {
     pub fn is_dataview(&self) -> NapiResult<bool> {
         unsafe {
             let mut result = MaybeUninit::uninit();
-            let status =
-                api::napi_is_dataview(self.env().raw(), self.raw(), result.as_mut_ptr());
+            let status = api::napi_is_dataview(self.env().raw(), self.raw(), result.as_mut_ptr());
             if status.err() {
                 return Err(NapiStatus::GenericFailure);
             }
