@@ -261,6 +261,7 @@ impl<'a> JsValue<'a> {
         }
     }
 
+    #[cfg(feature = "v5")]
     /// check if it is a date
     pub fn is_date(&self) -> NapiResult<bool> {
         unsafe {
@@ -274,6 +275,7 @@ impl<'a> JsValue<'a> {
         }
     }
 
+    #[cfg(feature = "v5")]
     /// view it as a date, may fail if it is not a date value
     pub fn as_date(&self) -> NapiResult<JsDate> {
         if self.is_date()? {
