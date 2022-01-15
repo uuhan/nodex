@@ -100,8 +100,8 @@ pub enum NapiThreadsafeFunctionCallMode {
 
 pub mod env;
 mod error;
-pub mod value;
 pub mod handle;
+pub mod value;
 
 // napi status and result type
 pub use error::{NapiResult, NapiStatus};
@@ -126,10 +126,10 @@ pub mod prelude {
     pub use env::NapiEnv;
     pub use error::{NapiResult, NapiStatus};
 
-    pub use value::*;
     pub use handle::NapiHandleScope;
+    pub use value::*;
 
-    pub use api::{napi_callback, napi_callback_info, napi_env, napi_value, napi_handle_scope};
+    pub use api::{napi_callback, napi_callback_info, napi_env, napi_handle_scope, napi_value};
 }
 
 #[cfg(test)]
