@@ -97,12 +97,19 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v2
 
-      - name: Install nodejs
+      - run: cargo build -p demo
+      - run: cp target/debug/libdemo.so demo.node
+
+      - name: Install nodejs - v14
         uses: actions/setup-node@v2
         with:
           node-version: '14'
-      - run: cargo build -p demo
-      - run: cp target/debug/libdemo.so demo.node
+      - run: node demo.js
+
+      - name: Install nodejs - v17
+        uses: actions/setup-node@v2
+        with:
+          node-version: '17'
       - run: node demo.js
 
   lints:
