@@ -27,7 +27,7 @@ macro_rules! napi_call {
     (=$napi:ident, $($args:expr),+ $(,)?) => {
         unsafe {
             let mut result = std::mem::MaybeUninit::uninit();
-            let status = crate::api::$napi($($args),+, result.as_mut_ptr());
+            let status = $crate::api::$napi($($args),+, result.as_mut_ptr());
             if status.err() {
                 return Err(status)
             }
@@ -37,10 +37,22 @@ macro_rules! napi_call {
 
     ($napi:ident, $($args:expr),+ $(,)?) => {
         unsafe {
-            let status = crate::api::$napi($($args),+);
+            let status = $crate::api::$napi($($args),+);
             if status.err() {
                 return Err(status)
             }
         }
+    }
+}
+
+#[macro_export]
+macro_rules! napi_guard {
+    ($version:expr) => {
+        assert!(
+            $version >= $crate::napi_version_guard(),
+            "Oops, your node(napi {}) is too old to support napi >= {}",
+            $version,
+            $crate::napi_version_guard(),
+        );
     }
 }

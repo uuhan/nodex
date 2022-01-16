@@ -3,6 +3,8 @@ use nodex_api::prelude::*;
 nodex_api::napi_module!(init);
 
 fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
+    nodex_api::napi_guard!(env.napi_version()?);
+
     let mut obj = env.object()?;
     let mut times = 0;
 
@@ -26,7 +28,6 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     assert_eq!(label, name.get()?);
 
     let version = env.node_version()?;
-
     println!(
         "{}.{}.{}-{} {}",
         version.major,

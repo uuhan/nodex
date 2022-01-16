@@ -141,6 +141,26 @@ pub mod prelude {
     };
 }
 
+pub const fn napi_version_guard() -> u32 {
+    #[cfg(feature = "v8")]
+    return 8;
+    #[cfg(feature = "v7")]
+    return 7;
+    #[cfg(feature = "v6")]
+    return 6;
+    #[cfg(feature = "v5")]
+    return 5;
+    #[cfg(feature = "v4")]
+    return 4;
+    #[cfg(feature = "v3")]
+    return 3;
+    #[cfg(feature = "v2")]
+    return 2;
+    #[cfg(feature = "v1")]
+    return 1;
+    panic!("please select a napi version to use.")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
