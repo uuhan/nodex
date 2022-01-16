@@ -36,26 +36,13 @@ nodex-api = "0.1.0-alpha.3"
 ### Init Module
 
 ```rust
-// lib.rs
-use nodex_api::{api, prelude::*};
-
-nodex_api::napi_module!(init);
-
-fn init(env: NapiEnv, exports: JsObject) -> NapiResult<()> {
-    Ok(())
-}
-```
-
-### Demo
-
-[lib.rs](./examples/demo/src/lib.rs)
-
-```rust
 use nodex_api::prelude::*;
 
 nodex_api::napi_module!(init);
 
 fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
+    nodex_api::napi_guard!(env.napi_version()?);
+
     let mut obj = env.object()?;
     let mut times = 0;
 
@@ -68,9 +55,10 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     obj.set_property(
         name,
-        env.func(move || {
+        env.func(move |this| {
             times += 1;
             println!("[{}] called", times);
+            this.value()
         })?,
     )?;
 
@@ -78,16 +66,16 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     assert_eq!(label, name.get()?);
 
-    // let version = env.node_version()?;
-    //
-    // println!(
-    //     "{}.{}.{}-{} {}",
-    //     version.major,
-    //     version.minor,
-    //     version.patch,
-    //     std::ffi::CStr::from_ptr(version.release).to_str().unwrap(),
-    //     env.napi_version()?,
-    // );
+    let version = env.node_version()?;
+    println!(
+        "{}.{}.{}-{} {}",
+        version.major,
+        version.minor,
+        version.patch,
+        unsafe { std::ffi::CStr::from_ptr(version.release).to_str().unwrap() },
+        env.napi_version()?,
+    );
+
     exports.set_property(env.string("a")?, env.string("b")?)?;
 
     exports.define_properties(&[
