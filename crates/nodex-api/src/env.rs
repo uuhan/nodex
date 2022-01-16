@@ -26,20 +26,9 @@ impl<'a> NapiEnv<'a> {
         self.0
     }
 
-    /// get current global object
-    pub fn global(&self) -> NapiResult<JsValue> {
-        let value = unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status = api::napi_get_global(self.raw(), result.as_mut_ptr());
-
-            if status.err() {
-                return Err(status);
-            }
-
-            result.assume_init()
-        };
-
-        Ok(JsValue::from_raw(*self, value))
+    /// This API returns the global object.
+    pub fn global(&self) -> NapiResult<JsGlobal> {
+        JsGlobal::new(*self)
     }
 
     /// get node version
