@@ -96,7 +96,7 @@ impl<'a> JsFunction<'a> {
 
         // TODO: it just works but not very useful by current design
         // use the trampoline function to call into the closure
-        extern "C" fn trampoline<'a>(env: napi_env, info: napi_callback_info) -> napi_value {
+        extern "C" fn trampoline(env: napi_env, info: napi_callback_info) -> napi_value {
             let mut argc = MaybeUninit::zeroed();
             let mut argv = MaybeUninit::uninit();
             let mut data = MaybeUninit::uninit();
