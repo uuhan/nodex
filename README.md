@@ -10,9 +10,16 @@ It is in a very early stage and heavy development is making.
 
 - [ ] good napi wrappings.
 - [ ] export the codebase from crates world, make it easy to call rust function from js world.
+    - [ ] sweet syntax, like: #[nodex::function] fn foo()
 - [ ] import the huge codebase from npm world, make it easy to call js function from rust side.
-- [ ] nodejs async runtime to drive rust async code.
+    - [ ] sweet syntax, like: let lodash = nodex::import!(lodash);
+- [ ] nodejs async runtime to drive rust async code
+    - [ ] async runtime for async rust
+    - [ ] macros like: #[nodex::rt] async fn main()
 - [ ] cargo-nodex cargo subcommand to make ease of create nodejs addons, e.g. auto generate ts typings.
+    - [ ] cargo nodex build
+    - [ ] cargo nodex typings
+    - [ ] cargo nodex package
 
 ## Examples
 
