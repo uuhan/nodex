@@ -40,16 +40,7 @@ impl NapiEnv {
 
     /// get napi version
     pub fn napi_version(&self) -> NapiResult<u32> {
-        unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status = api::napi_get_version(self.raw(), result.as_mut_ptr());
-
-            if status.err() {
-                return Err(status);
-            }
-
-            Ok(result.assume_init())
-        }
+        Ok(napi_call!(=napi_get_version, self.raw()))
     }
 
     /// Return null object
