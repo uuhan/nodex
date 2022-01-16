@@ -82,6 +82,17 @@ impl<'a> NapiEnv<'a> {
         JsString::new(*self, s)
     }
 
+    /// This API creates a JavaScript symbol value from a UTF8-encoded C string.
+    /// The JavaScript symbol type is described in Section 19.4 of the ECMAScript Language Specification.
+    pub fn symbol(&self) -> NapiResult<JsSymbol> {
+        JsSymbol::new(*self)
+    }
+
+    /// Symbol with description.
+    pub fn symbol_description(&self, desc: JsString) -> NapiResult<JsSymbol> {
+        JsSymbol::description(*self, desc)
+    }
+
     /// This API allocates a default JavaScript Object. It is the equivalent of doing new Object() in JavaScript.
     /// The JavaScript Object type is described in Section 6.1.7 of the ECMAScript Language Specification.
     pub fn object(&self) -> NapiResult<JsObject> {
@@ -91,6 +102,20 @@ impl<'a> NapiEnv<'a> {
     /// The async context
     pub fn context(&self, name: impl AsRef<str>) -> NapiResult<NapiAsyncContext<'a>> {
         NapiAsyncContext::new(*self, name)
+    }
+
+    /// Create a js function with a rust closure.
+    pub fn func(&self, name: impl AsRef<str>, func: impl FnMut()) -> NapiResult<JsFunction<'a>> {
+        JsFunction::with(*self, name, func)
+    }
+
+    /// Create a js function with a rust function
+    pub fn function(
+        &self,
+        name: impl AsRef<str>,
+        func: extern "C" fn(env: napi_env, info: napi_callback_info) -> napi_value,
+    ) -> NapiResult<JsFunction<'a>> {
+        JsFunction::new(*self, name, func)
     }
 
     /// This method allows the efficient definition of multiple properties on a given object. The

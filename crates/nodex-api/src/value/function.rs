@@ -56,7 +56,7 @@ impl<'a> JsFunction<'a> {
     pub fn new(
         env: NapiEnv<'a>,
         name: impl AsRef<str>,
-        value: unsafe extern "C" fn(env: napi_env, info: napi_callback_info) -> napi_value,
+        value: extern "C" fn(env: napi_env, info: napi_callback_info) -> napi_value,
     ) -> NapiResult<JsFunction<'a>> {
         let value = napi_call!(
             =napi_create_function,

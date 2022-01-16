@@ -11,13 +11,17 @@ fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
     // env.context("my-async-context")?;
 
     let name = env.string(label)?;
+    let symbol = env.symbol()?;
+
     obj.set_property(
         name,
-        JsFunction::with(env, "func", move || {
+        env.func("func", move || {
             times += 1;
             println!("[{}] called", times);
         })?,
     )?;
+
+    obj.set_property(symbol, env.double(100.)?)?;
 
     assert_eq!(label, name.get()?);
 
