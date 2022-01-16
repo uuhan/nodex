@@ -38,8 +38,10 @@ fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
 
 ### Demo
 
+[lib.rs](./examples/demo/src/lib.rs)
+
 ```rust
-use nodex_api::{api, prelude::*};
+use nodex_api::prelude::*;
 
 nodex_api::init!(init);
 
@@ -47,13 +49,24 @@ fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
     let mut obj = env.object()?;
     let mut times = 0;
 
-    obj.set(
-        env.string("func")?,
-        JsFunction::with(env, "func", move || {
+    let label = "func";
+
+    // env.context("my-async-context")?;
+
+    let name = env.string(label)?;
+    let symbol = env.symbol()?;
+
+    obj.set_property(
+        name,
+        env.func("func", move || {
             times += 1;
             println!("[{}] called", times);
         })?,
     )?;
+
+    obj.set_property(symbol, env.double(100.)?)?;
+
+    assert_eq!(label, name.get()?);
 
     // let version = env.node_version()?;
     //
@@ -66,14 +79,16 @@ fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
     //     env.napi_version()?,
     // );
 
-    let desc = DescriptorBuilder::new()
-        .with_name(JsString::new(env, "utils")?)
-        .with_value(obj)
-        .build()
-        .unwrap();
-
-    let status = unsafe { api::napi_define_properties(env.raw(), exports.raw(), 1, desc.raw()) };
-    assert_eq!(status, NapiStatus::Ok);
+    exports.define_properties(&[
+        DescriptorBuilder::new()
+            .with_name(env.string("utils")?)
+            .with_value(obj)
+            .build()?,
+        DescriptorBuilder::new()
+            .with_name(env.string("key1")?)
+            .with_value(env.double(100.)?)
+            .build()?,
+    ])?;
 
     Ok(())
 }
