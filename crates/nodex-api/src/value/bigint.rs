@@ -8,6 +8,8 @@ impl<'a> JsBigInt<'a> {
     pub(crate) fn from_value(value: JsValue) -> JsBigInt {
         JsBigInt(value)
     }
+
+    // TODO: [napi](https://nodejs.org/api/n-api.html)
 }
 
 impl<'a> ValueInner for JsBigInt<'a> {

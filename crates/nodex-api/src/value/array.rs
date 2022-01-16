@@ -9,34 +9,17 @@ impl<'a> JsArray<'a> {
         JsArray(value)
     }
 
+    /// This API returns a Node-API value corresponding to a JavaScript Array type. JavaScript
+    /// arrays are described in Section 22.1 of the ECMAScript Language Specification.
     pub fn new(env: NapiEnv<'a>, value: impl AsRef<str>) -> NapiResult<JsArray<'a>> {
-        let value = unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status = api::napi_create_array(env.raw(), result.as_mut_ptr());
-
-            if status.err() {
-                return Err(status);
-            }
-
-            result.assume_init()
-        };
-
+        let value = napi_call!(=napi_create_array, env.raw());
         Ok(JsArray(JsValue::from_raw(env, value)))
     }
 
-    /// get the size of array
+    /// This API returns the length of an array.
+    /// Array length is described in Section 22.1.4.1 of the ECMAScript Language Specification.
     pub fn size(&self) -> NapiResult<u32> {
-        let len = unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status =
-                api::napi_get_array_length(self.env().raw(), self.raw(), result.as_mut_ptr());
-
-            if status.err() {
-                return Err(status);
-            }
-            result.assume_init()
-        };
-
+        let len = napi_call!(=napi_get_array_length, self.env().raw(), self.raw());
         Ok(len)
     }
 }

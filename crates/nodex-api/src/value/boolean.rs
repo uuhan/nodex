@@ -9,36 +9,17 @@ impl<'a> JsBoolean<'a> {
         JsBoolean(value)
     }
 
-    /// create a boolean
+    /// This API is used to return the JavaScript singleton object that is used to represent the
+    /// given boolean value.
     pub fn new(env: NapiEnv<'a>, value: bool) -> NapiResult<JsBoolean<'a>> {
-        let value = unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status = api::napi_get_boolean(env.raw(), value, result.as_mut_ptr());
-
-            if status.err() {
-                return Err(status);
-            }
-
-            result.assume_init()
-        };
-
+        let value = napi_call!(=napi_get_boolean, env.raw(), value);
         Ok(JsBoolean(JsValue::from_raw(env, value)))
     }
 
-    /// get the underlaying boolean value
+    /// If a non-boolean napi_value is passed in it returns napi_boolean_expected.
+    /// This API returns the C boolean primitive equivalent of the given JavaScript Boolean.
     pub fn get(&self) -> NapiResult<bool> {
-        let value = unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status =
-                api::napi_get_value_bool(self.env().raw(), self.raw(), result.as_mut_ptr());
-
-            if status.err() {
-                return Err(status);
-            }
-
-            result.assume_init()
-        };
-
+        let value = napi_call!(=napi_get_value_bool, self.env().raw(), self.raw());
         Ok(value)
     }
 }

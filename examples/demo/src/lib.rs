@@ -8,7 +8,7 @@ fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
 
     // env.context("my-async-context")?;
 
-    obj.set(
+    obj.set_property(
         env.string("func")?,
         JsFunction::with(env, "func", move || {
             times += 1;
@@ -34,7 +34,7 @@ fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
             .build()?,
         DescriptorBuilder::new()
             .with_name(env.string("key1")?)
-            .with_value(env.number(100.)?)
+            .with_value(env.double(100.)?)
             .build()?,
     ])?;
 

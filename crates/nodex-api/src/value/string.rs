@@ -9,23 +9,15 @@ impl<'a> JsString<'a> {
         JsString(value)
     }
 
-    /// create a string
+    /// This API creates a JavaScript string value from a UTF8-encoded C string. The native string is copied.
+    /// The JavaScript string type is described in Section 6.1.4 of the ECMAScript Language Specification.
     pub fn new(env: NapiEnv<'a>, value: impl AsRef<str>) -> NapiResult<JsString<'a>> {
-        let value = unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status = api::napi_create_string_utf8(
-                env.raw(),
-                value.as_ref().as_ptr() as *const c_char,
-                value.as_ref().len(),
-                result.as_mut_ptr(),
-            );
-
-            if status.err() {
-                return Err(status);
-            }
-
-            result.assume_init()
-        };
+        let value = napi_call!(
+            =napi_create_string_utf8,
+            env.raw(),
+            value.as_ref().as_ptr() as *const c_char,
+            value.as_ref().len(),
+        );
 
         Ok(JsString(JsValue::from_raw(env, value)))
     }
