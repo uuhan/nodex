@@ -25,16 +25,17 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     assert_eq!(label, name.get()?);
 
-    // let version = env.node_version()?;
-    //
-    // println!(
-    //     "{}.{}.{}-{} {}",
-    //     version.major,
-    //     version.minor,
-    //     version.patch,
-    //     std::ffi::CStr::from_ptr(version.release).to_str().unwrap(),
-    //     env.napi_version()?,
-    // );
+    let version = env.node_version()?;
+
+    println!(
+        "{}.{}.{}-{} {}",
+        version.major,
+        version.minor,
+        version.patch,
+        unsafe { std::ffi::CStr::from_ptr(version.release).to_str().unwrap() },
+        env.napi_version()?,
+    );
+
     exports.set_property(env.string("a")?, env.string("b")?)?;
 
     exports.define_properties(&[
