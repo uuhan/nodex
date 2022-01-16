@@ -54,5 +54,5 @@ macro_rules! napi_guard {
             $version,
             $crate::napi_version_guard(),
         );
-    }
+    };
 }
