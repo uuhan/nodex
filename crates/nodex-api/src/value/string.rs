@@ -68,3 +68,9 @@ impl<'a> NapiValueT for JsString<'a> {
         self.0
     }
 }
+
+impl<'a> Into<String> for JsString<'a> {
+    fn into(self) -> String {
+        self.get_utf8().unwrap()
+    }
+}
