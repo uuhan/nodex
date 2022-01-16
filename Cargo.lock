@@ -274,7 +274,6 @@ dependencies = [
  "bindgen",
  "bitflags",
  "cc",
- "nodex-macros",
  "thiserror",
 ]
 
