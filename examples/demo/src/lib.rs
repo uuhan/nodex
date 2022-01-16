@@ -6,9 +6,11 @@ fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
     let mut obj = env.object()?;
     let mut times = 0;
 
+    let label = "func";
+
     // env.context("my-async-context")?;
 
-    let name = env.string("func")?;
+    let name = env.string(label)?;
     obj.set_property(
         name,
         JsFunction::with(env, "func", move || {
@@ -16,6 +18,8 @@ fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
             println!("[{}] called", times);
         })?,
     )?;
+
+    assert_eq!(label, name.get()?);
 
     // let version = env.node_version()?;
     //

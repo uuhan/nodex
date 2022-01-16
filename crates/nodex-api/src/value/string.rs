@@ -1,5 +1,4 @@
 use crate::{api, prelude::*};
-use encoding_rs::UTF_8;
 use std::borrow::Cow;
 use std::mem::MaybeUninit;
 
@@ -56,8 +55,11 @@ impl<'a> JsString<'a> {
             size + 1,
         );
 
-        let (dec, _, _) = UTF_8.decode(buffer.as_slice());
-        Ok(dec.to_string())
+        unsafe {
+            // remove trailing NULL
+            buffer.set_len(size);
+            Ok(String::from_utf8_unchecked(buffer))
+        }
     }
 }
 
