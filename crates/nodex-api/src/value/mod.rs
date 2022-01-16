@@ -318,6 +318,11 @@ pub trait NapiValueT {
     /// inner `JsValue` type
     fn inner(&self) -> JsValue;
 
+    /// napi_value type cast
+    fn cast<T: NapiValueT>(&self) -> T {
+        todo!()
+    }
+
     /// the `NapiEnv` of current value
     fn env(&self) -> NapiEnv {
         self.inner().env()
