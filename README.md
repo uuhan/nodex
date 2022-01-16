@@ -21,6 +21,16 @@ It is in a very early stage and heavy development is making.
     - [ ] cargo nodex typings
     - [ ] cargo nodex package
 
+## Usage
+
+```toml
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+nodex-api = "0.1.0-alpha.3"
+```
+
 ## Examples
 
 ### Init Module
