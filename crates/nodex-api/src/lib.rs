@@ -112,9 +112,6 @@ pub mod work;
 // napi status and result type
 pub use error::{NapiResult, NapiStatus};
 
-// useful macros
-pub use nodex_macros::init;
-
 pub mod prelude {
     use super::*;
 

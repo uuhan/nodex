@@ -9,6 +9,11 @@ impl<'a> JsObject<'a> {
         JsObject(value)
     }
 
+    /// NB: This is a special JsObject that should only be used in napi_register_module_v1.
+    pub fn napi_module_exports(env: napi_env, value: napi_value) -> JsObject<'a> {
+        JsObject(JsValue(NapiEnv::from_raw(env), value))
+    }
+
     pub fn new(env: NapiEnv<'a>) -> NapiResult<JsObject<'a>> {
         let value = napi_call!(=napi_create_object, env.raw());
         Ok(JsObject(JsValue::from_raw(env, value)))

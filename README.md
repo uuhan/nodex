@@ -29,7 +29,7 @@ It is in a very early stage and heavy development is making.
 // lib.rs
 use nodex_api::{api, prelude::*};
 
-nodex_api::init!(init);
+nodex_api::napi_module!(init);
 
 fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
     Ok(())
@@ -43,9 +43,9 @@ fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
 ```rust
 use nodex_api::prelude::*;
 
-nodex_api::init!(init);
+nodex_api::napi_module!(init);
 
-fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
+fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     let mut obj = env.object()?;
     let mut times = 0;
 
@@ -58,7 +58,7 @@ fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
 
     obj.set_property(
         name,
-        env.func("func", move || {
+        env.func(move || {
             times += 1;
             println!("[{}] called", times);
         })?,
@@ -78,6 +78,7 @@ fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
     //     std::ffi::CStr::from_ptr(version.release).to_str().unwrap(),
     //     env.napi_version()?,
     // );
+    exports.set_property(env.string("a")?, env.string("b")?)?;
 
     exports.define_properties(&[
         DescriptorBuilder::new()
@@ -101,9 +102,10 @@ bash demo.sh
 
 # output
 # [1] called
-# { func: [Function: func] }
+# { func: [Function (anonymous)], [Symbol()]: 100 }
 # [2] called
-# { func: [Function: func] }
+# { func: [Function (anonymous)], [Symbol()]: 100 }
+# 100
 ```
 
 ## How to participate in

@@ -55,14 +55,20 @@ impl<'a> JsFunction<'a> {
     /// JavaScript Functions are described in Section 19.2 of the ECMAScript Language Specification.
     pub fn new(
         env: NapiEnv<'a>,
-        name: impl AsRef<str>,
+        name: Option<impl AsRef<str>>,
         value: extern "C" fn(env: napi_env, info: napi_callback_info) -> napi_value,
     ) -> NapiResult<JsFunction<'a>> {
+        let (name, len) = if let Some(name) = name {
+            (name.as_ref().as_ptr() as *const c_char, name.as_ref().len())
+        } else {
+            (std::ptr::null(), 0)
+        };
+
         let value = napi_call!(
             =napi_create_function,
             env.raw(),
-            name.as_ref().as_ptr() as *const c_char,
-            name.as_ref().len(),
+            name,
+            len,
             Some(value),
             std::ptr::null_mut(),
         );
@@ -70,12 +76,18 @@ impl<'a> JsFunction<'a> {
         Ok(JsFunction(JsValue::from_raw(env, value)))
     }
 
-    /// Create a JsFunction by passing a rust closure.
+    /// Create a js function with rust closure
     pub fn with(
         env: NapiEnv<'a>,
-        name: impl AsRef<str>,
+        name: Option<impl AsRef<str>>,
         func: impl FnMut(),
     ) -> NapiResult<JsFunction<'a>> {
+        let (name, len) = if let Some(name) = name {
+            (name.as_ref().as_ptr() as *const c_char, name.as_ref().len())
+        } else {
+            (std::ptr::null(), 0)
+        };
+
         // NB: leak the func closure
         let func: Box<Box<dyn FnMut()>> = Box::new(Box::new(func));
 
@@ -118,8 +130,8 @@ impl<'a> JsFunction<'a> {
         let value = napi_call!(
             =napi_create_function,
             env.raw(),
-            name.as_ref().as_ptr() as *const c_char,
-            name.as_ref().len(),
+            name,
+            len,
             Some(trampoline),
             // pass closure to trampoline function
             Box::into_raw(func) as _,

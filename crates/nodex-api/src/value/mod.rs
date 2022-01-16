@@ -2,25 +2,22 @@ use crate::{api, env::NapiEnv, prelude::*};
 use std::mem::MaybeUninit;
 
 #[derive(Clone, Copy, Debug)]
-pub struct JsValue<'a> {
-    env: NapiEnv<'a>,
-    value: napi_value,
-}
+pub struct JsValue<'a>(pub(crate) NapiEnv<'a>, pub(crate) napi_value);
 
 impl<'a> JsValue<'a> {
     /// create `JsValue` from raw napi_value
     pub fn from_raw(env: NapiEnv<'a>, value: napi_value) -> JsValue<'a> {
-        JsValue { env, value }
+        JsValue(env, value)
     }
 
     /// `NapiEnv` of this `JsValue`
     pub fn env(&self) -> NapiEnv<'a> {
-        self.env
+        self.0
     }
 
     /// raw napi_value of this `JsValue`
     pub fn raw(&self) -> napi_value {
-        self.value
+        self.1
     }
 
     /// Returns napi_ok if the API succeeded.

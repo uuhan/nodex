@@ -104,18 +104,35 @@ impl<'a> NapiEnv<'a> {
         NapiAsyncContext::new(*self, name)
     }
 
+    /// Create a named js function with a rust closure.
+    pub fn func_named(
+        &self,
+        name: impl AsRef<str>,
+        func: impl FnMut(),
+    ) -> NapiResult<JsFunction<'a>> {
+        JsFunction::with(*self, Some(name), func)
+    }
+
     /// Create a js function with a rust closure.
-    pub fn func(&self, name: impl AsRef<str>, func: impl FnMut()) -> NapiResult<JsFunction<'a>> {
-        JsFunction::with(*self, name, func)
+    pub fn func(&self, func: impl FnMut()) -> NapiResult<JsFunction<'a>> {
+        JsFunction::with(*self, Option::<String>::None, func)
+    }
+
+    /// Create a named js function with a rust function
+    pub fn function_named(
+        &self,
+        name: impl AsRef<str>,
+        func: extern "C" fn(env: napi_env, info: napi_callback_info) -> napi_value,
+    ) -> NapiResult<JsFunction<'a>> {
+        JsFunction::new(*self, Some(name), func)
     }
 
     /// Create a js function with a rust function
     pub fn function(
         &self,
-        name: impl AsRef<str>,
         func: extern "C" fn(env: napi_env, info: napi_callback_info) -> napi_value,
     ) -> NapiResult<JsFunction<'a>> {
-        JsFunction::new(*self, name, func)
+        JsFunction::new(*self, Option::<String>::None, func)
     }
 
     /// This method allows the efficient definition of multiple properties on a given object. The
