@@ -2,9 +2,9 @@ use crate::{api, prelude::*};
 use std::{marker::PhantomData, mem::MaybeUninit, os::raw::c_void};
 
 #[derive(Copy, Clone, Debug)]
-pub struct JsExternal<'a, T>(pub(crate) JsValue<'a>, PhantomData<T>);
+pub struct JsExternal<T>(pub(crate) JsValue, PhantomData<T>);
 
-impl<'a, T> JsExternal<'a, T> {
+impl<T> JsExternal<T> {
     pub(crate) fn from_value(value: JsValue) -> JsExternal<T> {
         JsExternal(value, PhantomData)
     }
@@ -12,7 +12,7 @@ impl<'a, T> JsExternal<'a, T> {
     /// This API allocates a JavaScript value with external data attached to it. This is used to
     /// pass external data through JavaScript code, so it can be retrieved later by native code
     /// using napi_get_value_external.
-    pub fn new(env: NapiEnv<'a>, value: T) -> NapiResult<JsExternal<'a, T>> {
+    pub fn new(env: NapiEnv, value: T) -> NapiResult<JsExternal<T>> {
         // NB: first leak value.
         let value = Box::into_raw(Box::new(value));
 
@@ -38,10 +38,10 @@ impl<'a, T> JsExternal<'a, T> {
     /// - nor can it be removed later using napi_remove_wrap(), and
     /// - the object created by the API can be used with napi_wrap().
     /// JavaScript ArrayBuffers are described in Section 24.1 of the ECMAScript Language Specification.
-    pub fn arraybuffer(
-        env: NapiEnv<'a>,
+    pub fn arraybuffer<'a>(
+        env: NapiEnv,
         value: impl AsRef<[T]>,
-    ) -> NapiResult<JsExternal<'a, &[T]>> {
+    ) -> NapiResult<JsExternal<&'a [T]>> {
         todo!()
     }
 
@@ -51,7 +51,7 @@ impl<'a, T> JsExternal<'a, T> {
     /// - nor can it be removed later using napi_remove_wrap(), and
     /// - the object created by the API can be used with napi_wrap().
     /// For Node.js >=4 Buffers are Uint8Arrays.
-    pub fn buffer(env: NapiEnv<'a>, value: impl AsRef<[T]>) -> NapiResult<JsExternal<'a, &[T]>> {
+    pub fn buffer<'a>(env: NapiEnv, value: impl AsRef<[T]>) -> NapiResult<JsExternal<&'a [T]>> {
         todo!()
     }
 
@@ -69,8 +69,8 @@ impl<'a, T> JsExternal<'a, T> {
     }
 }
 
-impl<'a, T> NapiValueT for JsExternal<'a, T> {
-    fn inner(&self) -> JsValue {
+impl<T> NapiValueT for JsExternal<T> {
+    fn value(&self) -> JsValue {
         self.0
     }
 }

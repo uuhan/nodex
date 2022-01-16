@@ -2,16 +2,16 @@ use crate::{api, prelude::*};
 use std::{mem::MaybeUninit, os::raw::c_char};
 
 #[derive(Copy, Clone, Debug)]
-pub struct JsArrayBuffer<'a>(pub(crate) JsValue<'a>);
+pub struct JsArrayBuffer(pub(crate) JsValue);
 
-impl<'a> JsArrayBuffer<'a> {
+impl JsArrayBuffer {
     pub(crate) fn from_value(value: JsValue) -> JsArrayBuffer {
         JsArrayBuffer(value)
     }
 
     /// This API returns a Node-API value corresponding to a JavaScript ArrayBuffer. ArrayBuffers are used to represent fixed-length binary data buffers. They are normally used as a backing-buffer for TypedArray objects. The ArrayBuffer allocated will have an underlying byte buffer whose size is determined by the length parameter that's passed in. The underlying buffer is optionally returned back to the caller in case the caller wants to directly manipulate the buffer. This buffer can only be written to directly from native code. To write to this buffer from JavaScript, a typed array or DataView object would need to be created.
     /// JavaScript ArrayBuffer objects are described in Section 24.1 of the ECMAScript Language Specification.
-    pub fn new(env: NapiEnv<'a>, value: impl AsRef<[u8]>) -> NapiResult<JsArrayBuffer<'a>> {
+    pub fn new(env: NapiEnv, value: impl AsRef<[u8]>) -> NapiResult<JsArrayBuffer> {
         let bytes = value.as_ref();
         let len = bytes.len();
 
@@ -59,8 +59,8 @@ impl<'a> JsArrayBuffer<'a> {
     }
 }
 
-impl<'a> NapiValueT for JsArrayBuffer<'a> {
-    fn inner(&self) -> JsValue {
+impl NapiValueT for JsArrayBuffer {
+    fn value(&self) -> JsValue {
         self.0
     }
 }

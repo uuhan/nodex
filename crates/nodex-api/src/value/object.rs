@@ -2,19 +2,19 @@ use crate::{api, prelude::*};
 use std::{mem::MaybeUninit, os::raw::c_char};
 
 #[derive(Copy, Clone, Debug)]
-pub struct JsObject<'a>(pub(crate) JsValue<'a>);
+pub struct JsObject(pub(crate) JsValue);
 
-impl<'a> JsObject<'a> {
+impl JsObject {
     pub(crate) fn from_value(value: JsValue) -> JsObject {
         JsObject(value)
     }
 
     /// NB: This is a special JsObject that should only be used in napi_register_module_v1.
-    pub fn napi_module_exports(env: napi_env, value: napi_value) -> JsObject<'a> {
+    pub fn napi_module_exports(env: napi_env, value: napi_value) -> JsObject {
         JsObject(JsValue(NapiEnv::from_raw(env), value))
     }
 
-    pub fn new(env: NapiEnv<'a>) -> NapiResult<JsObject<'a>> {
+    pub fn new(env: NapiEnv) -> NapiResult<JsObject> {
         let value = napi_call!(=napi_create_object, env.raw());
         Ok(JsObject(JsValue::from_raw(env, value)))
     }
@@ -100,8 +100,8 @@ impl<'a> JsObject<'a> {
     }
 }
 
-impl<'a> NapiValueT for JsObject<'a> {
-    fn inner(&self) -> JsValue {
+impl NapiValueT for JsObject {
+    fn value(&self) -> JsValue {
         self.0
     }
 }

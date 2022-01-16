@@ -2,17 +2,17 @@ use crate::{api, prelude::*};
 use std::mem::MaybeUninit;
 
 #[derive(Clone, Debug)]
-pub struct NapiHandleScope<'a> {
-    env: NapiEnv<'a>,
+pub struct NapiHandleScope {
+    env: NapiEnv,
     handle: napi_handle_scope,
 }
 
-impl<'a> NapiHandleScope<'a> {
-    pub(crate) fn from_value(env: NapiEnv<'a>, handle: napi_handle_scope) -> NapiHandleScope {
+impl NapiHandleScope {
+    pub(crate) fn from_value(env: NapiEnv, handle: napi_handle_scope) -> NapiHandleScope {
         NapiHandleScope { env, handle }
     }
 
-    pub fn env(&self) -> NapiEnv<'a> {
+    pub fn env(&self) -> NapiEnv {
         self.env
     }
 
@@ -21,7 +21,7 @@ impl<'a> NapiHandleScope<'a> {
     }
 
     /// create a new napi_handle_scope
-    pub fn new(env: NapiEnv<'a>) -> NapiResult<NapiHandleScope<'a>> {
+    pub fn new(env: NapiEnv) -> NapiResult<NapiHandleScope> {
         let handle = unsafe {
             let mut result = MaybeUninit::uninit();
             let status = api::napi_open_handle_scope(env.raw(), result.as_mut_ptr());
@@ -50,7 +50,7 @@ impl<'a> NapiHandleScope<'a> {
     }
 }
 
-impl<'a> Drop for NapiHandleScope<'a> {
+impl Drop for NapiHandleScope {
     fn drop(&mut self) {
         self.close();
     }

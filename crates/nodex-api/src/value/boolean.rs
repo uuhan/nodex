@@ -2,16 +2,16 @@ use crate::{api, prelude::*};
 use std::{mem::MaybeUninit, os::raw::c_char};
 
 #[derive(Copy, Clone, Debug)]
-pub struct JsBoolean<'a>(pub(crate) JsValue<'a>);
+pub struct JsBoolean(pub(crate) JsValue);
 
-impl<'a> JsBoolean<'a> {
+impl JsBoolean {
     pub(crate) fn from_value(value: JsValue) -> JsBoolean {
         JsBoolean(value)
     }
 
     /// This API is used to return the JavaScript singleton object that is used to represent the
     /// given boolean value.
-    pub fn new(env: NapiEnv<'a>, value: bool) -> NapiResult<JsBoolean<'a>> {
+    pub fn new(env: NapiEnv, value: bool) -> NapiResult<JsBoolean> {
         let value = napi_call!(=napi_get_boolean, env.raw(), value);
         Ok(JsBoolean(JsValue::from_raw(env, value)))
     }
@@ -24,8 +24,8 @@ impl<'a> JsBoolean<'a> {
     }
 }
 
-impl<'a> NapiValueT for JsBoolean<'a> {
-    fn inner(&self) -> JsValue {
+impl NapiValueT for JsBoolean {
+    fn value(&self) -> JsValue {
         self.0
     }
 }

@@ -2,16 +2,16 @@ use crate::{api, prelude::*};
 use std::{mem::MaybeUninit, os::raw::c_char};
 
 #[derive(Copy, Clone, Debug)]
-pub struct JsTypedArray<'a>(pub(crate) JsValue<'a>);
+pub struct JsTypedArray(pub(crate) JsValue);
 
-impl<'a> JsTypedArray<'a> {
+impl JsTypedArray {
     pub(crate) fn from_value(value: JsValue) -> JsTypedArray {
         JsTypedArray(value)
     }
 }
 
-impl<'a> NapiValueT for JsTypedArray<'a> {
-    fn inner(&self) -> JsValue {
+impl NapiValueT for JsTypedArray {
+    fn value(&self) -> JsValue {
         self.0
     }
 }

@@ -20,7 +20,7 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
         env.func(move |this| {
             times += 1;
             println!("[{}] called", times);
-            this.raw()
+            this.value()
         })?,
     )?;
 

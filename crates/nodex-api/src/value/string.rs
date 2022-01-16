@@ -3,16 +3,16 @@ use std::borrow::Cow;
 use std::mem::MaybeUninit;
 
 #[derive(Copy, Clone, Debug)]
-pub struct JsString<'a>(pub(crate) JsValue<'a>);
+pub struct JsString(pub(crate) JsValue);
 
-impl<'a> JsString<'a> {
+impl JsString {
     pub(crate) fn from_value(value: JsValue) -> JsString {
         JsString(value)
     }
 
     /// Default js-string constructor.
     #[inline]
-    pub fn new(env: NapiEnv<'a>, value: impl AsRef<str>) -> NapiResult<JsString<'a>> {
+    pub fn new(env: NapiEnv, value: impl AsRef<str>) -> NapiResult<JsString> {
         Self::utf8(env, value)
     }
 
@@ -24,7 +24,7 @@ impl<'a> JsString<'a> {
 
     /// This API creates a JavaScript string value from a UTF8-encoded C string. The native string is copied.
     /// The JavaScript string type is described in Section 6.1.4 of the ECMAScript Language Specification.
-    pub fn utf8(env: NapiEnv<'a>, value: impl AsRef<str>) -> NapiResult<JsString<'a>> {
+    pub fn utf8(env: NapiEnv, value: impl AsRef<str>) -> NapiResult<JsString> {
         let value = napi_call!(
             =napi_create_string_utf8,
             env.raw(),
@@ -63,13 +63,13 @@ impl<'a> JsString<'a> {
     }
 }
 
-impl<'a> NapiValueT for JsString<'a> {
-    fn inner(&self) -> JsValue {
+impl NapiValueT for JsString {
+    fn value(&self) -> JsValue {
         self.0
     }
 }
 
-impl<'a> From<JsString<'a>> for String {
+impl From<JsString> for String {
     fn from(js: JsString) -> String {
         js.get_utf8().unwrap()
     }

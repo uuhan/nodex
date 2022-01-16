@@ -59,7 +59,7 @@ impl DescriptorBuilder {
     /// Optional napi_value that points to a JavaScript string or symbol to be used as the key for
     /// the property. One of utf8name or name must be provided for the property.
     pub fn with_name(mut self, name: impl NapiValueT) -> Self {
-        let name = name.inner();
+        let name = name.value();
         if let (Ok(name_string), Ok(name_symbol)) = (name.is_string(), name.is_symbol()) {
             if name_string || name_symbol {
                 self.name = name.raw();

@@ -2,16 +2,16 @@ use crate::{api, env::NapiEnv, prelude::*};
 use std::mem::MaybeUninit;
 
 #[derive(Clone, Copy, Debug)]
-pub struct JsValue<'a>(pub(crate) NapiEnv<'a>, pub(crate) napi_value);
+pub struct JsValue(pub(crate) NapiEnv, pub(crate) napi_value);
 
-impl<'a> JsValue<'a> {
+impl JsValue {
     /// create `JsValue` from raw napi_value
-    pub fn from_raw(env: NapiEnv<'a>, value: napi_value) -> JsValue<'a> {
+    pub fn from_raw(env: NapiEnv, value: napi_value) -> JsValue {
         JsValue(env, value)
     }
 
     /// `NapiEnv` of this `JsValue`
-    pub fn env(&self) -> NapiEnv<'a> {
+    pub fn env(&self) -> NapiEnv {
         self.0
     }
 
@@ -243,15 +243,15 @@ impl<'a> JsValue<'a> {
     }
 }
 
-impl<'a> NapiValueT for JsValue<'a> {
-    fn inner(&self) -> JsValue {
+impl NapiValueT for JsValue {
+    fn value(&self) -> JsValue {
         JsValue::from_raw(self.env(), self.raw())
     }
 }
 
 pub trait NapiValueT {
-    /// inner `JsValue` type
-    fn inner(&self) -> JsValue;
+    /// inner value
+    fn value(&self) -> JsValue;
 
     /// napi_value type cast
     fn cast<T: NapiValueT>(&self) -> T {
@@ -260,12 +260,12 @@ pub trait NapiValueT {
 
     /// the `NapiEnv` of current value
     fn env(&self) -> NapiEnv {
-        self.inner().env()
+        self.value().env()
     }
 
     /// the raw-handle of current value
     fn raw(&self) -> napi_value {
-        self.inner().raw()
+        self.value().raw()
     }
 
     /// This method allows the efficient definition of multiple properties on a given object. The
