@@ -77,11 +77,14 @@ impl<'a> JsFunction<'a> {
     }
 
     /// Create a js function with rust closure
-    pub fn with(
+    pub fn with<Func>(
         env: NapiEnv<'a>,
         name: Option<impl AsRef<str>>,
-        func: impl FnMut(),
-    ) -> NapiResult<JsFunction<'a>> {
+        func: Func,
+    ) -> NapiResult<JsFunction<'a>>
+    where
+        Func: FnMut(JsObject) -> napi_value,
+    {
         let (name, len) = if let Some(name) = name {
             (name.as_ref().as_ptr() as *const c_char, name.as_ref().len())
         } else {
@@ -89,19 +92,21 @@ impl<'a> JsFunction<'a> {
         };
 
         // NB: leak the func closure
-        let func: Box<Box<dyn FnMut()>> = Box::new(Box::new(func));
+        let func: Box<Box<dyn FnMut(JsObject) -> napi_value>> = Box::new(Box::new(func));
 
         // TODO: it just works but not very useful by current design
         // use the trampoline function to call into the closure
-        extern "C" fn trampoline(env: napi_env, info: napi_callback_info) -> napi_value {
+        extern "C" fn trampoline<'a>(env: napi_env, info: napi_callback_info) -> napi_value {
             let mut argc = MaybeUninit::zeroed();
             let mut argv = MaybeUninit::uninit();
             let mut data = MaybeUninit::uninit();
             let mut this = MaybeUninit::uninit();
 
+            let env = NapiEnv::from_raw(env);
+
             let (argc, argv, this, mut func) = unsafe {
                 let status = api::napi_get_cb_info(
-                    env,
+                    env.raw(),
                     info,
                     argc.as_mut_ptr(),
                     argv.as_mut_ptr(),
@@ -111,7 +116,7 @@ impl<'a> JsFunction<'a> {
 
                 // NB: this cb is leaked, should collect the box when the function is destroyed
                 // restore the closure from data
-                let func: &mut Box<dyn FnMut()> = std::mem::transmute(data);
+                let func: &mut Box<dyn FnMut(JsObject) -> napi_value> = std::mem::transmute(data);
 
                 (
                     argc.assume_init(),
@@ -121,10 +126,10 @@ impl<'a> JsFunction<'a> {
                 )
             };
 
-            // call the closure
-            func();
+            let this = JsObject::from_value(JsValue::from_raw(env, this));
 
-            this
+            // call the closure
+            func(this)
         }
 
         let value = napi_call!(

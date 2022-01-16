@@ -245,7 +245,7 @@ impl<'a> JsValue<'a> {
 
 impl<'a> NapiValueT for JsValue<'a> {
     fn inner(&self) -> JsValue {
-        *self
+        JsValue::from_raw(self.env(), self.raw())
     }
 }
 

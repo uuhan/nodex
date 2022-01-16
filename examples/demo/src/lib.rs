@@ -17,9 +17,10 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     obj.set_property(
         name,
-        env.func(move || {
+        env.func(move |this| {
             times += 1;
             println!("[{}] called", times);
+            this.raw()
         })?,
     )?;
 

@@ -105,16 +105,18 @@ impl<'a> NapiEnv<'a> {
     }
 
     /// Create a named js function with a rust closure.
-    pub fn func_named(
-        &self,
-        name: impl AsRef<str>,
-        func: impl FnMut(),
-    ) -> NapiResult<JsFunction<'a>> {
+    pub fn func_named<Func>(&self, name: impl AsRef<str>, func: Func) -> NapiResult<JsFunction<'a>>
+    where
+        Func: FnMut(JsObject) -> napi_value,
+    {
         JsFunction::with(*self, Some(name), func)
     }
 
     /// Create a js function with a rust closure.
-    pub fn func(&self, func: impl FnMut()) -> NapiResult<JsFunction<'a>> {
+    pub fn func<Func>(&self, func: Func) -> NapiResult<JsFunction<'a>>
+    where
+        Func: FnMut(JsObject) -> napi_value,
+    {
         JsFunction::with(*self, Option::<String>::None, func)
     }
 
