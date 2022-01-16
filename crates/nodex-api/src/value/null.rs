@@ -9,18 +9,9 @@ impl<'a> JsNull<'a> {
         JsNull(value)
     }
 
+    /// This API returns the null object.
     pub fn new(env: NapiEnv<'a>) -> NapiResult<JsNull<'a>> {
-        let value = unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status = api::napi_get_null(env.raw(), result.as_mut_ptr());
-
-            if status.err() {
-                return Err(status);
-            }
-
-            result.assume_init()
-        };
-
+        let value = napi_call!(=napi_get_null, env.raw());
         Ok(JsNull(JsValue::from_raw(env, value)))
     }
 }

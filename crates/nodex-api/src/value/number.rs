@@ -62,15 +62,13 @@ impl<'a> JsNumber<'a> {
     /// If the number exceeds the range of the 32 bit integer, then the result is truncated to the equivalent of the bottom 32 bits. This can result in a large positive number becoming a negative number if the value is > 231 - 1.
     /// Non-finite number values (NaN, +Infinity, or -Infinity) set the result to zero.
     pub fn get_value_int32(&self) -> NapiResult<i32> {
-        let value = napi_call!(=napi_get_value_int32, self.env().raw(), self.raw());
-        Ok(value)
+        Ok(napi_call!(=napi_get_value_int32, self.env().raw(), self.raw()))
     }
 
     /// If a non-number napi_value is passed in it returns napi_number_expected.
     /// This API returns the C primitive equivalent of the given napi_value as a uint32_t.
     pub fn get_value_uint32(&self) -> NapiResult<u32> {
-        let value = napi_call!(=napi_get_value_uint32, self.env().raw(), self.raw());
-        Ok(value)
+        Ok(napi_call!(=napi_get_value_uint32, self.env().raw(), self.raw()))
     }
 
     /// If a non-number napi_value is passed in it returns napi_number_expected.
@@ -78,15 +76,13 @@ impl<'a> JsNumber<'a> {
     /// number values outside the range of Number.MIN_SAFE_INTEGER -(2**53 - 1) - Number.MAX_SAFE_INTEGER (2**53 - 1) will lose precision.
     /// Non-finite number values (NaN, +Infinity, or -Infinity) set the result to zero.
     pub fn get_value_int64(&self) -> NapiResult<i64> {
-        let value = napi_call!(=napi_get_value_int64, self.env().raw(), self.raw());
-        Ok(value)
+        Ok(napi_call!(=napi_get_value_int64, self.env().raw(), self.raw()))
     }
 
     /// If a non-number napi_value is passed in it returns napi_number_expected.
     /// This API returns the C double primitive equivalent of the given JavaScript number.
     pub fn get_value_double(&self) -> NapiResult<f64> {
-        let value = napi_call!(=napi_get_value_double, self.env().raw(), self.raw());
-        Ok(value)
+        Ok(napi_call!(=napi_get_value_double, self.env().raw(), self.raw()))
     }
 }
 

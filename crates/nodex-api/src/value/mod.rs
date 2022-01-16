@@ -23,19 +23,14 @@ impl<'a> JsValue<'a> {
         self.value
     }
 
-    /// get the value type of the js value
+    /// Returns napi_ok if the API succeeded.
+    /// - `napi_invalid_arg` if the type of value is not a known ECMAScript type and value is not an External value.
+    /// This API represents behavior similar to invoking the typeof Operator on the object as defined in Section 12.5.5 of the ECMAScript Language Specification. However, there are some differences:
+    /// It has support for detecting an External value.
+    /// It detects null as a separate type, while ECMAScript typeof would detect object.
+    /// If value has a type that is invalid, an error is returned.
     pub fn value_type(&self) -> NapiResult<NapiValuetype> {
-        let value = unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status = api::napi_typeof(self.env().raw(), self.raw(), result.as_mut_ptr());
-            if status.err() {
-                return Err(status);
-            }
-
-            result.assume_init()
-        };
-
-        Ok(value)
+        Ok(napi_call!(=napi_typeof, self.env().raw(), self.raw()))
     }
 
     /// check if it is an object
@@ -80,17 +75,10 @@ impl<'a> JsValue<'a> {
         }
     }
 
-    /// check if it is an array
+    /// This API represents invoking the IsArray operation on the object as defined in Section
+    /// 7.2.2 of the ECMAScript Language Specification.
     pub fn is_array(&self) -> NapiResult<bool> {
-        unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status = api::napi_is_array(self.env().raw(), self.raw(), result.as_mut_ptr());
-            if status.err() {
-                return Err(NapiStatus::ArrayExpected);
-            }
-
-            Ok(result.assume_init())
-        }
+        Ok(napi_call!(=napi_is_array, self.env().raw(), self.raw()))
     }
 
     /// view it as an array, may fail if it is not an array value
@@ -102,17 +90,9 @@ impl<'a> JsValue<'a> {
         }
     }
 
-    /// check if it is a typed_array
+    /// This API checks if the Object passed in is a typed array.
     pub fn is_typedarray(&self) -> NapiResult<bool> {
-        unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status = api::napi_is_typedarray(self.env().raw(), self.raw(), result.as_mut_ptr());
-            if status.err() {
-                return Err(NapiStatus::GenericFailure);
-            }
-
-            Ok(result.assume_init())
-        }
+        Ok(napi_call!(=napi_is_typedarray, self.env().raw(), self.raw()))
     }
 
     /// view it as a typed_array, may fail if it is not a typed_array value
@@ -124,18 +104,9 @@ impl<'a> JsValue<'a> {
         }
     }
 
-    /// check if it is an arraybuffer
+    /// This API checks if the Object passed in is an array buffer.
     pub fn is_arraybuffer(&self) -> NapiResult<bool> {
-        unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status =
-                api::napi_is_arraybuffer(self.env().raw(), self.raw(), result.as_mut_ptr());
-            if status.err() {
-                return Err(NapiStatus::ArraybufferExpected);
-            }
-
-            Ok(result.assume_init())
-        }
+        Ok(napi_call!(=napi_is_arraybuffer, self.env().raw(), self.raw()))
     }
 
     /// view it as an array_buffer, may faile if it is not an array_buffer value
@@ -147,17 +118,9 @@ impl<'a> JsValue<'a> {
         }
     }
 
-    /// check if it is a buffer
+    /// This API checks if the Object passed in is a buffer.
     pub fn is_buffer(&self) -> NapiResult<bool> {
-        unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status = api::napi_is_buffer(self.env().raw(), self.raw(), result.as_mut_ptr());
-            if status.err() {
-                return Err(NapiStatus::GenericFailure);
-            }
-
-            Ok(result.assume_init())
-        }
+        Ok(napi_call!(=napi_is_buffer, self.env().raw(), self.raw()))
     }
 
     /// view it as a buffer, may faile if it is not a buffer value
@@ -169,17 +132,9 @@ impl<'a> JsValue<'a> {
         }
     }
 
-    /// check if it is a dataview
+    /// This API checks if the Object passed in is a DataView.
     pub fn is_dataview(&self) -> NapiResult<bool> {
-        unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status = api::napi_is_dataview(self.env().raw(), self.raw(), result.as_mut_ptr());
-            if status.err() {
-                return Err(NapiStatus::GenericFailure);
-            }
-
-            Ok(result.assume_init())
-        }
+        Ok(napi_call!(=napi_is_dataview, self.env().raw(), self.raw()))
     }
 
     /// view it as a dataview, may faile if it is not a dataview value
@@ -262,17 +217,9 @@ impl<'a> JsValue<'a> {
     }
 
     #[cfg(feature = "v5")]
-    /// check if it is a date
+    /// This API checks if the Object passed in is a date.
     pub fn is_date(&self) -> NapiResult<bool> {
-        unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status = api::napi_is_date(self.env().raw(), self.raw(), result.as_mut_ptr());
-            if status.err() {
-                return Err(NapiStatus::DateExpected);
-            }
-
-            Ok(result.assume_init())
-        }
+        Ok(napi_call!(=napi_is_date, self.env().raw(), self.raw()))
     }
 
     #[cfg(feature = "v5")]
@@ -293,18 +240,9 @@ impl<'a> JsValue<'a> {
         Ok(self.value_type()? == NapiValuetype::Undefined)
     }
 
-    /// check if it is an promise
+    /// This API checks if the Object passed in is a promise.
     pub fn is_promise(&self) -> NapiResult<bool> {
-        unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status = api::napi_is_promise(self.env().raw(), self.raw(), result.as_mut_ptr());
-
-            if status.err() {
-                return Err(NapiStatus::GenericFailure);
-            }
-
-            Ok(result.assume_init())
-        }
+        Ok(napi_call!(=napi_is_promise, self.env().raw(), self.raw()))
     }
 }
 
@@ -342,20 +280,15 @@ pub trait NapiValueT {
         &self,
         properties: impl AsRef<[NapiPropertyDescriptor]>,
     ) -> NapiResult<()> {
-        unsafe {
-            let status = api::napi_define_properties(
-                self.env().raw(),
-                self.raw(),
-                properties.as_ref().len(),
-                properties.as_ref().as_ptr() as *const _,
-            );
+        napi_call!(
+            napi_define_properties,
+            self.env().raw(),
+            self.raw(),
+            properties.as_ref().len(),
+            properties.as_ref().as_ptr() as *const _,
+        );
 
-            if status.err() {
-                return Err(status);
-            }
-
-            Ok(())
-        }
+        Ok(())
     }
 }
 

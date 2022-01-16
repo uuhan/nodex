@@ -11,18 +11,15 @@ impl<'a> JsPromise<'a> {
 
     /// This API creates a deferred object and a JavaScript promise.
     pub fn new(env: NapiEnv<'a>) -> NapiResult<JsPromise<'a>> {
-        let (promise, deferred) = unsafe {
-            let mut promise = MaybeUninit::uninit();
-            let mut deferred = MaybeUninit::uninit();
-            let status =
-                api::napi_create_promise(env.raw(), deferred.as_mut_ptr(), promise.as_mut_ptr());
+        let mut deferred = MaybeUninit::uninit();
 
-            if status.err() {
-                return Err(status);
-            }
+        let promise = napi_call!(
+            =napi_create_promise,
+            env.raw(),
+            deferred.as_mut_ptr(),
+        );
 
-            (promise.assume_init(), deferred.assume_init())
-        };
+        let deferred = unsafe { deferred.assume_init() };
 
         Ok(JsPromise(JsValue::from_raw(env, promise), deferred))
     }
@@ -35,15 +32,13 @@ impl<'a> JsPromise<'a> {
     ///
     /// The deferred object is freed upon successful completion.
     pub fn resolve(&self, resolution: impl NapiValueT) -> NapiResult<()> {
-        unsafe {
-            let status = api::napi_resolve_deferred(self.env().raw(), self.1, resolution.raw());
-
-            if status.err() {
-                return Err(status);
-            }
-
-            Ok(())
-        }
+        napi_call!(
+            napi_resolve_deferred,
+            self.env().raw(),
+            self.1,
+            resolution.raw()
+        );
+        Ok(())
     }
 
     /// This API rejects a JavaScript promise by way of the deferred object with which it is
@@ -54,15 +49,13 @@ impl<'a> JsPromise<'a> {
     ///
     /// The deferred object is freed upon successful completion.
     pub fn reject(&self, rejection: impl NapiValueT) -> NapiResult<()> {
-        unsafe {
-            let status = api::napi_reject_deferred(self.env().raw(), self.1, rejection.raw());
-
-            if status.err() {
-                return Err(status);
-            }
-
-            Ok(())
-        }
+        napi_call!(
+            napi_reject_deferred,
+            self.env().raw(),
+            self.1,
+            rejection.raw()
+        );
+        Ok(())
     }
 }
 

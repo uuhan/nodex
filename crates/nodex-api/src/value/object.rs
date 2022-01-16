@@ -40,26 +40,22 @@ impl<'a> JsObject<'a> {
         key: impl NapiValueT,
         value: impl NapiValueT,
     ) -> NapiResult<bool> {
-        let result = napi_call!(
+        Ok(napi_call!(
             =napi_has_own_property,
             self.env().raw(),
             self.raw(),
             key.raw(),
-        );
-
-        Ok(result)
+        ))
     }
 
     /// This API returns if the Object passed in has an element at the requested index.
     pub fn has_element(&mut self, index: u32) -> NapiResult<bool> {
-        let result = napi_call!(
+        Ok(napi_call!(
             =napi_has_element,
             self.env().raw(),
             self.raw(),
             index,
-        );
-
-        Ok(result)
+        ))
     }
 
     /// This API gets the element at the requested index.
@@ -76,27 +72,25 @@ impl<'a> JsObject<'a> {
 
     /// This API attempts to delete the specified index from object.
     pub fn delete_element(&mut self, index: u32) -> NapiResult<bool> {
-        let result = napi_call!(
+        Ok(napi_call!(
             =napi_delete_element,
             self.env().raw(),
             self.raw(),
             index,
-        );
-
-        Ok(result)
+        ))
     }
 
     #[cfg(feature = "v8")]
     #[doc = "Object.freeze()"]
     pub fn freeze(&mut self) -> NapiResult<()> {
-        napi_call!(napi_object_freeze, self.env().raw(), self.raw(),);
+        napi_call!(napi_object_freeze, self.env().raw(), self.raw());
         Ok(())
     }
 
     #[cfg(feature = "v8")]
     #[doc = "Object.seal()"]
     pub fn seal(&mut self) -> NapiResult<()> {
-        napi_call!(napi_object_seal, self.env().raw(), self.raw(),);
+        napi_call!(napi_object_seal, self.env().raw(), self.raw());
         Ok(())
     }
 }

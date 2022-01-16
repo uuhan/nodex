@@ -8,8 +8,9 @@ fn init(env: NapiEnv, exports: JsValue) -> NapiResult<()> {
 
     // env.context("my-async-context")?;
 
+    let name = env.string("func")?;
     obj.set_property(
-        env.string("func")?,
+        name,
         JsFunction::with(env, "func", move || {
             times += 1;
             println!("[{}] called", times);

@@ -14,17 +14,7 @@ impl<'a> JsDate<'a> {
     /// This API allocates a JavaScript Date object.
     /// JavaScript Date objects are described in Section 20.3 of the ECMAScript Language Specification.
     pub fn new(env: NapiEnv<'a>, time: f64) -> NapiResult<JsDate<'a>> {
-        let value = unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status = api::napi_create_date(env.raw(), time, result.as_mut_ptr());
-
-            if status.err() {
-                return Err(status);
-            }
-
-            result.assume_init()
-        };
-
+        let value = napi_call!(=napi_create_date, env.raw(), time);
         Ok(JsDate(JsValue::from_raw(env, value)))
     }
 
@@ -33,19 +23,7 @@ impl<'a> JsDate<'a> {
     /// Returns napi_ok if the API succeeded. If a non-date napi_value is passed in it returns napi_date_expected.
     /// This API returns the C double primitive of time value for the given JavaScript Date.
     pub fn get(&self) -> NapiResult<f64> {
-        let value = unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status =
-                api::napi_get_date_value(self.env().raw(), self.raw(), result.as_mut_ptr());
-
-            if status.err() {
-                return Err(status);
-            }
-
-            result.assume_init()
-        };
-
-        Ok(value)
+        Ok(napi_call!(=napi_get_date_value, self.env().raw(), self.raw()))
     }
 }
 
