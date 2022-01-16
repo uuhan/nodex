@@ -2,15 +2,15 @@ use crate::{api, prelude::*};
 use std::{mem::MaybeUninit, os::raw::c_char};
 
 #[derive(Copy, Clone, Debug)]
-pub struct JsPromise<'a>(pub(crate) JsValue<'a>, pub(crate) napi_deferred);
+pub struct JsPromise(pub(crate) JsValue, pub(crate) napi_deferred);
 
-impl<'a> JsPromise<'a> {
+impl JsPromise {
     pub(crate) fn from_value(value: JsValue, deferred: napi_deferred) -> JsPromise {
         JsPromise(value, deferred)
     }
 
     /// This API creates a deferred object and a JavaScript promise.
-    pub fn new(env: NapiEnv<'a>) -> NapiResult<JsPromise<'a>> {
+    pub fn new(env: NapiEnv) -> NapiResult<JsPromise> {
         let mut deferred = MaybeUninit::uninit();
 
         let promise = napi_call!(
@@ -59,8 +59,8 @@ impl<'a> JsPromise<'a> {
     }
 }
 
-impl<'a> NapiValueT for JsPromise<'a> {
-    fn inner(&self) -> JsValue {
+impl NapiValueT for JsPromise {
+    fn value(&self) -> JsValue {
         self.0
     }
 }

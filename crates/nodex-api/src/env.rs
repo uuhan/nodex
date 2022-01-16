@@ -1,4 +1,4 @@
-use std::{marker::PhantomData, mem::MaybeUninit};
+use std::mem::MaybeUninit;
 
 use crate::{
     api::{self, napi_node_version},
@@ -7,18 +7,18 @@ use crate::{
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
-pub struct NapiEnv<'a>(napi_env, PhantomData<&'a napi_env>);
+pub struct NapiEnv(pub(crate) napi_env);
 
-impl<'a> AsRef<napi_env> for NapiEnv<'a> {
+impl AsRef<napi_env> for NapiEnv {
     fn as_ref(&self) -> &napi_env {
         &self.0
     }
 }
 
-impl<'a> NapiEnv<'a> {
+impl NapiEnv {
     /// create `NapiEnv` from raw napi_env
-    pub fn from_raw(env: napi_env) -> NapiEnv<'a> {
-        NapiEnv(env, PhantomData)
+    pub fn from_raw(env: napi_env) -> NapiEnv {
+        NapiEnv(env)
     }
 
     /// access raw napi_env from `NapiEnv`
@@ -34,30 +34,13 @@ impl<'a> NapiEnv<'a> {
     /// get node version
     /// the returned buffer is statically allocated and does not need to be freed.
     pub fn node_version(&self) -> NapiResult<napi_node_version> {
-        unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status = api::napi_get_node_version(self.raw(), result.as_mut_ptr());
-
-            if status.err() {
-                return Err(status);
-            }
-
-            Ok(std::ptr::read(result.assume_init()))
-        }
+        let value = napi_call!(=napi_get_node_version, self.raw());
+        unsafe { Ok(std::ptr::read(value)) }
     }
 
     /// get napi version
     pub fn napi_version(&self) -> NapiResult<u32> {
-        unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status = api::napi_get_version(self.raw(), result.as_mut_ptr());
-
-            if status.err() {
-                return Err(status);
-            }
-
-            Ok(result.assume_init())
-        }
+        Ok(napi_call!(=napi_get_version, self.raw()))
     }
 
     /// Return null object
@@ -100,21 +83,23 @@ impl<'a> NapiEnv<'a> {
     }
 
     /// The async context
-    pub fn context(&self, name: impl AsRef<str>) -> NapiResult<NapiAsyncContext<'a>> {
+    pub fn context(&self, name: impl AsRef<str>) -> NapiResult<NapiAsyncContext> {
         NapiAsyncContext::new(*self, name)
     }
 
     /// Create a named js function with a rust closure.
-    pub fn func_named(
-        &self,
-        name: impl AsRef<str>,
-        func: impl FnMut(),
-    ) -> NapiResult<JsFunction<'a>> {
+    pub fn func_named<Func>(&self, name: impl AsRef<str>, func: Func) -> NapiResult<JsFunction>
+    where
+        Func: FnMut(JsObject) -> JsValue,
+    {
         JsFunction::with(*self, Some(name), func)
     }
 
     /// Create a js function with a rust closure.
-    pub fn func(&self, func: impl FnMut()) -> NapiResult<JsFunction<'a>> {
+    pub fn func<Func>(&self, func: Func) -> NapiResult<JsFunction>
+    where
+        Func: FnMut(JsObject) -> JsValue,
+    {
         JsFunction::with(*self, Option::<String>::None, func)
     }
 
@@ -123,7 +108,7 @@ impl<'a> NapiEnv<'a> {
         &self,
         name: impl AsRef<str>,
         func: extern "C" fn(env: napi_env, info: napi_callback_info) -> napi_value,
-    ) -> NapiResult<JsFunction<'a>> {
+    ) -> NapiResult<JsFunction> {
         JsFunction::new(*self, Some(name), func)
     }
 
@@ -131,7 +116,7 @@ impl<'a> NapiEnv<'a> {
     pub fn function(
         &self,
         func: extern "C" fn(env: napi_env, info: napi_callback_info) -> napi_value,
-    ) -> NapiResult<JsFunction<'a>> {
+    ) -> NapiResult<JsFunction> {
         JsFunction::new(*self, Option::<String>::None, func)
     }
 
@@ -145,19 +130,13 @@ impl<'a> NapiEnv<'a> {
         object: impl NapiValueT,
         properties: impl AsRef<[NapiPropertyDescriptor]>,
     ) -> NapiResult<()> {
-        unsafe {
-            let status = api::napi_define_properties(
-                self.raw(),
-                object.raw(),
-                properties.as_ref().len(),
-                properties.as_ref().as_ptr() as *const _,
-            );
-
-            if status.err() {
-                return Err(status);
-            }
-
-            Ok(())
-        }
+        napi_call!(
+            napi_define_properties,
+            self.raw(),
+            object.raw(),
+            properties.as_ref().len(),
+            properties.as_ref().as_ptr() as *const _,
+        );
+        Ok(())
     }
 }

@@ -2,16 +2,16 @@ use crate::{api, prelude::*};
 use std::{mem::MaybeUninit, os::raw::c_char};
 
 #[derive(Copy, Clone, Debug)]
-pub struct JsArray<'a>(pub(crate) JsValue<'a>);
+pub struct JsArray(pub(crate) JsValue);
 
-impl<'a> JsArray<'a> {
+impl JsArray {
     pub(crate) fn from_value(value: JsValue) -> JsArray {
         JsArray(value)
     }
 
     /// This API returns a Node-API value corresponding to a JavaScript Array type. JavaScript
     /// arrays are described in Section 22.1 of the ECMAScript Language Specification.
-    pub fn new(env: NapiEnv<'a>, value: impl AsRef<str>) -> NapiResult<JsArray<'a>> {
+    pub fn new(env: NapiEnv, value: impl AsRef<str>) -> NapiResult<JsArray> {
         let value = napi_call!(=napi_create_array, env.raw());
         Ok(JsArray(JsValue::from_raw(env, value)))
     }
@@ -24,8 +24,8 @@ impl<'a> JsArray<'a> {
     }
 }
 
-impl<'a> NapiValueT for JsArray<'a> {
-    fn inner(&self) -> JsValue {
+impl NapiValueT for JsArray {
+    fn value(&self) -> JsValue {
         self.0
     }
 }

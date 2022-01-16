@@ -2,9 +2,9 @@ use crate::{api, prelude::*};
 use std::{mem::MaybeUninit, os::raw::c_char};
 
 #[derive(Copy, Clone, Debug)]
-pub struct JsFunction<'a>(pub(crate) JsValue<'a>);
+pub struct JsFunction(pub(crate) JsValue);
 
-impl<'a> JsFunction<'a> {
+impl JsFunction {
     pub(crate) fn from_value(value: JsValue) -> JsFunction {
         JsFunction(value)
     }
@@ -54,10 +54,10 @@ impl<'a> JsFunction<'a> {
     ///
     /// JavaScript Functions are described in Section 19.2 of the ECMAScript Language Specification.
     pub fn new(
-        env: NapiEnv<'a>,
+        env: NapiEnv,
         name: Option<impl AsRef<str>>,
         value: extern "C" fn(env: napi_env, info: napi_callback_info) -> napi_value,
-    ) -> NapiResult<JsFunction<'a>> {
+    ) -> NapiResult<JsFunction> {
         let (name, len) = if let Some(name) = name {
             (name.as_ref().as_ptr() as *const c_char, name.as_ref().len())
         } else {
@@ -77,11 +77,14 @@ impl<'a> JsFunction<'a> {
     }
 
     /// Create a js function with rust closure
-    pub fn with(
-        env: NapiEnv<'a>,
+    pub fn with<Func>(
+        env: NapiEnv,
         name: Option<impl AsRef<str>>,
-        func: impl FnMut(),
-    ) -> NapiResult<JsFunction<'a>> {
+        func: Func,
+    ) -> NapiResult<JsFunction>
+    where
+        Func: FnMut(JsObject) -> JsValue,
+    {
         let (name, len) = if let Some(name) = name {
             (name.as_ref().as_ptr() as *const c_char, name.as_ref().len())
         } else {
@@ -89,7 +92,7 @@ impl<'a> JsFunction<'a> {
         };
 
         // NB: leak the func closure
-        let func: Box<Box<dyn FnMut()>> = Box::new(Box::new(func));
+        let func: Box<Box<dyn FnMut(JsObject) -> JsValue>> = Box::new(Box::new(func));
 
         // TODO: it just works but not very useful by current design
         // use the trampoline function to call into the closure
@@ -99,9 +102,11 @@ impl<'a> JsFunction<'a> {
             let mut data = MaybeUninit::uninit();
             let mut this = MaybeUninit::uninit();
 
+            let env = NapiEnv::from_raw(env);
+
             let (argc, argv, this, mut func) = unsafe {
                 let status = api::napi_get_cb_info(
-                    env,
+                    env.raw(),
                     info,
                     argc.as_mut_ptr(),
                     argv.as_mut_ptr(),
@@ -111,7 +116,7 @@ impl<'a> JsFunction<'a> {
 
                 // NB: this cb is leaked, should collect the box when the function is destroyed
                 // restore the closure from data
-                let func: &mut Box<dyn FnMut()> = std::mem::transmute(data);
+                let func: &mut Box<dyn FnMut(JsObject) -> JsValue> = std::mem::transmute(data);
 
                 (
                     argc.assume_init(),
@@ -121,10 +126,10 @@ impl<'a> JsFunction<'a> {
                 )
             };
 
-            // call the closure
-            func();
+            let this = JsObject::from_value(JsValue::from_raw(env, this));
 
-            this
+            // call the closure
+            func(this).raw()
         }
 
         let value = napi_call!(
@@ -141,8 +146,8 @@ impl<'a> JsFunction<'a> {
     }
 }
 
-impl<'a> NapiValueT for JsFunction<'a> {
-    fn inner(&self) -> JsValue {
+impl NapiValueT for JsFunction {
+    fn value(&self) -> JsValue {
         self.0
     }
 }

@@ -1,20 +1,20 @@
 use crate::{api, prelude::*};
-use std::{mem::MaybeUninit, os::raw::c_char};
+use std::{ffi::CString, mem::MaybeUninit, os::raw::c_char};
 
 #[derive(Copy, Clone, Debug)]
-pub struct JsObject<'a>(pub(crate) JsValue<'a>);
+pub struct JsObject(pub(crate) JsValue);
 
-impl<'a> JsObject<'a> {
+impl JsObject {
     pub(crate) fn from_value(value: JsValue) -> JsObject {
         JsObject(value)
     }
 
     /// NB: This is a special JsObject that should only be used in napi_register_module_v1.
-    pub fn napi_module_exports(env: napi_env, value: napi_value) -> JsObject<'a> {
+    pub fn napi_module_exports(env: napi_env, value: napi_value) -> JsObject {
         JsObject(JsValue(NapiEnv::from_raw(env), value))
     }
 
-    pub fn new(env: NapiEnv<'a>) -> NapiResult<JsObject<'a>> {
+    pub fn new(env: NapiEnv) -> NapiResult<JsObject> {
         let value = napi_call!(=napi_create_object, env.raw());
         Ok(JsObject(JsValue::from_raw(env, value)))
     }
@@ -25,6 +25,19 @@ impl<'a> JsObject<'a> {
         Ok(JsValue::from_raw(self.env(), value))
     }
 
+    /// This method is equivalent to calling napi_get_property with a napi_value created
+    /// from the string passed in as utf8Name.
+    pub fn get_named_property(&self, key: impl AsRef<str>) -> NapiResult<JsValue> {
+        let name = CString::new(key.as_ref()).map_err(|_| NapiStatus::StringExpected)?;
+        let value = napi_call!(
+            =napi_get_named_property,
+            self.env().raw(),
+            self.raw(),
+            name.as_ptr(),
+        );
+        Ok(JsValue::from_raw(self.env(), value))
+    }
+
     /// This API set a property on the Object passed in.
     pub fn set_property(&mut self, key: impl NapiValueT, value: impl NapiValueT) -> NapiResult<()> {
         napi_call!(
@@ -32,6 +45,24 @@ impl<'a> JsObject<'a> {
             self.env().raw(),
             self.raw(),
             key.raw(),
+            value.raw(),
+        );
+        Ok(())
+    }
+
+    /// This method is equivalent to calling napi_get_property with a napi_value created from the
+    /// string passed in as utf8Name.
+    pub fn set_named_property(
+        &mut self,
+        key: impl AsRef<str>,
+        value: impl NapiValueT,
+    ) -> NapiResult<()> {
+        let name = CString::new(key.as_ref()).map_err(|_| NapiStatus::StringExpected)?;
+        napi_call!(
+            napi_set_named_property,
+            self.env().raw(),
+            self.raw(),
+            name.as_ptr(),
             value.raw(),
         );
         Ok(())
@@ -100,8 +131,8 @@ impl<'a> JsObject<'a> {
     }
 }
 
-impl<'a> NapiValueT for JsObject<'a> {
-    fn inner(&self) -> JsValue {
+impl NapiValueT for JsObject {
+    fn value(&self) -> JsValue {
         self.0
     }
 }

@@ -2,9 +2,9 @@ use crate::{api, prelude::*};
 use std::{mem::MaybeUninit, os::raw::c_char};
 
 #[derive(Copy, Clone, Debug)]
-pub struct JsBigInt<'a>(pub(crate) JsValue<'a>);
+pub struct JsBigInt(pub(crate) JsValue);
 
-impl<'a> JsBigInt<'a> {
+impl JsBigInt {
     pub(crate) fn from_value(value: JsValue) -> JsBigInt {
         JsBigInt(value)
     }
@@ -12,8 +12,8 @@ impl<'a> JsBigInt<'a> {
     // TODO: [napi](https://nodejs.org/api/n-api.html)
 }
 
-impl<'a> NapiValueT for JsBigInt<'a> {
-    fn inner(&self) -> JsValue {
+impl NapiValueT for JsBigInt {
+    fn value(&self) -> JsValue {
         self.0
     }
 }

@@ -2,16 +2,16 @@ use crate::{api, prelude::*};
 use std::{mem::MaybeUninit, os::raw::c_char};
 
 #[derive(Copy, Clone, Debug)]
-pub struct JsNumber<'a>(pub(crate) JsValue<'a>);
+pub struct JsNumber(pub(crate) JsValue);
 
-impl<'a> JsNumber<'a> {
+impl JsNumber {
     pub(crate) fn from_value(value: JsValue) -> JsNumber {
         JsNumber(value)
     }
 
     /// This API is used to convert from the C int32_t type to the JavaScript number type.
     /// The JavaScript number type is described in Section 6.1.6 of the ECMAScript Language Specification.
-    pub fn int32(env: NapiEnv<'a>, value: i32) -> NapiResult<JsNumber<'a>> {
+    pub fn int32(env: NapiEnv, value: i32) -> NapiResult<JsNumber> {
         let value = napi_call!(
             =napi_create_int32,
             env.raw(),
@@ -23,7 +23,7 @@ impl<'a> JsNumber<'a> {
 
     /// This API is used to convert from the C uint32_t type to the JavaScript number type.
     /// The JavaScript number type is described in Section 6.1.6 of the ECMAScript Language Specification.
-    pub fn uint32(env: NapiEnv<'a>, value: u32) -> NapiResult<JsNumber<'a>> {
+    pub fn uint32(env: NapiEnv, value: u32) -> NapiResult<JsNumber> {
         let value = napi_call!(
             =napi_create_uint32,
             env.raw(),
@@ -35,7 +35,7 @@ impl<'a> JsNumber<'a> {
 
     /// This API is used to convert from the C int64_t type to the JavaScript number type.
     /// The JavaScript number type is described in Section 6.1.6 of the ECMAScript Language Specification. Note the complete range of int64_t cannot be represented with full precision in JavaScript. Integer values outside the range of Number.MIN_SAFE_INTEGER -(2**53 - 1) - Number.MAX_SAFE_INTEGER (2**53 - 1) will lose precision.
-    pub fn int64(env: NapiEnv<'a>, value: i64) -> NapiResult<JsNumber<'a>> {
+    pub fn int64(env: NapiEnv, value: i64) -> NapiResult<JsNumber> {
         let value = napi_call!(
             =napi_create_int64,
             env.raw(),
@@ -47,7 +47,7 @@ impl<'a> JsNumber<'a> {
 
     /// This API is used to convert from the C double type to the JavaScript number type.
     /// The JavaScript number type is described in Section 6.1.6 of the ECMAScript Language Specification.
-    pub fn double(env: NapiEnv<'a>, value: f64) -> NapiResult<JsNumber<'a>> {
+    pub fn double(env: NapiEnv, value: f64) -> NapiResult<JsNumber> {
         let value = napi_call!(
             =napi_create_double,
             env.raw(),
@@ -86,8 +86,8 @@ impl<'a> JsNumber<'a> {
     }
 }
 
-impl<'a> NapiValueT for JsNumber<'a> {
-    fn inner(&self) -> JsValue {
+impl NapiValueT for JsNumber {
+    fn value(&self) -> JsValue {
         self.0
     }
 }

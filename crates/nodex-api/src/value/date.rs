@@ -2,9 +2,9 @@ use crate::{api, prelude::*};
 use std::{mem::MaybeUninit, os::raw::c_char};
 
 #[derive(Copy, Clone, Debug)]
-pub struct JsDate<'a>(pub(crate) JsValue<'a>);
+pub struct JsDate(pub(crate) JsValue);
 
-impl<'a> JsDate<'a> {
+impl JsDate {
     pub(crate) fn from_value(value: JsValue) -> JsDate {
         JsDate(value)
     }
@@ -13,7 +13,7 @@ impl<'a> JsDate<'a> {
     /// This API does not observe leap seconds; they are ignored, as ECMAScript aligns with POSIX time specification.
     /// This API allocates a JavaScript Date object.
     /// JavaScript Date objects are described in Section 20.3 of the ECMAScript Language Specification.
-    pub fn new(env: NapiEnv<'a>, time: f64) -> NapiResult<JsDate<'a>> {
+    pub fn new(env: NapiEnv, time: f64) -> NapiResult<JsDate> {
         let value = napi_call!(=napi_create_date, env.raw(), time);
         Ok(JsDate(JsValue::from_raw(env, value)))
     }
@@ -27,8 +27,8 @@ impl<'a> JsDate<'a> {
     }
 }
 
-impl<'a> NapiValueT for JsDate<'a> {
-    fn inner(&self) -> JsValue {
+impl NapiValueT for JsDate {
+    fn value(&self) -> JsValue {
         self.0
     }
 }

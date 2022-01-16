@@ -100,6 +100,7 @@ pub enum NapiThreadsafeFunctionCallMode {
     Blocking = api::napi_threadsafe_function_call_mode_napi_tsfn_blocking,
 }
 
+pub mod args;
 pub mod context;
 pub mod descriptor;
 pub mod env;
@@ -129,6 +130,7 @@ pub mod prelude {
     pub use env::NapiEnv;
     pub use error::{NapiResult, NapiStatus};
 
+    pub use args::*;
     pub use context::NapiAsyncContext;
     pub use descriptor::{DescriptorBuilder, NapiPropertyDescriptor};
     pub use handle::NapiHandleScope;
@@ -137,8 +139,29 @@ pub mod prelude {
 
     pub use api::{
         napi_async_context, napi_async_work, napi_callback, napi_callback_info, napi_deferred,
-        napi_env, napi_handle_scope, napi_property_descriptor, napi_value,
+        napi_env, napi_escapable_handle_scope, napi_handle_scope, napi_property_descriptor,
+        napi_value,
     };
+}
+
+pub const fn napi_version_guard() -> u32 {
+    #[cfg(feature = "v8")]
+    return 8;
+    #[cfg(feature = "v7")]
+    return 7;
+    #[cfg(feature = "v6")]
+    return 6;
+    #[cfg(feature = "v5")]
+    return 5;
+    #[cfg(feature = "v4")]
+    return 4;
+    #[cfg(feature = "v3")]
+    return 3;
+    #[cfg(feature = "v2")]
+    return 2;
+    #[cfg(feature = "v1")]
+    return 1;
+    panic!("please select a napi version to use.")
 }
 
 #[cfg(test)]
