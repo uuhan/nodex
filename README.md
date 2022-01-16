@@ -9,13 +9,9 @@ It is in a very early stage and heavy development is making.
 ## Features
 
 - [ ] good napi wrappings.
-
 - [ ] export the codebase from crates world, make it easy to call rust function from js world.
-
 - [ ] import the huge codebase from npm world, make it easy to call js function from rust side.
-
 - [ ] nodejs async runtime to drive rust async code.
-
 - [ ] cargo-nodex cargo subcommand to make ease of create nodejs addons, e.g. auto generate ts typings.
 
 ## Examples
