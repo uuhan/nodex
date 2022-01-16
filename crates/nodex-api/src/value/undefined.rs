@@ -9,18 +9,9 @@ impl<'a> JsUndefined<'a> {
         JsUndefined(value)
     }
 
+    /// This API returns the Undefined object.
     pub fn new(env: NapiEnv<'a>) -> NapiResult<JsUndefined<'a>> {
-        let value = unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status = api::napi_get_undefined(env.raw(), result.as_mut_ptr());
-
-            if status.err() {
-                return Err(status);
-            }
-
-            result.assume_init()
-        };
-
+        let value = napi_call!(=napi_get_undefined, env.raw());
         Ok(JsUndefined(JsValue::from_raw(env, value)))
     }
 }
