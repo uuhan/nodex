@@ -90,6 +90,21 @@ jobs:
           command: test
           args: -p nodex-api --no-default-features --features=v8
 
+  demo:
+    name: Run Demo Project
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install nodejs
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - run: cargo build -p demo
+      - run: cp target/debug/libdemo.so demo.node
+      - run: node demo.js
+
   lints:
     name: Lints
     runs-on: ubuntu-latest
