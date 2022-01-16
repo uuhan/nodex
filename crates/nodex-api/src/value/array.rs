@@ -24,8 +24,8 @@ impl<'a> JsArray<'a> {
     }
 }
 
-impl<'a> ValueInner for JsArray<'a> {
-    fn downcast(&self) -> JsValue {
+impl<'a> NapiValueT for JsArray<'a> {
+    fn inner(&self) -> JsValue {
         self.0
     }
 }

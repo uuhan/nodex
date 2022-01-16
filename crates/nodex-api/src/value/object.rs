@@ -15,13 +15,13 @@ impl<'a> JsObject<'a> {
     }
 
     /// This API gets the requested property from the Object passed in.
-    pub fn get_property(&self, key: impl ValueInner) -> NapiResult<JsValue> {
+    pub fn get_property(&self, key: impl NapiValueT) -> NapiResult<JsValue> {
         let value = napi_call!(=napi_get_property, self.env().raw(), self.raw(), key.raw());
         Ok(JsValue::from_raw(self.env(), value))
     }
 
     /// This API set a property on the Object passed in.
-    pub fn set_property(&mut self, key: impl ValueInner, value: impl ValueInner) -> NapiResult<()> {
+    pub fn set_property(&mut self, key: impl NapiValueT, value: impl NapiValueT) -> NapiResult<()> {
         napi_call!(
             napi_set_property,
             self.env().raw(),
@@ -37,8 +37,8 @@ impl<'a> JsObject<'a> {
     /// types.
     pub fn has_own_property(
         &mut self,
-        key: impl ValueInner,
-        value: impl ValueInner,
+        key: impl NapiValueT,
+        value: impl NapiValueT,
     ) -> NapiResult<bool> {
         let result = napi_call!(
             =napi_has_own_property,
@@ -101,8 +101,8 @@ impl<'a> JsObject<'a> {
     }
 }
 
-impl<'a> ValueInner for JsObject<'a> {
-    fn downcast(&self) -> JsValue {
+impl<'a> NapiValueT for JsObject<'a> {
+    fn inner(&self) -> JsValue {
         self.0
     }
 }

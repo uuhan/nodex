@@ -10,8 +10,8 @@ impl<'a> JsDataView<'a> {
     }
 }
 
-impl<'a> ValueInner for JsDataView<'a> {
-    fn downcast(&self) -> JsValue {
+impl<'a> NapiValueT for JsDataView<'a> {
+    fn inner(&self) -> JsValue {
         self.0
     }
 }

@@ -10,8 +10,8 @@ impl<'a> JsTypedArray<'a> {
     }
 }
 
-impl<'a> ValueInner for JsTypedArray<'a> {
-    fn downcast(&self) -> JsValue {
+impl<'a> NapiValueT for JsTypedArray<'a> {
+    fn inner(&self) -> JsValue {
         self.0
     }
 }

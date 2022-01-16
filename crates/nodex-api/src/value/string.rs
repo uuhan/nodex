@@ -23,8 +23,8 @@ impl<'a> JsString<'a> {
     }
 }
 
-impl<'a> ValueInner for JsString<'a> {
-    fn downcast(&self) -> JsValue {
+impl<'a> NapiValueT for JsString<'a> {
+    fn inner(&self) -> JsValue {
         self.0
     }
 }

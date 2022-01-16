@@ -25,8 +25,8 @@ impl<'a> JsUndefined<'a> {
     }
 }
 
-impl<'a> ValueInner for JsUndefined<'a> {
-    fn downcast(&self) -> JsValue {
+impl<'a> NapiValueT for JsUndefined<'a> {
+    fn inner(&self) -> JsValue {
         self.0
     }
 }

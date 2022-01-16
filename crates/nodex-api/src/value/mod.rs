@@ -308,24 +308,24 @@ impl<'a> JsValue<'a> {
     }
 }
 
-impl<'a> ValueInner for JsValue<'a> {
-    fn downcast(&self) -> JsValue {
+impl<'a> NapiValueT for JsValue<'a> {
+    fn inner(&self) -> JsValue {
         *self
     }
 }
 
-pub trait ValueInner {
-    /// downcast to inner `JsValue` type
-    fn downcast(&self) -> JsValue;
+pub trait NapiValueT {
+    /// inner `JsValue` type
+    fn inner(&self) -> JsValue;
 
     /// the `NapiEnv` of current value
     fn env(&self) -> NapiEnv {
-        self.downcast().env()
+        self.inner().env()
     }
 
     /// the raw-handle of current value
     fn raw(&self) -> napi_value {
-        self.downcast().raw()
+        self.inner().raw()
     }
 
     /// This method allows the efficient definition of multiple properties on a given object. The

@@ -24,8 +24,8 @@ impl<'a> JsBoolean<'a> {
     }
 }
 
-impl<'a> ValueInner for JsBoolean<'a> {
-    fn downcast(&self) -> JsValue {
+impl<'a> NapiValueT for JsBoolean<'a> {
+    fn inner(&self) -> JsValue {
         self.0
     }
 }

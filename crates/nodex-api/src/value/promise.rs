@@ -34,7 +34,7 @@ impl<'a> JsPromise<'a> {
     /// call must have been retained in order to be passed to this API.
     ///
     /// The deferred object is freed upon successful completion.
-    pub fn resolve(&self, resolution: impl ValueInner) -> NapiResult<()> {
+    pub fn resolve(&self, resolution: impl NapiValueT) -> NapiResult<()> {
         unsafe {
             let status = api::napi_resolve_deferred(self.env().raw(), self.1, resolution.raw());
 
@@ -53,7 +53,7 @@ impl<'a> JsPromise<'a> {
     /// from that call must have been retained in order to be passed to this API.
     ///
     /// The deferred object is freed upon successful completion.
-    pub fn reject(&self, rejection: impl ValueInner) -> NapiResult<()> {
+    pub fn reject(&self, rejection: impl NapiValueT) -> NapiResult<()> {
         unsafe {
             let status = api::napi_reject_deferred(self.env().raw(), self.1, rejection.raw());
 
@@ -66,8 +66,8 @@ impl<'a> JsPromise<'a> {
     }
 }
 
-impl<'a> ValueInner for JsPromise<'a> {
-    fn downcast(&self) -> JsValue {
+impl<'a> NapiValueT for JsPromise<'a> {
+    fn inner(&self) -> JsValue {
         self.0
     }
 }

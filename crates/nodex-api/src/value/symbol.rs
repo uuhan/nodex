@@ -10,8 +10,8 @@ impl<'a> JsSymbol<'a> {
     }
 }
 
-impl<'a> ValueInner for JsSymbol<'a> {
-    fn downcast(&self) -> JsValue {
+impl<'a> NapiValueT for JsSymbol<'a> {
+    fn inner(&self) -> JsValue {
         self.0
     }
 }

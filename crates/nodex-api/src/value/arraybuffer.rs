@@ -59,8 +59,8 @@ impl<'a> JsArrayBuffer<'a> {
     }
 }
 
-impl<'a> ValueInner for JsArrayBuffer<'a> {
-    fn downcast(&self) -> JsValue {
+impl<'a> NapiValueT for JsArrayBuffer<'a> {
+    fn inner(&self) -> JsValue {
         self.0
     }
 }

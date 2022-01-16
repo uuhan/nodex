@@ -12,8 +12,8 @@ impl<'a> JsBigInt<'a> {
     // TODO: [napi](https://nodejs.org/api/n-api.html)
 }
 
-impl<'a> ValueInner for JsBigInt<'a> {
-    fn downcast(&self) -> JsValue {
+impl<'a> NapiValueT for JsBigInt<'a> {
+    fn inner(&self) -> JsValue {
         self.0
     }
 }

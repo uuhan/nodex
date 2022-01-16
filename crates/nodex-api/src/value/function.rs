@@ -104,8 +104,8 @@ impl<'a> JsFunction<'a> {
     }
 }
 
-impl<'a> ValueInner for JsFunction<'a> {
-    fn downcast(&self) -> JsValue {
+impl<'a> NapiValueT for JsFunction<'a> {
+    fn inner(&self) -> JsValue {
         self.0
     }
 }

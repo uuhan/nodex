@@ -111,7 +111,7 @@ impl<'a> NapiEnv<'a> {
     /// specification).
     pub fn define_properties(
         &self,
-        object: impl ValueInner,
+        object: impl NapiValueT,
         properties: impl AsRef<[NapiPropertyDescriptor]>,
     ) -> NapiResult<()> {
         unsafe {

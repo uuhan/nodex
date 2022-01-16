@@ -49,8 +49,8 @@ impl<'a> JsDate<'a> {
     }
 }
 
-impl<'a> ValueInner for JsDate<'a> {
-    fn downcast(&self) -> JsValue {
+impl<'a> NapiValueT for JsDate<'a> {
+    fn inner(&self) -> JsValue {
         self.0
     }
 }

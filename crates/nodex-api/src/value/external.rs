@@ -59,8 +59,8 @@ impl<'a, T> JsExternal<'a, T> {
     }
 }
 
-impl<'a, T> ValueInner for JsExternal<'a, T> {
-    fn downcast(&self) -> JsValue {
+impl<'a, T> NapiValueT for JsExternal<'a, T> {
+    fn inner(&self) -> JsValue {
         self.0
     }
 }
