@@ -8,7 +8,7 @@ It is in a very early stage and heavy development is making.
 
 ## Features
 
-- [ ] good napi wrappings.
+- [ ] ergonomical api design.
 - [ ] export the codebase from crates world, make it easy to call rust function from js world.
     - [ ] sweet syntax, like: #[nodex::function] fn foo()
 - [ ] import the huge codebase from npm world, make it easy to call js function from rust side.
