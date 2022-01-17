@@ -20,37 +20,71 @@ impl NapiHandleScope {
         self.handle
     }
 
-    /// create a new napi_handle_scope
-    pub fn new(env: NapiEnv) -> NapiResult<NapiHandleScope> {
-        let handle = unsafe {
-            let mut result = MaybeUninit::uninit();
-            let status = api::napi_open_handle_scope(env.raw(), result.as_mut_ptr());
-
-            if status.err() {
-                return Err(status);
-            }
-
-            result.assume_init()
-        };
-
+    /// This API opens a new scope.
+    pub fn open(env: NapiEnv) -> NapiResult<NapiHandleScope> {
+        let handle = napi_call!(=napi_open_handle_scope, env.raw());
         Ok(NapiHandleScope { env, handle })
     }
 
-    /// close this napi_handle_scope
+    /// This API closes the scope passed in. Scopes must be closed in the reverse
+    /// order from which they were created.
+    /// This API can be called even if there is a pending JavaScript exception.
     pub fn close(&mut self) -> NapiResult<()> {
-        unsafe {
-            let status = api::napi_close_handle_scope(self.env().raw(), self.raw());
-
-            if status.err() {
-                return Err(status);
-            }
-
-            Ok(())
-        }
+        Ok(napi_call!(
+            napi_close_handle_scope,
+            self.env().raw(),
+            self.raw()
+        ))
     }
 }
 
 impl Drop for NapiHandleScope {
+    fn drop(&mut self) {
+        self.close();
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct NapiEscapableHandleScope {
+    env: NapiEnv,
+    handle: napi_escapable_handle_scope,
+}
+
+impl NapiEscapableHandleScope {
+    pub(crate) fn from_value(
+        env: NapiEnv,
+        handle: napi_escapable_handle_scope,
+    ) -> NapiEscapableHandleScope {
+        NapiEscapableHandleScope { env, handle }
+    }
+
+    pub fn env(&self) -> NapiEnv {
+        self.env
+    }
+
+    pub fn raw(&self) -> napi_escapable_handle_scope {
+        self.handle
+    }
+
+    /// This API opens a new scope from which one object can be promoted to the outer scope.
+    pub fn open(env: NapiEnv) -> NapiResult<NapiEscapableHandleScope> {
+        let handle = napi_call!(=napi_open_escapable_handle_scope, env.raw());
+        Ok(NapiEscapableHandleScope { env, handle })
+    }
+
+    /// This API closes the scope passed in. Scopes must be closed in the reverse
+    /// order from which they were created.
+    /// This API can be called even if there is a pending JavaScript exception.
+    pub fn close(&mut self) -> NapiResult<()> {
+        Ok(napi_call!(
+            napi_close_escapable_handle_scope,
+            self.env().raw(),
+            self.raw()
+        ))
+    }
+}
+
+impl Drop for NapiEscapableHandleScope {
     fn drop(&mut self) {
         self.close();
     }

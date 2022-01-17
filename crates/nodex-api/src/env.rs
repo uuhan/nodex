@@ -130,19 +130,12 @@ impl NapiEnv {
         object: impl NapiValueT,
         properties: impl AsRef<[NapiPropertyDescriptor]>,
     ) -> NapiResult<()> {
-        unsafe {
-            let status = api::napi_define_properties(
-                self.raw(),
-                object.raw(),
-                properties.as_ref().len(),
-                properties.as_ref().as_ptr() as *const _,
-            );
-
-            if status.err() {
-                return Err(status);
-            }
-
-            Ok(())
-        }
+        Ok(napi_call!(
+            napi_define_properties,
+            self.raw(),
+            object.raw(),
+            properties.as_ref().len(),
+            properties.as_ref().as_ptr() as *const _,
+        ))
     }
 }
