@@ -268,6 +268,21 @@ pub trait NapiValueT {
         self.value().raw()
     }
 
+    /// get null singleton
+    fn null(&self) -> NapiResult<JsNull> {
+        JsNull::new(self.env())
+    }
+
+    /// get undefined singleton
+    fn undefined(&self) -> NapiResult<JsUndefined> {
+        JsUndefined::new(self.env())
+    }
+
+    /// get global singleton
+    fn global(&self) -> NapiResult<JsGlobal> {
+        JsGlobal::new(self.env())
+    }
+
     /// This method allows the efficient definition of multiple properties on a given object. The
     /// properties are defined using property descriptors (see napi_property_descriptor). Given an
     /// array of such property descriptors, this API will set the properties on the object one at a
