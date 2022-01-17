@@ -28,7 +28,7 @@ It is in a very early stage and heavy development is making.
 crate-type = ["cdylib"]
 
 [dependencies]
-nodex-api = "0.1.0-alpha.3"
+nodex-api = "0.1.0-alpha.4"
 ```
 
 ## Examples
