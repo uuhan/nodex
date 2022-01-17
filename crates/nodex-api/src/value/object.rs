@@ -25,6 +25,19 @@ impl JsObject {
         Ok(JsValue::from_raw(self.env(), value))
     }
 
+    /// This method is equivalent to calling napi_get_property with a napi_value created
+    /// from the string passed in as utf8Name.
+    pub fn get_named_property(&self, key: impl AsRef<str>) -> NapiResult<JsValue> {
+        let name = CString::new(key.as_ref()).map_err(|_| NapiStatus::StringExpected)?;
+        let value = napi_call!(
+            =napi_get_named_property,
+            self.env().raw(),
+            self.raw(),
+            name.as_ptr(),
+        );
+        Ok(JsValue::from_raw(self.env(), value))
+    }
+
     /// This API set a property on the Object passed in.
     pub fn set_property(&mut self, key: impl NapiValueT, value: impl NapiValueT) -> NapiResult<()> {
         napi_call!(
