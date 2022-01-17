@@ -25,7 +25,7 @@ bindgen = { version = "0.59.2", optional = true }
 cc = { version = "1.0.72", optional = true }
 
 [features]
-default = ["v8"]
+default = ["v1"]
 gen-api = ["bindgen", "cc"]
 v1 = []
 v2 = ["v1"]
