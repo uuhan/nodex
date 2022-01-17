@@ -38,7 +38,7 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
         env.napi_version()?,
     );
 
-    exports.set_property(env.string("a")?, env.string("b")?)?;
+    exports.set_named_property("a", env.string("b")?)?;
 
     exports.define_properties(&[
         DescriptorBuilder::new()

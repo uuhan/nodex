@@ -1,5 +1,5 @@
 use crate::{api, prelude::*};
-use std::{mem::MaybeUninit, os::raw::c_char};
+use std::{ffi::CString, mem::MaybeUninit, os::raw::c_char};
 
 #[derive(Copy, Clone, Debug)]
 pub struct JsObject(pub(crate) JsValue);
@@ -32,6 +32,24 @@ impl JsObject {
             self.env().raw(),
             self.raw(),
             key.raw(),
+            value.raw(),
+        );
+        Ok(())
+    }
+
+    /// This method is equivalent to calling napi_get_property with a napi_value created from the
+    /// string passed in as utf8Name.
+    pub fn set_named_property(
+        &mut self,
+        key: impl AsRef<str>,
+        value: impl NapiValueT,
+    ) -> NapiResult<()> {
+        let name = CString::new(key.as_ref()).map_err(|_| NapiStatus::StringExpected)?;
+        napi_call!(
+            napi_set_named_property,
+            self.env().raw(),
+            self.raw(),
+            name.as_ptr(),
             value.raw(),
         );
         Ok(())
