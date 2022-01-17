@@ -29,7 +29,7 @@ macro_rules! napi_call {
             let mut result = std::mem::MaybeUninit::uninit();
             let status = $crate::api::$napi($($args),+, result.as_mut_ptr());
             if status.err() {
-                return Err(status)
+                return Err(status);
             }
             result.assume_init()
         }
@@ -39,7 +39,7 @@ macro_rules! napi_call {
         unsafe {
             let status = $crate::api::$napi($($args),+);
             if status.err() {
-                return Err(status)
+                return Err(status);
             }
         }
     }

@@ -130,12 +130,13 @@ impl NapiEnv {
         object: impl NapiValueT,
         properties: impl AsRef<[NapiPropertyDescriptor]>,
     ) -> NapiResult<()> {
-        Ok(napi_call!(
+        napi_call!(
             napi_define_properties,
             self.raw(),
             object.raw(),
             properties.as_ref().len(),
             properties.as_ref().as_ptr() as *const _,
-        ))
+        );
+        Ok(())
     }
 }
