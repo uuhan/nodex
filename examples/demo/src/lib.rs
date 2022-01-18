@@ -14,10 +14,32 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     obj.set_property(
         name,
-        env.func(move |this| {
+        env.func(move |this, [a1, a2]| {
+            let env = this.env();
+
+            println!("call: {:?} {:?}", a1.is_function()?, a2.is_function()?,);
+
+            env.async_work_state(
+                "my-test-async-task",
+                0,
+                move |idx| {
+                    *idx += 1;
+                    println!("execute async task");
+                },
+                move |_, status, idx| {
+                    if status == NapiStatus::Cancelled {
+                        println!("[{}] task cancelled", status);
+                    } else {
+                        println!("[{}] complete async task: {}", status, idx);
+                    }
+                    Ok(())
+                },
+            )?
+            .queue()?;
+
             times += 1;
             println!("[{}] called", times);
-            this.value()
+            Ok(this.value())
         })?,
     )?;
     obj.set_property(symbol, env.double(100.)?)?;
@@ -58,35 +80,18 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
                 move || {
                     println!("execute async task2");
                 },
-                move |env2, status| {
-                    println!("[{}] complete async task2: {:?} {:?}", status, env, env2);
+                move |_, status| {
+                    println!("[{}] complete async task2", status);
+                    Ok(())
                 },
-            )
-            .unwrap()
-            .queue()
-            .unwrap();
+            )?
+            .queue()?;
             println!("[{}] complete async task1", status);
+
+            Ok(())
         },
     )?
     .queue()?;
-
-    let mut work = env.async_work_state(
-        "my-test-async-task",
-        0,
-        move |idx| {
-            *idx += 1;
-            println!("execute async task");
-        },
-        move |_, status, idx| {
-            if status == NapiStatus::Cancelled {
-                println!("[{}] task cancelled", status);
-            } else {
-                println!("[{}] complete async task: {}", status, idx);
-            }
-        },
-    )?;
-
-    work.queue()?;
 
     Ok(())
 }

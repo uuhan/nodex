@@ -88,17 +88,21 @@ impl NapiEnv {
     }
 
     /// Create a named js function with a rust closure.
-    pub fn func_named<Func>(&self, name: impl AsRef<str>, func: Func) -> NapiResult<JsFunction>
+    pub fn func_named<Func, const N: usize>(
+        &self,
+        name: impl AsRef<str>,
+        func: Func,
+    ) -> NapiResult<JsFunction>
     where
-        Func: FnMut(JsObject) -> JsValue,
+        Func: FnMut(JsObject, [JsValue; N]) -> NapiResult<JsValue>,
     {
         JsFunction::with(*self, Some(name), func)
     }
 
     /// Create a js function with a rust closure.
-    pub fn func<Func>(&self, func: Func) -> NapiResult<JsFunction>
+    pub fn func<Func, const N: usize>(&self, func: Func) -> NapiResult<JsFunction>
     where
-        Func: FnMut(JsObject) -> JsValue,
+        Func: FnMut(JsObject, [JsValue; N]) -> NapiResult<JsValue>,
     {
         JsFunction::with(*self, Option::<String>::None, func)
     }
@@ -125,7 +129,7 @@ impl NapiEnv {
         &self,
         name: impl AsRef<str>,
         execute: impl FnMut(),
-        complete: impl FnMut(NapiEnv, NapiStatus),
+        complete: impl FnMut(NapiEnv, NapiStatus) -> NapiResult<()>,
     ) -> NapiResult<NapiAsyncWork> {
         NapiAsyncWork::new(*self, name, execute, complete)
     }
@@ -136,7 +140,7 @@ impl NapiEnv {
         name: impl AsRef<str>,
         state: T,
         execute: impl FnMut(&mut T),
-        complete: impl FnMut(NapiEnv, NapiStatus, &mut T),
+        complete: impl FnMut(NapiEnv, NapiStatus, &mut T) -> NapiResult<()>,
     ) -> NapiResult<NapiAsyncWork> {
         NapiAsyncWork::state(*self, name, state, execute, complete)
     }

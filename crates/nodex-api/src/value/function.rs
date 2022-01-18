@@ -77,13 +77,13 @@ impl JsFunction {
     }
 
     /// Create a js function with rust closure
-    pub fn with<Func>(
+    pub fn with<Func, const N: usize>(
         env: NapiEnv,
         name: Option<impl AsRef<str>>,
         func: Func,
     ) -> NapiResult<JsFunction>
     where
-        Func: FnMut(JsObject) -> JsValue,
+        Func: FnMut(JsObject, [JsValue; N]) -> NapiResult<JsValue>,
     {
         let (name, len) = if let Some(name) = name {
             (name.as_ref().as_ptr() as *const c_char, name.as_ref().len())
@@ -92,13 +92,17 @@ impl JsFunction {
         };
 
         // NB: leak the func closure
-        let func: Box<Box<dyn FnMut(JsObject) -> JsValue>> = Box::new(Box::new(func));
+        let func: Box<Box<dyn FnMut(JsObject, [JsValue; N]) -> NapiResult<JsValue>>> =
+            Box::new(Box::new(func));
 
         // TODO: it just works but not very useful by current design
         // use the trampoline function to call into the closure
-        extern "C" fn trampoline(env: napi_env, info: napi_callback_info) -> napi_value {
-            let mut argc = MaybeUninit::zeroed();
-            let mut argv = MaybeUninit::uninit();
+        extern "C" fn trampoline<const N: usize>(
+            env: napi_env,
+            info: napi_callback_info,
+        ) -> napi_value {
+            let mut argc = N;
+            let mut argv = [std::ptr::null_mut(); N];
             let mut data = MaybeUninit::uninit();
             let mut this = MaybeUninit::uninit();
 
@@ -108,7 +112,7 @@ impl JsFunction {
                 let status = api::napi_get_cb_info(
                     env.raw(),
                     info,
-                    argc.as_mut_ptr(),
+                    &mut argc,
                     argv.as_mut_ptr(),
                     this.as_mut_ptr(),
                     data.as_mut_ptr(),
@@ -116,20 +120,23 @@ impl JsFunction {
 
                 // NB: this cb is leaked, should collect the box when the function is destroyed
                 // restore the closure from data
-                let func: &mut Box<dyn FnMut(JsObject) -> JsValue> = std::mem::transmute(data);
+                let func: &mut Box<dyn FnMut(JsObject, [JsValue; N]) -> NapiResult<JsValue>> =
+                    std::mem::transmute(data);
 
-                (
-                    argc.assume_init(),
-                    argv.assume_init(),
-                    this.assume_init(),
-                    func,
-                )
+                (argc, argv, this.assume_init(), func)
             };
+
+            let args = unsafe { argv.map(|arg| JsValue::from_raw(env, arg)) };
 
             let this = JsObject::from_value(JsValue::from_raw(env, this));
 
-            // call the closure
-            func(this).raw()
+            let result = if let Ok(result) = func(this, args) {
+                result
+            } else {
+                env.undefined().unwrap().value()
+            };
+
+            result.raw()
         }
 
         let value = napi_call!(
@@ -137,7 +144,7 @@ impl JsFunction {
             env.raw(),
             name,
             len,
-            Some(trampoline),
+            Some(trampoline::<N>),
             // pass closure to trampoline function
             Box::into_raw(func) as _,
         );
