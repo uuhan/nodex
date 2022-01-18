@@ -1,8 +1,8 @@
 const demo = require("./demo.node")
 
 console.log(demo.utils.func())
-console.log(demo.utils.func(() => {
-  console.log("demo callback")
-}))
+demo.utils.func((value) => {
+  console.log(value)
+})
 
 console.log(demo.key1)

@@ -77,6 +77,7 @@ impl JsFunction {
     }
 
     /// Create a js function with rust closure
+    #[allow(clippy::type_complexity)]
     pub fn with<Func, const N: usize>(
         env: NapiEnv,
         name: Option<impl AsRef<str>>,
@@ -150,6 +151,22 @@ impl JsFunction {
         );
 
         Ok(JsFunction(JsValue::from_raw(env, value)))
+    }
+
+    /// This method allows a JavaScript function object to be called from a native add-on. This is
+    /// the primary mechanism of calling back from the add-on's native code into JavaScript. For
+    /// the special case of calling into JavaScript after an async operation, see
+    /// napi_make_callback.
+    pub fn call<const N: usize>(&self, this: JsObject, argv: [JsValue; N]) -> NapiResult<JsValue> {
+        let value = napi_call!(
+            =napi_call_function,
+            self.env().raw(),
+            this.raw(),
+            self.raw(),
+            argv.len(),
+            argv.map(|arg| arg.raw()).as_ptr(),
+        );
+        Ok(JsValue::from_raw(self.env(), value))
     }
 }
 

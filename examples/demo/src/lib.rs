@@ -14,10 +14,11 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     obj.set_property(
         name,
-        env.func(move |this, [a1, a2]| {
+        env.func(move |this, [a1]| {
             let env = this.env();
 
-            println!("call: {:?} {:?}", a1.is_function()?, a2.is_function()?,);
+            a1.as_function()?
+                .call(this, [env.string("I am from rust world.")?.value()])?;
 
             env.async_work_state(
                 "my-test-async-task",
