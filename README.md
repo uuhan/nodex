@@ -78,7 +78,7 @@ obj.set_property(name, env.null()?)?;
 
 // Function
 let func: JsFunction = env.func(move |this| {
-    this.undefined()
+    this.value()
 })?;
 ```
 
@@ -101,7 +101,7 @@ obj.define_properties(&[
 env.async_work(
     env,
     "my-test-async-task",
-    move |_| {
+    move || {
         println!("execute async task");
     },
     move |_, status| {
@@ -114,7 +114,7 @@ env.async_work(
 env.async_work_state(
     "my-test-async-task",
     0,
-    move |_, idx| {
+    move |idx| {
         *idx += 1;
         println!("execute async task");
     },
