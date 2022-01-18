@@ -31,6 +31,8 @@ crate-type = ["cdylib"]
 nodex-api = "0.1.0-alpha.6"
 ```
 
+The default napi version is set to v1, you can use other version with your need.
+
 ## Examples
 
 ### Init Module
