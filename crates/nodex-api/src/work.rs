@@ -3,11 +3,11 @@ use crate::{api, prelude::*};
 type DataPointer = *mut std::ffi::c_void;
 
 #[derive(Clone, Debug)]
-pub struct NapiAsyncWork(NapiEnv, napi_async_work);
+pub struct NapiAsyncWork(NapiEnv, napi_async_work, bool);
 
 impl NapiAsyncWork {
     pub(crate) fn from_value(env: NapiEnv, work: napi_async_work) -> NapiAsyncWork {
-        NapiAsyncWork(env, work)
+        NapiAsyncWork(env, work, false)
     }
 
     pub fn env(&self) -> NapiEnv {
@@ -72,18 +72,25 @@ impl NapiAsyncWork {
             Box::into_raw(pair) as _,
         );
 
-        Ok(NapiAsyncWork(env, work))
+        Ok(NapiAsyncWork(env, work, false))
     }
 
     /// This API requests that the previously allocated work be scheduled for execution. Once it
     /// returns successfully, this API must not be called again with the same napi_async_work item
     /// or the result will be undefined.
-    pub fn queue(&self) -> NapiResult<()> {
-        Ok(napi_call!(
-            napi_queue_async_work,
-            self.env().raw(),
-            self.raw(),
-        ))
+    ///
+    /// NB: The `NapiAsyncWork` can not be queued more than once.
+    pub fn queue(&mut self) -> NapiResult<()> {
+        if !self.2 {
+            self.2 = true;
+            Ok(napi_call!(
+                napi_queue_async_work,
+                self.env().raw(),
+                self.raw(),
+            ))
+        } else {
+            Err(NapiStatus::GenericFailure)
+        }
     }
 
     /// This API cancels queued work if it has not yet been started. If it has already

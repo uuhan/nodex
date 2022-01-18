@@ -45,7 +45,7 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
             .build()?,
     ])?;
 
-    let work = NapiAsyncWork::new(
+    let mut work = NapiAsyncWork::new(
         env,
         "my-test-async-task",
         |_| {
