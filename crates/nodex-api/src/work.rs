@@ -159,11 +159,7 @@ impl NapiAsyncWork {
     pub fn queue(&mut self) -> NapiResult<()> {
         if !self.2 {
             self.2 = true;
-            napi_call!(
-                napi_queue_async_work,
-                self.env().raw(),
-                self.raw(),
-            );
+            napi_call!(napi_queue_async_work, self.env().raw(), self.raw(),);
             Ok(())
         } else {
             Err(NapiStatus::GenericFailure)
@@ -178,22 +174,14 @@ impl NapiAsyncWork {
     ///
     /// This API can be called even if there is a pending JavaScript exception.
     pub fn cancel(&self) -> NapiResult<()> {
-        napi_call!(
-            napi_cancel_async_work,
-            self.env().raw(),
-            self.raw(),
-        );
+        napi_call!(napi_cancel_async_work, self.env().raw(), self.raw(),);
         Ok(())
     }
 
     /// This API frees a previously allocated work object.
     /// This API can be called even if there is a pending JavaScript exception.
     pub fn delete(&self) -> NapiResult<()> {
-        napi_call!(
-            napi_delete_async_work,
-            self.env().raw(),
-            self.raw(),
-        );
+        napi_call!(napi_delete_async_work, self.env().raw(), self.raw(),);
         Ok(())
     }
 }
