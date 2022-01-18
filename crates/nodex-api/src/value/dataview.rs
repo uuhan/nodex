@@ -10,8 +10,4 @@ impl JsDataView {
     }
 }
 
-impl NapiValueT for JsDataView {
-    fn value(&self) -> JsValue {
-        self.0
-    }
-}
+napi_value_t!(JsDataView);

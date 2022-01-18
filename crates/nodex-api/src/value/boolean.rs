@@ -24,8 +24,4 @@ impl JsBoolean {
     }
 }
 
-impl NapiValueT for JsBoolean {
-    fn value(&self) -> JsValue {
-        self.0
-    }
-}
+napi_value_t!(JsBoolean);

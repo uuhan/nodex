@@ -27,8 +27,4 @@ impl JsDate {
     }
 }
 
-impl NapiValueT for JsDate {
-    fn value(&self) -> JsValue {
-        self.0
-    }
-}
+napi_value_t!(JsDate);

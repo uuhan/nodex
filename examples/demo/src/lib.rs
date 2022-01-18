@@ -9,9 +9,6 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     let mut times = 0;
 
     let label = "func";
-
-    // env.context("my-async-context")?;
-
     let name = env.string(label)?;
     let symbol = env.symbol()?;
 
@@ -23,9 +20,7 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
             this.value()
         })?,
     )?;
-
     obj.set_property(symbol, env.double(100.)?)?;
-
     assert_eq!(label, name.get()?);
 
     let version = env.node_version()?;
@@ -39,7 +34,6 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     );
 
     exports.set_named_property("a", env.string("b")?)?;
-
     exports.define_properties(&[
         DescriptorBuilder::new()
             .with_utf8name("utils")
@@ -50,6 +44,30 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
             .with_value(env.double(100.)?)
             .build()?,
     ])?;
+
+    env.async_work(
+        "my-test-async-task",
+        move |_| {
+            println!("execute async task");
+        },
+        move |_, status| {
+            println!("[{}] complete async task", status);
+        },
+    )?
+    .queue()?;
+
+    env.async_work_state(
+        "my-test-async-task",
+        0,
+        move |_, idx| {
+            *idx += 1;
+            println!("execute async task");
+        },
+        move |_, status, idx| {
+            println!("[{}] complete async task: {}", status, idx);
+        },
+    )?
+    .queue()?;
 
     Ok(())
 }

@@ -10,8 +10,4 @@ impl JsTypedArray {
     }
 }
 
-impl NapiValueT for JsTypedArray {
-    fn value(&self) -> JsValue {
-        self.0
-    }
-}
+napi_value_t!(JsTypedArray);

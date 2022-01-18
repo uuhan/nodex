@@ -25,6 +25,10 @@ impl JsArray {
 }
 
 impl NapiValueT for JsArray {
+    fn from_raw(env: NapiEnv, value: napi_value) -> Self {
+        JsArray(JsValue::from_raw(env, value))
+    }
+
     fn value(&self) -> JsValue {
         self.0
     }

@@ -59,8 +59,4 @@ impl JsArrayBuffer {
     }
 }
 
-impl NapiValueT for JsArrayBuffer {
-    fn value(&self) -> JsValue {
-        self.0
-    }
-}
+napi_value_t!(JsArrayBuffer);

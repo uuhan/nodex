@@ -28,70 +28,103 @@ It is in a very early stage and heavy development is making.
 crate-type = ["cdylib"]
 
 [dependencies]
-nodex-api = "0.1.0-alpha.5"
+nodex-api = "0.1.0-alpha.6"
 ```
 
 ## Examples
 
 ### Init Module
 
+simply define you module by:
+
 ```rust
 use nodex_api::prelude::*;
-
 nodex_api::napi_module!(init);
-
-fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
-    nodex_api::napi_guard!(env.napi_version()?);
-
-    let mut obj = env.object()?;
-    let mut times = 0;
-
-    let label = "func";
-
-    // env.context("my-async-context")?;
-
-    let name = env.string(label)?;
-    let symbol = env.symbol()?;
-
-    obj.set_property(
-        name,
-        env.func(move |this| {
-            times += 1;
-            println!("[{}] called", times);
-            this.value()
-        })?,
-    )?;
-
-    obj.set_property(symbol, env.double(100.)?)?;
-
-    assert_eq!(label, name.get()?);
-
-    let version = env.node_version()?;
-    println!(
-        "{}.{}.{}-{} {}",
-        version.major,
-        version.minor,
-        version.patch,
-        unsafe { std::ffi::CStr::from_ptr(version.release).to_str().unwrap() },
-        env.napi_version()?,
-    );
-
-    exports.set_property(env.string("a")?, env.string("b")?)?;
-
-    exports.define_properties(&[
-        DescriptorBuilder::new()
-            .with_name(env.string("utils")?)
-            .with_value(obj)
-            .build()?,
-        DescriptorBuilder::new()
-            .with_name(env.string("key1")?)
-            .with_value(env.double(100.)?)
-            .build()?,
-    ])?;
-
+fn init(env: NapiEnv, exports: JsObject) -> NapiResult<()> {
     Ok(())
 }
 ```
+
+### Version Guard
+
+check if the node api version is not less than your addon:
+
+```rust
+nodex_api::napi_guard!(env.napi_version()?);
+```
+
+### Nodejs Version & Napi Version
+
+get the runtime version:
+
+```rust
+let node_version = env.node_version()?;
+let napi_version = env.napi_version()?;
+```
+
+### Define Js Variable
+
+```rust
+// String & Symbol
+let label: JsSymbol = env.symbol()?;
+let name: JsString = env.string("")?;
+
+// Object
+let mut obj: JsObject = env.object()?;
+obj.set_property(name, env.null()?)?;
+
+// Function
+let func: JsFunction = env.func(move |this| {
+    this.undefined()
+})?;
+```
+
+### Set Property Descriptor
+
+```rust
+let mut obj: JsObject = env.object()?;
+obj.define_properties(&[
+    DescriptorBuilder::new()
+        .with_name(env.string("utils")?)
+        .with_value(env.double(100.)?)
+        .build()?,
+])?;
+```
+
+### Create An Async Work
+
+```rust
+// without shared state
+env.async_work(
+    env,
+    "my-test-async-task",
+    move |_| {
+        println!("execute async task");
+    },
+    move |_, status| {
+        println!("[{}] complete async task", status);
+    },
+)?
+.queue()?;
+
+// with shared state
+env.async_work_state(
+    "my-test-async-task",
+    0,
+    move |_, idx| {
+        *idx += 1;
+        println!("execute async task");
+    },
+    move |_, status, idx| {
+        println!("[{}] complete async task: {}", status, idx);
+    },
+)?
+.queue()?;
+```
+
+### More
+
+[examples/demo](./examples/demo)
 
 Run:
 

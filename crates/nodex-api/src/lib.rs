@@ -106,6 +106,7 @@ pub mod descriptor;
 pub mod env;
 mod error;
 pub mod handle;
+pub mod reference;
 pub mod rt;
 pub mod value;
 pub mod work;
@@ -140,7 +141,7 @@ pub mod prelude {
     pub use api::{
         napi_async_context, napi_async_work, napi_callback, napi_callback_info, napi_deferred,
         napi_env, napi_escapable_handle_scope, napi_handle_scope, napi_property_descriptor,
-        napi_value,
+        napi_ref, napi_value,
     };
 }
 

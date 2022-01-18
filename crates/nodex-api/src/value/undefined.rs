@@ -16,8 +16,4 @@ impl JsUndefined {
     }
 }
 
-impl NapiValueT for JsUndefined {
-    fn value(&self) -> JsValue {
-        self.0
-    }
-}
+napi_value_t!(JsUndefined);

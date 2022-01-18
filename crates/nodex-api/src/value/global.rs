@@ -15,8 +15,4 @@ impl JsGlobal {
     }
 }
 
-impl NapiValueT for JsGlobal {
-    fn value(&self) -> JsValue {
-        self.0
-    }
-}
+napi_value_t!(JsGlobal);
