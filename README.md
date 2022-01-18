@@ -28,7 +28,7 @@ It is in a very early stage and heavy development is making.
 crate-type = ["cdylib"]
 
 [dependencies]
-nodex-api = "0.1.0-alpha.5"
+nodex-api = "0.1.0-alpha.6"
 ```
 
 ## Examples
@@ -83,10 +83,10 @@ let func: JsFunction = env.func(move |this| {
 
 ```rust
 let mut obj: JsObject = env.object()?;
-exports.define_properties(&[
+obj.define_properties(&[
     DescriptorBuilder::new()
         .with_name(env.string("utils")?)
-        .with_value(obj)
+        .with_value(env.double(100.)?)
         .build()?,
 ])?;
 ```
@@ -95,7 +95,7 @@ exports.define_properties(&[
 
 ```rust
 // without shared state
-NapiAsyncWork::new(
+env.async_work(
     env,
     "my-test-async-task",
     move |_| {
@@ -108,8 +108,7 @@ NapiAsyncWork::new(
 .queue()?;
 
 // with shared state
-NapiAsyncWork::state(
-    env,
+env.async_work_state(
     "my-test-async-task",
     0,
     move |_, idx| {

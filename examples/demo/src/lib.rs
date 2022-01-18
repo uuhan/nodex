@@ -45,8 +45,7 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
             .build()?,
     ])?;
 
-    NapiAsyncWork::new(
-        env,
+    env.async_work(
         "my-test-async-task",
         move |_| {
             println!("execute async task");
@@ -57,8 +56,7 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     )?
     .queue()?;
 
-    NapiAsyncWork::state(
-        env,
+    env.async_work_state(
         "my-test-async-task",
         0,
         move |_, idx| {
