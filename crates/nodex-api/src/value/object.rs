@@ -131,8 +131,4 @@ impl JsObject {
     }
 }
 
-impl NapiValueT for JsObject {
-    fn value(&self) -> JsValue {
-        self.0
-    }
-}
+napi_value_t!(JsObject);

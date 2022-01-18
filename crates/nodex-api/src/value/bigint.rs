@@ -12,8 +12,4 @@ impl JsBigInt {
     // TODO: [napi](https://nodejs.org/api/n-api.html)
 }
 
-impl NapiValueT for JsBigInt {
-    fn value(&self) -> JsValue {
-        self.0
-    }
-}
+napi_value_t!(JsBigInt);

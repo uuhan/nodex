@@ -2,29 +2,25 @@ use crate::{api, prelude::*};
 use std::{marker::PhantomData, mem::MaybeUninit};
 
 #[derive(Clone, Debug)]
-pub struct NapiAsyncWork {
-    env: NapiEnv,
-    work: napi_async_work,
-}
+pub struct NapiAsyncWork(NapiEnv, napi_async_work);
 
 impl NapiAsyncWork {
     pub(crate) fn from_value(env: NapiEnv, work: napi_async_work) -> NapiAsyncWork {
-        NapiAsyncWork { env, work }
+        NapiAsyncWork(env, work)
     }
 
     pub fn env(&self) -> NapiEnv {
-        self.env
+        self.0
     }
 
     pub fn raw(&self) -> napi_async_work {
-        self.work
+        self.1
     }
 
     /// This API allocates a work object that is used to execute logic asynchronously. It should be freed using napi_delete_async_work once the work is no longer required.
     /// async_resource_name should be a null-terminated, UTF-8-encoded string.
     /// The async_resource_name identifier is provided by the user and should be representative of the type of async work being performed. It is also recommended to apply namespacing to the identifier, e.g. by including the module name. See the async_hooks documentation for more information.
     pub fn new(env: NapiEnv, name: impl AsRef<str>) -> NapiResult<NapiAsyncWork> {
-        // TODO: nodejs async work
         let work = unsafe {
             let mut result = MaybeUninit::uninit();
             let status = api::napi_create_async_work(
@@ -44,6 +40,6 @@ impl NapiAsyncWork {
             result.assume_init()
         };
 
-        Ok(NapiAsyncWork { env, work })
+        Ok(NapiAsyncWork(env, work))
     }
 }

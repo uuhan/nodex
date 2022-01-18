@@ -9,6 +9,10 @@ impl JsPromise {
         JsPromise(value, deferred)
     }
 
+    pub fn env(&self) -> NapiEnv {
+        self.0.env()
+    }
+
     /// This API creates a deferred object and a JavaScript promise.
     pub fn new(env: NapiEnv) -> NapiResult<JsPromise> {
         let mut deferred = MaybeUninit::uninit();
@@ -56,11 +60,5 @@ impl JsPromise {
             rejection.raw()
         );
         Ok(())
-    }
-}
-
-impl NapiValueT for JsPromise {
-    fn value(&self) -> JsValue {
-        self.0
     }
 }

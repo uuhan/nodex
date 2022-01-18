@@ -56,3 +56,31 @@ macro_rules! napi_guard {
         );
     };
 }
+
+#[macro_export]
+macro_rules! napi_from_raw {
+    ($T:ident) => {
+        fn from_raw(env: $crate::env::NapiEnv, raw: $crate::api::napi_value) -> $T {
+            $T($crate::value::JsValue(env, raw))
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! napi_get_value {
+    ($T:ident) => {
+        fn value(&self) -> $crate::value::JsValue {
+            self.0
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! napi_value_t {
+    ($T:ident) => {
+        impl $crate::value::NapiValueT for $T {
+            napi_from_raw!($T);
+            napi_get_value!($T);
+        }
+    };
+}

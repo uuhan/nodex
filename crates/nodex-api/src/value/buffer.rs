@@ -10,8 +10,4 @@ impl JsBuffer {
     }
 }
 
-impl NapiValueT for JsBuffer {
-    fn value(&self) -> JsValue {
-        self.0
-    }
-}
+napi_value_t!(JsBuffer);

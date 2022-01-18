@@ -5,11 +5,6 @@ use std::mem::MaybeUninit;
 pub struct JsValue(pub(crate) NapiEnv, pub(crate) napi_value);
 
 impl JsValue {
-    /// create `JsValue` from raw napi_value
-    pub fn from_raw(env: NapiEnv, value: napi_value) -> JsValue {
-        JsValue(env, value)
-    }
-
     /// `NapiEnv` of this `JsValue`
     pub fn env(&self) -> NapiEnv {
         self.0
@@ -244,18 +239,25 @@ impl JsValue {
 }
 
 impl NapiValueT for JsValue {
+    fn from_raw(env: NapiEnv, value: napi_value) -> JsValue {
+        JsValue(env, value)
+    }
+
     fn value(&self) -> JsValue {
-        JsValue::from_raw(self.env(), self.raw())
+        *self
     }
 }
 
 pub trait NapiValueT {
+    /// construct value from raw pointer
+    fn from_raw(env: NapiEnv, value: napi_value) -> Self;
+
     /// inner value
     fn value(&self) -> JsValue;
 
     /// napi_value type cast
     fn cast<T: NapiValueT>(&self) -> T {
-        todo!()
+        T::from_raw(self.env(), self.raw())
     }
 
     /// the `NapiEnv` of current value

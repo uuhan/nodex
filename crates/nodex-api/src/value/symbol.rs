@@ -23,8 +23,4 @@ impl JsSymbol {
     }
 }
 
-impl NapiValueT for JsSymbol {
-    fn value(&self) -> JsValue {
-        self.0
-    }
-}
+napi_value_t!(JsSymbol);

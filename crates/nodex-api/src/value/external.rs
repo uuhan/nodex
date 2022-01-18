@@ -70,6 +70,10 @@ impl<T> JsExternal<T> {
 }
 
 impl<T> NapiValueT for JsExternal<T> {
+    fn from_raw(env: NapiEnv, raw: napi_value) -> JsExternal<T> {
+        JsExternal(JsValue(env, raw), PhantomData)
+    }
+
     fn value(&self) -> JsValue {
         self.0
     }

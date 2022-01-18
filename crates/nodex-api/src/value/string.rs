@@ -63,11 +63,7 @@ impl JsString {
     }
 }
 
-impl NapiValueT for JsString {
-    fn value(&self) -> JsValue {
-        self.0
-    }
-}
+napi_value_t!(JsString);
 
 impl From<JsString> for String {
     fn from(js: JsString) -> String {
