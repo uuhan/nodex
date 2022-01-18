@@ -33,6 +33,7 @@ impl NapiAsyncWork {
     /// * `name` - napi async work identifier
     /// * `execute` - The native function which should be called to execute the logic asynchronously. The given function is called from a worker pool thread and can execute in parallel with the main event loop thread.
     /// * `complete` - The native function which will be called when the asynchronous logic is completed or is cancelled. The given function is called from the main event loop thread.
+    #[allow(clippy::type_complexity)]
     pub fn new(
         env: NapiEnv,
         name: impl AsRef<str>,
@@ -45,7 +46,7 @@ impl NapiAsyncWork {
                 let (execute, _): &mut (
                     Box<dyn FnMut(NapiEnv)>,
                     Box<dyn FnMut(NapiEnv, NapiStatus)>,
-                ) = std::mem::transmute(data);
+                ) = std::mem::transmute(&mut *(data as *mut _));
                 execute(env);
             }
         }
@@ -95,6 +96,7 @@ impl NapiAsyncWork {
     /// * `state` - The state shared between `execute` & `complete`
     /// * `execute` - The native function which should be called to execute the logic asynchronously. The given function is called from a worker pool thread and can execute in parallel with the main event loop thread.
     /// * `complete` - The native function which will be called when the asynchronous logic is completed or is cancelled. The given function is called from the main event loop thread.
+    #[allow(clippy::type_complexity)]
     pub fn state<T>(
         env: NapiEnv,
         name: impl AsRef<str>,
@@ -109,7 +111,7 @@ impl NapiAsyncWork {
                     Box<dyn FnMut(NapiEnv, &mut T)>,
                     Box<dyn FnMut(NapiEnv, NapiStatus, &mut T)>,
                     T,
-                ) = std::mem::transmute(data);
+                ) = std::mem::transmute(&mut *(data as *mut _));
                 execute(env, state);
             }
         }
@@ -157,11 +159,12 @@ impl NapiAsyncWork {
     pub fn queue(&mut self) -> NapiResult<()> {
         if !self.2 {
             self.2 = true;
-            Ok(napi_call!(
+            napi_call!(
                 napi_queue_async_work,
                 self.env().raw(),
                 self.raw(),
-            ))
+            );
+            Ok(())
         } else {
             Err(NapiStatus::GenericFailure)
         }
@@ -175,20 +178,22 @@ impl NapiAsyncWork {
     ///
     /// This API can be called even if there is a pending JavaScript exception.
     pub fn cancel(&self) -> NapiResult<()> {
-        Ok(napi_call!(
+        napi_call!(
             napi_cancel_async_work,
             self.env().raw(),
             self.raw(),
-        ))
+        );
+        Ok(())
     }
 
     /// This API frees a previously allocated work object.
     /// This API can be called even if there is a pending JavaScript exception.
     pub fn delete(&self) -> NapiResult<()> {
-        Ok(napi_call!(
+        napi_call!(
             napi_delete_async_work,
             self.env().raw(),
             self.raw(),
-        ))
+        );
+        Ok(())
     }
 }
