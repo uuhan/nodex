@@ -135,6 +135,7 @@ pub mod prelude {
     pub use context::NapiAsyncContext;
     pub use descriptor::{DescriptorBuilder, NapiPropertyDescriptor};
     pub use handle::NapiHandleScope;
+    pub use reference::NapiRef;
     pub use value::*;
     pub use work::NapiAsyncWork;
 

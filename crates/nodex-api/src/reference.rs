@@ -10,7 +10,7 @@ impl NapiRef {
 
     /// This API creates a new reference with the specified reference count to the Object passed
     /// in.
-    pub fn new(value: JsValue, count: u32) -> NapiResult<NapiRef> {
+    pub fn new<T: NapiValueT>(value: T, count: u32) -> NapiResult<NapiRef> {
         let reference = napi_call!(
             =napi_create_reference,
             value.env().raw(),
@@ -35,7 +35,7 @@ impl NapiRef {
 
     /// If still valid, this API returns the napi_value representing the JavaScript Object
     /// associated with the napi_ref. Otherwise, result will be NULL.
-    pub fn deref<T: NapiValueT>(&mut self) -> NapiResult<T> {
+    pub fn deref<T: NapiValueT>(&self) -> NapiResult<T> {
         let value = napi_call!(=napi_get_reference_value, self.0.raw(), self.1);
         Ok(T::from_raw(self.0, value))
     }
