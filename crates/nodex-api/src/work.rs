@@ -42,10 +42,8 @@ impl NapiAsyncWork {
     ) -> NapiResult<NapiAsyncWork> {
         extern "C" fn napi_async_execute_callback(env: napi_env, data: DataPointer) {
             unsafe {
-                let (execute, _): &mut (
-                    Box<dyn FnMut()>,
-                    Box<dyn FnMut(NapiEnv, NapiStatus)>,
-                ) = std::mem::transmute(&mut *(data as *mut _));
+                let (execute, _): &mut (Box<dyn FnMut()>, Box<dyn FnMut(NapiEnv, NapiStatus)>) =
+                    std::mem::transmute(&mut *(data as *mut _));
                 execute();
             }
         }
