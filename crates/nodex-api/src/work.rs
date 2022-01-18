@@ -177,8 +177,12 @@ impl NapiAsyncWork {
 
     /// This API frees a previously allocated work object.
     /// This API can be called even if there is a pending JavaScript exception.
-    pub fn delete(&self) -> NapiResult<()> {
-        napi_call!(napi_delete_async_work, self.env().raw(), self.raw(),);
+    ///
+    /// NB: should not delete a queued task.
+    pub fn delete(self) -> NapiResult<()> {
+        if !self.2 {
+            napi_call!(napi_delete_async_work, self.env().raw(), self.raw(),);
+        }
         Ok(())
     }
 }

@@ -70,7 +70,7 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     )?
     .queue()?;
 
-    env.async_work_state(
+    let mut work = env.async_work_state(
         "my-test-async-task",
         0,
         move |idx| {
@@ -78,10 +78,15 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
             println!("execute async task");
         },
         move |_, status, idx| {
-            println!("[{}] complete async task: {}", status, idx);
+            if status == NapiStatus::Cancelled {
+                println!("[{}] task cancelled", status);
+            } else {
+                println!("[{}] complete async task: {}", status, idx);
+            }
         },
-    )?
-    .queue()?;
+    )?;
+
+    work.queue()?;
 
     Ok(())
 }
