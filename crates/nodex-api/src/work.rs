@@ -1,5 +1,6 @@
 use crate::{api, prelude::*};
-use std::{marker::PhantomData, mem::MaybeUninit};
+
+type DataPointer = *mut std::ffi::c_void;
 
 #[derive(Clone, Debug)]
 pub struct NapiAsyncWork(NapiEnv, napi_async_work);
@@ -17,18 +18,58 @@ impl NapiAsyncWork {
         self.1
     }
 
-    /// This API allocates a work object that is used to execute logic asynchronously. It should be freed using napi_delete_async_work once the work is no longer required.
+    /// This API allocates a work object that is used to execute logic asynchronously.
+    /// It should be freed using napi_delete_async_work once the work is no longer required.
     /// async_resource_name should be a null-terminated, UTF-8-encoded string.
-    /// The async_resource_name identifier is provided by the user and should be representative of the type of async work being performed. It is also recommended to apply namespacing to the identifier, e.g. by including the module name. See the async_hooks documentation for more information.
-    pub fn new(env: NapiEnv, name: impl AsRef<str>) -> NapiResult<NapiAsyncWork> {
+    ///
+    /// The async_resource_name identifier is provided by the user and should be representative
+    /// of the type of async work being performed. It is also recommended to apply namespacing
+    /// to the identifier, e.g. by including the module name. See the async_hooks documentation
+    /// for more information.
+    ///
+    /// # Arguments
+    ///
+    /// * `execute` - The native function which should be called to execute the logic asynchronously. The given function is called from a worker pool thread and can execute in parallel with the main event loop thread.
+    /// * `complete` - The native function which will be called when the asynchronous logic is completed or is cancelled. The given function is called from the main event loop thread.
+    pub fn new(
+        env: NapiEnv,
+        name: impl AsRef<str>,
+        execute: impl Fn(NapiEnv),
+        complete: impl Fn(NapiEnv, NapiStatus),
+    ) -> NapiResult<NapiAsyncWork> {
+        extern "C" fn napi_async_execute_callback(env: napi_env, data: DataPointer) {
+            unsafe {
+                let env = NapiEnv::from_raw(env);
+                let (execute, _): &mut (Box<dyn Fn(NapiEnv)>, Box<dyn Fn(NapiEnv, NapiStatus)>) =
+                    std::mem::transmute(data);
+                execute(env);
+            }
+        }
+        extern "C" fn napi_async_complete_callback(
+            env: napi_env,
+            status: NapiStatus,
+            data: DataPointer,
+        ) {
+            unsafe {
+                let env = NapiEnv::from_raw(env);
+                let pair: Box<(Box<dyn Fn(NapiEnv)>, Box<dyn Fn(NapiEnv, NapiStatus)>)> =
+                    Box::from_raw(data as _);
+                let mut complete = pair.1;
+                complete(env, status);
+            }
+        }
+
+        let pair: Box<(Box<dyn Fn(NapiEnv)>, Box<dyn Fn(NapiEnv, NapiStatus)>)> =
+            Box::new((Box::new(execute), Box::new(complete)));
+
         let work = napi_call!(
             =napi_create_async_work,
             env.raw(),
             env.object()?.raw(),
             env.string(name)?.raw(),
-            None,
-            None,
-            std::ptr::null_mut(),
+            Some(napi_async_execute_callback),
+            Some(napi_async_complete_callback),
+            Box::into_raw(pair) as _,
         );
 
         Ok(NapiAsyncWork(env, work))
