@@ -78,7 +78,9 @@ obj.set_property(name, env.null()?)?;
 
 // Function
 let func: JsFunction = env.func(move |this, [a1, a2, a3]| {
-    Ok(this.value())
+    let env = this.env();
+    let r = a1.as_function()?.call(this, [env.string("I am from rust world.")?.value()])?;
+    Ok(r)
 })?;
 ```
 

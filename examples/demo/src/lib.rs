@@ -17,7 +17,8 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
         env.func(move |this, [a1]| {
             let env = this.env();
 
-            a1.as_function()?
+            let r = a1
+                .as_function()?
                 .call(this, [env.string("I am from rust world.")?.value()])?;
 
             env.async_work_state(
@@ -40,7 +41,7 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
             times += 1;
             println!("[{}] called", times);
-            Ok(this.value())
+            Ok(r)
         })?,
     )?;
     obj.set_property(symbol, env.double(100.)?)?;
