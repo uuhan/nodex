@@ -124,7 +124,7 @@ impl NapiEnv {
     pub fn async_work(
         &self,
         name: impl AsRef<str>,
-        execute: impl FnMut(NapiEnv),
+        execute: impl FnMut(),
         complete: impl FnMut(NapiEnv, NapiStatus),
     ) -> NapiResult<NapiAsyncWork> {
         NapiAsyncWork::new(*self, name, execute, complete)
@@ -135,7 +135,7 @@ impl NapiEnv {
         &self,
         name: impl AsRef<str>,
         state: T,
-        execute: impl FnMut(NapiEnv, &mut T),
+        execute: impl FnMut(&mut T),
         complete: impl FnMut(NapiEnv, NapiStatus, &mut T),
     ) -> NapiResult<NapiAsyncWork> {
         NapiAsyncWork::state(*self, name, state, execute, complete)

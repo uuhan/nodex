@@ -45,13 +45,20 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
             .build()?,
     ])?;
 
+    let label = "my-task-async-work";
+
     env.async_work(
-        "my-test-async-task",
-        move |_| {
-            println!("execute async task");
+        label,
+        move || {
+            println!("execute async task1: {:?}", env.undefined().unwrap());
         },
-        move |_, status| {
-            println!("[{}] complete async task", status);
+        move |env, status| {
+            env.async_work(label, move || {
+                println!("execute async task2");
+            }, move |env2, status| {
+                println!("[{}] complete async task2: {:?} {:?}", status, env, env2);
+            }).unwrap().queue().unwrap();
+            println!("[{}] complete async task1", status);
         },
     )?
     .queue()?;
@@ -59,7 +66,7 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     env.async_work_state(
         "my-test-async-task",
         0,
-        move |_, idx| {
+        move |idx| {
             *idx += 1;
             println!("execute async task");
         },
