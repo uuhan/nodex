@@ -40,7 +40,7 @@ impl NapiAsyncWork {
         execute: impl FnMut(),
         complete: impl FnMut(NapiEnv, NapiStatus) -> NapiResult<()>,
     ) -> NapiResult<NapiAsyncWork> {
-        extern "C" fn napi_async_execute_callback(env: napi_env, data: DataPointer) {
+        extern "C" fn napi_async_execute_callback(env: NapiEnv, data: DataPointer) {
             unsafe {
                 let (execute, _): &mut (
                     Box<dyn FnMut()>,
@@ -50,12 +50,11 @@ impl NapiAsyncWork {
             }
         }
         extern "C" fn napi_async_complete_callback(
-            env: napi_env,
+            env: NapiEnv,
             status: NapiStatus,
             data: DataPointer,
         ) {
             unsafe {
-                let env = NapiEnv::from_raw(env);
                 let mut pair: Box<(
                     Box<dyn FnMut()>,
                     Box<dyn FnMut(NapiEnv, NapiStatus) -> NapiResult<()>>,
@@ -72,7 +71,7 @@ impl NapiAsyncWork {
 
         let work = napi_call!(
             =napi_create_async_work,
-            env.raw(),
+            env,
             env.object()?.raw(),
             env.string(name)?.raw(),
             Some(napi_async_execute_callback),
@@ -107,9 +106,8 @@ impl NapiAsyncWork {
         execute: impl FnMut(&mut T),
         complete: impl FnMut(NapiEnv, NapiStatus, &mut T) -> NapiResult<()>,
     ) -> NapiResult<NapiAsyncWork> {
-        extern "C" fn napi_async_execute_callback<T>(env: napi_env, data: DataPointer) {
+        extern "C" fn napi_async_execute_callback<T>(env: NapiEnv, data: DataPointer) {
             unsafe {
-                let env = NapiEnv::from_raw(env);
                 let (execute, _, state): &mut (
                     Box<dyn FnMut(&mut T)>,
                     Box<dyn FnMut(NapiEnv, NapiStatus, &mut T) -> NapiResult<()>>,
@@ -119,12 +117,11 @@ impl NapiAsyncWork {
             }
         }
         extern "C" fn napi_async_complete_callback<T>(
-            env: napi_env,
+            env: NapiEnv,
             status: NapiStatus,
             data: DataPointer,
         ) {
             unsafe {
-                let env = NapiEnv::from_raw(env);
                 let mut pair: Box<(
                     Box<dyn FnMut(&mut T)>,
                     Box<dyn FnMut(NapiEnv, NapiStatus, &mut T)>,
@@ -143,7 +140,7 @@ impl NapiAsyncWork {
 
         let work = napi_call!(
             =napi_create_async_work,
-            env.raw(),
+            env,
             env.object()?.raw(),
             env.string(name)?.raw(),
             Some(napi_async_execute_callback::<T>),
@@ -162,7 +159,7 @@ impl NapiAsyncWork {
     pub fn queue(&mut self) -> NapiResult<()> {
         if !self.2 {
             self.2 = true;
-            napi_call!(napi_queue_async_work, self.env().raw(), self.raw(),);
+            napi_call!(napi_queue_async_work, self.env(), self.raw(),);
             Ok(())
         } else {
             Err(NapiStatus::GenericFailure)
@@ -177,7 +174,7 @@ impl NapiAsyncWork {
     ///
     /// This API can be called even if there is a pending JavaScript exception.
     pub fn cancel(&self) -> NapiResult<()> {
-        napi_call!(napi_cancel_async_work, self.env().raw(), self.raw(),);
+        napi_call!(napi_cancel_async_work, self.env(), self.raw(),);
         Ok(())
     }
 
@@ -187,7 +184,7 @@ impl NapiAsyncWork {
     /// NB: should not delete a queued task.
     pub fn delete(self) -> NapiResult<()> {
         if !self.2 {
-            napi_call!(napi_delete_async_work, self.env().raw(), self.raw(),);
+            napi_call!(napi_delete_async_work, self.env(), self.raw(),);
         }
         Ok(())
     }

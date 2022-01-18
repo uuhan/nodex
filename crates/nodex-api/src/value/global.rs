@@ -10,7 +10,7 @@ impl JsGlobal {
 
     /// This API returns the global object.
     pub fn new(env: NapiEnv) -> NapiResult<JsGlobal> {
-        let value = napi_call!(=napi_get_global, env.raw());
+        let value = napi_call!(=napi_get_global, env);
         Ok(JsGlobal(JsValue::from_raw(env, value)))
     }
 }

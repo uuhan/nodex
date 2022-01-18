@@ -56,7 +56,7 @@ impl JsFunction {
     pub fn new(
         env: NapiEnv,
         name: Option<impl AsRef<str>>,
-        value: extern "C" fn(env: napi_env, info: napi_callback_info) -> napi_value,
+        value: extern "C" fn(env: NapiEnv, info: napi_callback_info) -> napi_value,
     ) -> NapiResult<JsFunction> {
         let (name, len) = if let Some(name) = name {
             (name.as_ref().as_ptr() as *const c_char, name.as_ref().len())
@@ -66,7 +66,7 @@ impl JsFunction {
 
         let value = napi_call!(
             =napi_create_function,
-            env.raw(),
+            env,
             name,
             len,
             Some(value),
@@ -100,7 +100,7 @@ impl JsFunction {
         // TODO: it just works but not very useful by current design
         // use the trampoline function to call into the closure
         extern "C" fn trampoline<T: NapiValueT, const N: usize>(
-            env: napi_env,
+            env: NapiEnv,
             info: napi_callback_info,
         ) -> napi_value {
             let mut argc = N;
@@ -108,11 +108,9 @@ impl JsFunction {
             let mut data = MaybeUninit::uninit();
             let mut this = MaybeUninit::uninit();
 
-            let env = NapiEnv::from_raw(env);
-
             let (argc, argv, this, mut func) = unsafe {
                 let status = api::napi_get_cb_info(
-                    env.raw(),
+                    env,
                     info,
                     &mut argc,
                     argv.as_mut_ptr(),
@@ -142,7 +140,7 @@ impl JsFunction {
 
         let value = napi_call!(
             =napi_create_function,
-            env.raw(),
+            env,
             name,
             len,
             Some(trampoline::<T, N>),
@@ -164,7 +162,7 @@ impl JsFunction {
     ) -> NapiResult<JsValue> {
         let value = napi_call!(
             =napi_call_function,
-            self.env().raw(),
+            self.env(),
             this.raw(),
             self.raw(),
             argv.len(),

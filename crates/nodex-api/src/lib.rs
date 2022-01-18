@@ -134,15 +134,15 @@ pub mod prelude {
     pub use args::*;
     pub use context::NapiAsyncContext;
     pub use descriptor::{DescriptorBuilder, NapiPropertyDescriptor};
-    pub use handle::NapiHandleScope;
+    pub use handle::{NapiEscapableHandleScope, NapiHandleScope};
     pub use reference::NapiRef;
     pub use value::*;
     pub use work::NapiAsyncWork;
 
     pub use api::{
-        napi_async_context, napi_async_work, napi_callback, napi_callback_info, napi_deferred,
-        napi_env, napi_escapable_handle_scope, napi_handle_scope, napi_property_descriptor,
-        napi_ref, napi_value,
+        napi_async_cleanup_hook_handle, napi_async_context, napi_async_work, napi_callback,
+        napi_callback_info, napi_deferred, napi_env, napi_escapable_handle_scope,
+        napi_handle_scope, napi_property_descriptor, napi_ref, napi_value,
     };
 }
 
@@ -164,6 +164,25 @@ pub const fn napi_version_guard() -> u32 {
     #[cfg(feature = "v1")]
     return 1;
     panic!("please select a napi version to use.")
+}
+
+/// The function call does not return, the process will be terminated.
+/// This API can be called even if there is a pending JavaScript exception.
+#[inline]
+pub fn fatal_error(msg: impl AsRef<str>, loc: Option<impl AsRef<str>>) {
+    let (loc, loc_len) = if let Some(loc) = loc {
+        (loc.as_ref().as_ptr() as *const _, loc.as_ref().len())
+    } else {
+        (std::ptr::null(), 0)
+    };
+    unsafe {
+        api::napi_fatal_error(
+            loc,
+            loc_len,
+            msg.as_ref().as_ptr() as *const _,
+            msg.as_ref().len(),
+        );
+    }
 }
 
 #[cfg(test)]

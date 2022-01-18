@@ -15,19 +15,9 @@ impl JsValue {
         self.1
     }
 
-    /// Returns napi_ok if the API succeeded.
-    /// - `napi_invalid_arg` if the type of value is not a known ECMAScript type and value is not an External value.
-    /// This API represents behavior similar to invoking the typeof Operator on the object as defined in Section 12.5.5 of the ECMAScript Language Specification. However, there are some differences:
-    /// It has support for detecting an External value.
-    /// It detects null as a separate type, while ECMAScript typeof would detect object.
-    /// If value has a type that is invalid, an error is returned.
-    pub fn value_type(&self) -> NapiResult<NapiValuetype> {
-        Ok(napi_call!(=napi_typeof, self.env().raw(), self.raw()))
-    }
-
     /// check if it is an object
     pub fn is_object(&self) -> NapiResult<bool> {
-        Ok(self.value_type()? == NapiValuetype::Object)
+        Ok(self.kind()? == NapiValuetype::Object)
     }
 
     /// view it as an object, may fail if it is not an object value
@@ -41,7 +31,7 @@ impl JsValue {
 
     /// check if it is a string
     pub fn is_string(&self) -> NapiResult<bool> {
-        Ok(self.value_type()? == NapiValuetype::String)
+        Ok(self.kind()? == NapiValuetype::String)
     }
 
     /// view it as a string, may fail if it is not a string value
@@ -55,7 +45,7 @@ impl JsValue {
 
     /// check if it is a symbol
     pub fn is_symbol(&self) -> NapiResult<bool> {
-        Ok(self.value_type()? == NapiValuetype::Symbol)
+        Ok(self.kind()? == NapiValuetype::Symbol)
     }
 
     /// view it as a symbol, may fail if it is not a symbol value
@@ -70,7 +60,7 @@ impl JsValue {
     /// This API represents invoking the IsArray operation on the object as defined in Section
     /// 7.2.2 of the ECMAScript Language Specification.
     pub fn is_array(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_array, self.env().raw(), self.raw()))
+        Ok(napi_call!(=napi_is_array, self.env(), self.raw()))
     }
 
     /// view it as an array, may fail if it is not an array value
@@ -84,7 +74,7 @@ impl JsValue {
 
     /// This API checks if the Object passed in is a typed array.
     pub fn is_typedarray(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_typedarray, self.env().raw(), self.raw()))
+        Ok(napi_call!(=napi_is_typedarray, self.env(), self.raw()))
     }
 
     /// view it as a typed_array, may fail if it is not a typed_array value
@@ -98,7 +88,7 @@ impl JsValue {
 
     /// This API checks if the Object passed in is an array buffer.
     pub fn is_arraybuffer(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_arraybuffer, self.env().raw(), self.raw()))
+        Ok(napi_call!(=napi_is_arraybuffer, self.env(), self.raw()))
     }
 
     /// view it as an array_buffer, may faile if it is not an array_buffer value
@@ -112,7 +102,7 @@ impl JsValue {
 
     /// This API checks if the Object passed in is a buffer.
     pub fn is_buffer(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_buffer, self.env().raw(), self.raw()))
+        Ok(napi_call!(=napi_is_buffer, self.env(), self.raw()))
     }
 
     /// view it as a buffer, may faile if it is not a buffer value
@@ -126,7 +116,7 @@ impl JsValue {
 
     /// This API checks if the Object passed in is a DataView.
     pub fn is_dataview(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_dataview, self.env().raw(), self.raw()))
+        Ok(napi_call!(=napi_is_dataview, self.env(), self.raw()))
     }
 
     /// view it as a dataview, may faile if it is not a dataview value
@@ -140,7 +130,7 @@ impl JsValue {
 
     /// check if it is an external
     pub fn is_external(&self) -> NapiResult<bool> {
-        Ok(self.value_type()? == NapiValuetype::External)
+        Ok(self.kind()? == NapiValuetype::External)
     }
 
     /// view it as an external, may fail if it is not an external value
@@ -154,7 +144,7 @@ impl JsValue {
 
     /// check if it is a function
     pub fn is_function(&self) -> NapiResult<bool> {
-        Ok(self.value_type()? == NapiValuetype::Function)
+        Ok(self.kind()? == NapiValuetype::Function)
     }
 
     /// view it as a number, may fail if it is not a number value
@@ -168,7 +158,7 @@ impl JsValue {
 
     /// check if it is a number
     pub fn is_number(&self) -> NapiResult<bool> {
-        Ok(self.value_type()? == NapiValuetype::Number)
+        Ok(self.kind()? == NapiValuetype::Number)
     }
 
     /// view it as a number, may fail if it is not a number value
@@ -182,7 +172,7 @@ impl JsValue {
 
     /// check if it is a bigint
     pub fn is_bigint(&self) -> NapiResult<bool> {
-        Ok(self.value_type()? == NapiValuetype::Bigint)
+        Ok(self.kind()? == NapiValuetype::Bigint)
     }
 
     /// view it as a bigint, may fail if it is not a bigint value
@@ -196,7 +186,7 @@ impl JsValue {
 
     /// check if it is a boolean
     pub fn is_boolean(&self) -> NapiResult<bool> {
-        Ok(self.value_type()? == NapiValuetype::Boolean)
+        Ok(self.kind()? == NapiValuetype::Boolean)
     }
 
     /// view it as a boolean, may fail if it is not a boolean value
@@ -211,7 +201,7 @@ impl JsValue {
     #[cfg(feature = "v5")]
     /// This API checks if the Object passed in is a date.
     pub fn is_date(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_date, self.env().raw(), self.raw()))
+        Ok(napi_call!(=napi_is_date, self.env(), self.raw()))
     }
 
     #[cfg(feature = "v5")]
@@ -225,16 +215,16 @@ impl JsValue {
     }
 
     pub fn is_null(&self) -> NapiResult<bool> {
-        Ok(self.value_type()? == NapiValuetype::Null)
+        Ok(self.kind()? == NapiValuetype::Null)
     }
 
     pub fn is_undefined(&self) -> NapiResult<bool> {
-        Ok(self.value_type()? == NapiValuetype::Undefined)
+        Ok(self.kind()? == NapiValuetype::Undefined)
     }
 
     /// This API checks if the Object passed in is a promise.
     pub fn is_promise(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_promise, self.env().raw(), self.raw()))
+        Ok(napi_call!(=napi_is_promise, self.env(), self.raw()))
     }
 }
 
@@ -258,6 +248,17 @@ pub trait NapiValueT {
     /// napi_value type cast
     fn cast<T: NapiValueT>(&self) -> T {
         T::from_raw(self.env(), self.raw())
+    }
+
+    /// Returns napi_ok if the API succeeded.
+    /// - `napi_invalid_arg` if the type of value is not a known ECMAScript type and value is not an External value.
+    /// This API represents behavior similar to invoking the typeof Operator on the object as defined in Section 12.5.5 of the ECMAScript Language Specification. However, there are some differences:
+    /// It has support for detecting an External value.
+    /// It detects null as a separate type, while ECMAScript typeof would detect object.
+    /// If value has a type that is invalid, an error is returned.
+    #[inline]
+    fn kind(&self) -> NapiResult<NapiValuetype> {
+        Ok(napi_call!(=napi_typeof, self.env(), self.raw()))
     }
 
     /// the `NapiEnv` of current value
@@ -285,6 +286,13 @@ pub trait NapiValueT {
         JsGlobal::new(self.env())
     }
 
+    /// value is throwable
+    #[inline]
+    fn throw(&self) -> NapiResult<()> {
+        napi_call!(napi_throw, self.env(), self.raw());
+        Ok(())
+    }
+
     /// This method allows the efficient definition of multiple properties on a given object. The
     /// properties are defined using property descriptors (see napi_property_descriptor). Given an
     /// array of such property descriptors, this API will set the properties on the object one at a
@@ -296,7 +304,7 @@ pub trait NapiValueT {
     ) -> NapiResult<()> {
         napi_call!(
             napi_define_properties,
-            self.env().raw(),
+            self.env(),
             self.raw(),
             properties.as_ref().len(),
             properties.as_ref().as_ptr() as *const _,
@@ -313,6 +321,7 @@ mod boolean;
 mod buffer;
 mod dataview;
 mod date;
+mod error;
 mod external;
 mod function;
 mod global;
@@ -332,6 +341,7 @@ pub use boolean::JsBoolean;
 pub use buffer::JsBuffer;
 pub use dataview::JsDataView;
 pub use date::JsDate;
+pub use error::JsError;
 pub use external::JsExternal;
 pub use function::JsFunction;
 pub use global::JsGlobal;

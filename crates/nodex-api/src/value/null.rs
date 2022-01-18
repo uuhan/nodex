@@ -11,7 +11,7 @@ impl JsNull {
 
     /// This API returns the null object.
     pub fn new(env: NapiEnv) -> NapiResult<JsNull> {
-        let value = napi_call!(=napi_get_null, env.raw());
+        let value = napi_call!(=napi_get_null, env);
         Ok(JsNull(JsValue::from_raw(env, value)))
     }
 }

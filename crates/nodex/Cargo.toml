@@ -1,6 +1,6 @@
 [package]
 name = "nodex"
-version = "0.1.0-alpha.1"
+version = "0.1.0-alpha.9"
 readme = "../../README.md"
 edition = "2021"
 repository = "https://github.com/uuhan/nodex"
@@ -11,4 +11,15 @@ description = "nodex for ease of creating nodejs native addon."
 
 [dependencies.nodex-api]
 path = "../nodex-api"
-version = "0.1.0-alpha.8"
+version = "0.1.0-alpha.9"
+
+[features]
+default = ["v1"]
+v1 = ["nodex-api/v1"]
+v2 = ["nodex-api/v2"]
+v3 = ["nodex-api/v3"]
+v4 = ["nodex-api/v4"]
+v5 = ["nodex-api/v5"]
+v6 = ["nodex-api/v6"]
+v7 = ["nodex-api/v7"]
+v8 = ["nodex-api/v8"]

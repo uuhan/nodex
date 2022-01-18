@@ -15,13 +15,13 @@ impl JsObject {
     }
 
     pub fn new(env: NapiEnv) -> NapiResult<JsObject> {
-        let value = napi_call!(=napi_create_object, env.raw());
+        let value = napi_call!(=napi_create_object, env);
         Ok(JsObject(JsValue::from_raw(env, value)))
     }
 
     /// This API gets the requested property from the Object passed in.
     pub fn get_property(&self, key: impl NapiValueT) -> NapiResult<JsValue> {
-        let value = napi_call!(=napi_get_property, self.env().raw(), self.raw(), key.raw());
+        let value = napi_call!(=napi_get_property, self.env(), self.raw(), key.raw());
         Ok(JsValue::from_raw(self.env(), value))
     }
 
@@ -31,7 +31,7 @@ impl JsObject {
         let name = CString::new(key.as_ref()).map_err(|_| NapiStatus::StringExpected)?;
         let value = napi_call!(
             =napi_get_named_property,
-            self.env().raw(),
+            self.env(),
             self.raw(),
             name.as_ptr(),
         );
@@ -42,7 +42,7 @@ impl JsObject {
     pub fn set_property(&mut self, key: impl NapiValueT, value: impl NapiValueT) -> NapiResult<()> {
         napi_call!(
             napi_set_property,
-            self.env().raw(),
+            self.env(),
             self.raw(),
             key.raw(),
             value.raw(),
@@ -60,7 +60,7 @@ impl JsObject {
         let name = CString::new(key.as_ref()).map_err(|_| NapiStatus::StringExpected)?;
         napi_call!(
             napi_set_named_property,
-            self.env().raw(),
+            self.env(),
             self.raw(),
             name.as_ptr(),
             value.raw(),
@@ -78,7 +78,7 @@ impl JsObject {
     ) -> NapiResult<bool> {
         Ok(napi_call!(
             =napi_has_own_property,
-            self.env().raw(),
+            self.env(),
             self.raw(),
             key.raw(),
         ))
@@ -88,7 +88,7 @@ impl JsObject {
     pub fn has_element(&mut self, index: u32) -> NapiResult<bool> {
         Ok(napi_call!(
             =napi_has_element,
-            self.env().raw(),
+            self.env(),
             self.raw(),
             index,
         ))
@@ -98,7 +98,7 @@ impl JsObject {
     pub fn get_element(&mut self, index: u32) -> NapiResult<JsValue> {
         let result = napi_call!(
             =napi_get_element,
-            self.env().raw(),
+            self.env(),
             self.raw(),
             index,
         );
@@ -110,7 +110,7 @@ impl JsObject {
     pub fn delete_element(&mut self, index: u32) -> NapiResult<bool> {
         Ok(napi_call!(
             =napi_delete_element,
-            self.env().raw(),
+            self.env(),
             self.raw(),
             index,
         ))
@@ -119,14 +119,14 @@ impl JsObject {
     #[cfg(feature = "v8")]
     #[doc = "Object.freeze()"]
     pub fn freeze(&mut self) -> NapiResult<()> {
-        napi_call!(napi_object_freeze, self.env().raw(), self.raw());
+        napi_call!(napi_object_freeze, self.env(), self.raw());
         Ok(())
     }
 
     #[cfg(feature = "v8")]
     #[doc = "Object.seal()"]
     pub fn seal(&mut self) -> NapiResult<()> {
-        napi_call!(napi_object_seal, self.env().raw(), self.raw());
+        napi_call!(napi_object_seal, self.env(), self.raw());
         Ok(())
     }
 }

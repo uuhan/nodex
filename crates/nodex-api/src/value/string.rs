@@ -27,7 +27,7 @@ impl JsString {
     pub fn utf8(env: NapiEnv, value: impl AsRef<str>) -> NapiResult<JsString> {
         let value = napi_call!(
             =napi_create_string_utf8,
-            env.raw(),
+            env,
             value.as_ref().as_ptr() as *const _,
             value.as_ref().len(),
         );
@@ -39,7 +39,7 @@ impl JsString {
     pub fn get_utf8(&self) -> NapiResult<String> {
         let size = napi_call!(
             =napi_get_value_string_utf8,
-            self.env().raw(),
+            self.env(),
             self.raw(),
             std::ptr::null_mut(),
             0,
@@ -48,7 +48,7 @@ impl JsString {
         let mut buffer = vec![0u8; size + 1];
         let size = napi_call!(
             =napi_get_value_string_utf8,
-            self.env().raw(),
+            self.env(),
             self.raw(),
             buffer.as_mut_ptr() as *mut _,
             // should contains the NULL terminator

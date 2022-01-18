@@ -11,7 +11,7 @@ impl JsUndefined {
 
     /// This API returns the Undefined object.
     pub fn new(env: NapiEnv) -> NapiResult<JsUndefined> {
-        let value = napi_call!(=napi_get_undefined, env.raw());
+        let value = napi_call!(=napi_get_undefined, env);
         Ok(JsUndefined(JsValue::from_raw(env, value)))
     }
 }

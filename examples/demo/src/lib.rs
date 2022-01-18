@@ -1,9 +1,9 @@
-use nodex_api::prelude::*;
+use nodex::prelude::*;
 
-nodex_api::napi_module!(init);
+nodex::napi_module!(init);
 
-fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
-    nodex_api::napi_guard!(env.napi_version()?);
+fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
+    nodex::napi_guard!(env.napi_version()?);
 
     let mut obj = env.object()?;
     let mut times = 0;
@@ -16,9 +16,9 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
         name,
         env.func(move |this, [a1]: [JsFunction; 1]| {
             let env = this.env();
-
-            let r = a1.call(this, [env.string("I am from rust world.")?]);
-            let result = match r {
+            let _scope = env.handle_scope()?;
+            let result = a1.call(this, [env.string("I am from rust world.")?]);
+            let result = match result {
                 Ok(result) => result,
                 Err(_) => env.undefined()?.value(),
             };
@@ -90,6 +90,20 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
         },
     )?
     .queue()?;
+
+    env.add_cleanup_hook(|| {
+        println!("clean hook fired");
+        Ok(())
+    })?;
+
+    let hook = env.add_cleanup_hook(|| {
+        println!("clean hook fired");
+        Ok(())
+    })?;
+
+    hook.remove()?;
+
+    if let Some(_hook) = env.add_async_cleanup_hook(|hook| hook.remove())? {}
 
     Ok(())
 }

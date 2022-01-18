@@ -16,14 +16,14 @@ impl<T> JsExternal<T> {
         // NB: first leak value.
         let value = Box::into_raw(Box::new(value));
 
-        unsafe extern "C" fn finalize<T>(_env: napi_env, data: *mut c_void, _hint: *mut c_void) {
+        unsafe extern "C" fn finalize<T>(_env: NapiEnv, data: *mut c_void, _hint: *mut c_void) {
             // NB: collect leaked value when the external value is being collected.
             Box::from_raw(data as *mut T);
         }
 
         let value = napi_call!(
             =napi_create_external,
-            env.raw(),
+            env,
             value as *mut c_void,
             Some(finalize::<T>),
             std::ptr::null_mut(),
@@ -59,7 +59,7 @@ impl<T> JsExternal<T> {
     pub fn get(&self) -> NapiResult<&T> {
         let value = napi_call!(
             =napi_get_value_external,
-            self.env().raw(),
+            self.env(),
             self.raw(),
         );
 

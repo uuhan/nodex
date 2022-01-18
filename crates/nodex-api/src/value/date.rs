@@ -14,7 +14,7 @@ impl JsDate {
     /// This API allocates a JavaScript Date object.
     /// JavaScript Date objects are described in Section 20.3 of the ECMAScript Language Specification.
     pub fn new(env: NapiEnv, time: f64) -> NapiResult<JsDate> {
-        let value = napi_call!(=napi_create_date, env.raw(), time);
+        let value = napi_call!(=napi_create_date, env, time);
         Ok(JsDate(JsValue::from_raw(env, value)))
     }
 
@@ -23,7 +23,7 @@ impl JsDate {
     /// Returns napi_ok if the API succeeded. If a non-date napi_value is passed in it returns napi_date_expected.
     /// This API returns the C double primitive of time value for the given JavaScript Date.
     pub fn get(&self) -> NapiResult<f64> {
-        Ok(napi_call!(=napi_get_date_value, self.env().raw(), self.raw()))
+        Ok(napi_call!(=napi_get_date_value, self.env(), self.raw()))
     }
 }
 
