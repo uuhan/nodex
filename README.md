@@ -28,7 +28,7 @@ It is in a very early stage and heavy development is making.
 crate-type = ["cdylib"]
 
 [dependencies.nodex-api]
-version = "0.1.0-alpha.6"
+version = "0.1.0-alpha.7"
 features = ["v8"]
 ```
 
@@ -77,8 +77,8 @@ let mut obj: JsObject = env.object()?;
 obj.set_property(name, env.null()?)?;
 
 // Function
-let func: JsFunction = env.func(move |this| {
-    this.value()
+let func: JsFunction = env.func(move |this, [a1, a2, a3]| {
+    Ok(this.value())
 })?;
 ```
 
@@ -106,6 +106,7 @@ env.async_work(
     },
     move |_, status| {
         println!("[{}] complete async task", status);
+        Ok(())
     },
 )?
 .queue()?;
@@ -120,6 +121,7 @@ env.async_work_state(
     },
     move |_, status, idx| {
         println!("[{}] complete async task: {}", status, idx);
+        Ok(())
     },
 )?
 .queue()?;

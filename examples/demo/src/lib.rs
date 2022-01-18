@@ -73,7 +73,7 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     env.async_work(
         label,
         move || {
-            println!("execute async task1: {:?}", env.undefined().unwrap());
+            println!("execute async task1");
         },
         move |env, status| {
             env.async_work(
