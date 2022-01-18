@@ -27,8 +27,9 @@ It is in a very early stage and heavy development is making.
 [lib]
 crate-type = ["cdylib"]
 
-[dependencies]
-nodex-api = "0.1.0-alpha.6"
+[dependencies.nodex-api]
+version = "0.1.0-alpha.6"
+features = ["v8"]
 ```
 
 The default napi version is set to v1, you can use other version with your need.
