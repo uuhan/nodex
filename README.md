@@ -28,11 +28,13 @@ It is in a very early stage and heavy development is making.
 crate-type = ["cdylib"]
 
 [dependencies.nodex-api]
-version = "0.1.0-alpha.7"
+version = "0.1.0-alpha.8"
 features = ["v8"]
 ```
 
 The default napi version is set to v1, you can use other version with your need.
+
+We have v1,v2,v3,...v8 versions.
 
 ## Examples
 
@@ -50,7 +52,7 @@ fn init(env: NapiEnv, exports: JsObject) -> NapiResult<()> {
 
 ### Version Guard
 
-check if the node api version is not less than your addon:
+make share the node api version is large or equal than your compiled addon's.
 
 ```rust
 nodex_api::napi_guard!(env.napi_version()?);
@@ -77,9 +79,15 @@ let mut obj: JsObject = env.object()?;
 obj.set_property(name, env.null()?)?;
 
 // Function
-let func: JsFunction = env.func(move |this, [a1, a2, a3]| {
+let func: JsFunction = env.func(move |this, [a1, a2, a3]: [JsValue; _]| {
     let env = this.env();
     let r = a1.as_function()?.call(this, [env.string("I am from rust world.")?.value()])?;
+    Ok(r)
+})?;
+
+let func: JsFunction = env.func(move |this, [a1]: [JsFunction; _]| {
+    let env = this.env();
+    let r = a1.call(this, [env.string("I am from rust world.")?.value()])?;
     Ok(r)
 })?;
 ```
@@ -104,9 +112,12 @@ env.async_work(
     env,
     "my-test-async-task",
     move || {
+        // you can do the hard work in the thread-pool context.
+        // NB: js work is not allowed here.
         println!("execute async task");
     },
     move |_, status| {
+        // you can do some js work in this context
         println!("[{}] complete async task", status);
         Ok(())
     },
