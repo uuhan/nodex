@@ -29,19 +29,23 @@ impl NapiAsyncWork {
     ///
     /// # Arguments
     ///
+    /// * `env` - napi_env
+    /// * `name` - napi async work identifier
     /// * `execute` - The native function which should be called to execute the logic asynchronously. The given function is called from a worker pool thread and can execute in parallel with the main event loop thread.
     /// * `complete` - The native function which will be called when the asynchronous logic is completed or is cancelled. The given function is called from the main event loop thread.
     pub fn new(
         env: NapiEnv,
         name: impl AsRef<str>,
-        execute: impl Fn(NapiEnv),
-        complete: impl Fn(NapiEnv, NapiStatus),
+        execute: impl FnMut(NapiEnv),
+        complete: impl FnMut(NapiEnv, NapiStatus),
     ) -> NapiResult<NapiAsyncWork> {
         extern "C" fn napi_async_execute_callback(env: napi_env, data: DataPointer) {
             unsafe {
                 let env = NapiEnv::from_raw(env);
-                let (execute, _): &mut (Box<dyn Fn(NapiEnv)>, Box<dyn Fn(NapiEnv, NapiStatus)>) =
-                    std::mem::transmute(data);
+                let (execute, _): &mut (
+                    Box<dyn FnMut(NapiEnv)>,
+                    Box<dyn FnMut(NapiEnv, NapiStatus)>,
+                ) = std::mem::transmute(data);
                 execute(env);
             }
         }
@@ -52,14 +56,14 @@ impl NapiAsyncWork {
         ) {
             unsafe {
                 let env = NapiEnv::from_raw(env);
-                let pair: Box<(Box<dyn Fn(NapiEnv)>, Box<dyn Fn(NapiEnv, NapiStatus)>)> =
+                let mut pair: Box<(Box<dyn FnMut(NapiEnv)>, Box<dyn FnMut(NapiEnv, NapiStatus)>)> =
                     Box::from_raw(data as _);
                 let mut complete = pair.1;
                 complete(env, status);
             }
         }
 
-        let pair: Box<(Box<dyn Fn(NapiEnv)>, Box<dyn Fn(NapiEnv, NapiStatus)>)> =
+        let pair: Box<(Box<dyn FnMut(NapiEnv)>, Box<dyn FnMut(NapiEnv, NapiStatus)>)> =
             Box::new((Box::new(execute), Box::new(complete)));
 
         let work = napi_call!(
@@ -69,6 +73,76 @@ impl NapiAsyncWork {
             env.string(name)?.raw(),
             Some(napi_async_execute_callback),
             Some(napi_async_complete_callback),
+            Box::into_raw(pair) as _,
+        );
+
+        Ok(NapiAsyncWork(env, work, false))
+    }
+
+    /// This API allocates a work object that is used to execute logic asynchronously.
+    /// It should be freed using napi_delete_async_work once the work is no longer required.
+    /// async_resource_name should be a null-terminated, UTF-8-encoded string.
+    ///
+    /// The async_resource_name identifier is provided by the user and should be representative
+    /// of the type of async work being performed. It is also recommended to apply namespacing
+    /// to the identifier, e.g. by including the module name. See the async_hooks documentation
+    /// for more information.
+    ///
+    /// # Arguments
+    ///
+    /// * `env` - napi_env
+    /// * `name` - napi async work identifier
+    /// * `state` - The state shared between `execute` & `complete`
+    /// * `execute` - The native function which should be called to execute the logic asynchronously. The given function is called from a worker pool thread and can execute in parallel with the main event loop thread.
+    /// * `complete` - The native function which will be called when the asynchronous logic is completed or is cancelled. The given function is called from the main event loop thread.
+    pub fn state<T>(
+        env: NapiEnv,
+        name: impl AsRef<str>,
+        state: T,
+        execute: impl FnMut(NapiEnv, &mut T),
+        complete: impl FnMut(NapiEnv, NapiStatus, &mut T),
+    ) -> NapiResult<NapiAsyncWork> {
+        extern "C" fn napi_async_execute_callback<T>(env: napi_env, data: DataPointer) {
+            unsafe {
+                let env = NapiEnv::from_raw(env);
+                let (execute, _, state): &mut (
+                    Box<dyn FnMut(NapiEnv, &mut T)>,
+                    Box<dyn FnMut(NapiEnv, NapiStatus, &mut T)>,
+                    T,
+                ) = std::mem::transmute(data);
+                execute(env, state);
+            }
+        }
+        extern "C" fn napi_async_complete_callback<T>(
+            env: napi_env,
+            status: NapiStatus,
+            data: DataPointer,
+        ) {
+            unsafe {
+                let env = NapiEnv::from_raw(env);
+                let mut pair: Box<(
+                    Box<dyn FnMut(NapiEnv, &mut T)>,
+                    Box<dyn FnMut(NapiEnv, NapiStatus, &mut T)>,
+                    T,
+                )> = Box::from_raw(data as _);
+                let mut complete = pair.1;
+                complete(env, status, &mut pair.2);
+            }
+        }
+
+        let pair: Box<(
+            Box<dyn FnMut(NapiEnv, &mut T)>,
+            Box<dyn FnMut(NapiEnv, NapiStatus, &mut T)>,
+            T,
+        )> = Box::new((Box::new(execute), Box::new(complete), state));
+
+        let work = napi_call!(
+            =napi_create_async_work,
+            env.raw(),
+            env.object()?.raw(),
+            env.string(name)?.raw(),
+            Some(napi_async_execute_callback::<T>),
+            Some(napi_async_complete_callback::<T>),
             Box::into_raw(pair) as _,
         );
 

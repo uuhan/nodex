@@ -45,18 +45,31 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
             .build()?,
     ])?;
 
-    let mut work = NapiAsyncWork::new(
+    NapiAsyncWork::new(
         env,
         "my-test-async-task",
-        |_| {
+        move |_| {
             println!("execute async task");
         },
-        |_, status| {
+        move |_, status| {
             println!("[{}] complete async task", status);
         },
-    )?;
+    )?
+    .queue()?;
 
-    work.queue()?;
+    NapiAsyncWork::state(
+        env,
+        "my-test-async-task",
+        0,
+        move |_, idx| {
+            *idx += 1;
+            println!("execute async task");
+        },
+        move |_, status, idx| {
+            println!("[{}] complete async task: {}", status, idx);
+        },
+    )?
+    .queue()?;
 
     Ok(())
 }
