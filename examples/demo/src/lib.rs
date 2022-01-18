@@ -1,9 +1,9 @@
-use nodex_api::prelude::*;
+use nodex::prelude::*;
 
-nodex_api::napi_module!(init);
+nodex::napi_module!(init);
 
 fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
-    nodex_api::napi_guard!(env.napi_version()?);
+    nodex::napi_guard!(env.napi_version()?);
 
     let mut obj = env.object()?;
     let mut times = 0;

@@ -4,11 +4,11 @@ macro_rules! napi_module {
     ($init:ident) => {
         #[no_mangle]
         pub unsafe extern "C" fn napi_register_module_v1(
-            env: nodex_api::api::napi_env,
-            exports: nodex_api::api::napi_value,
-        ) -> nodex_api::api::napi_value {
-            let exports = nodex_api::value::JsObject::napi_module_exports(env, exports);
-            let env = nodex_api::env::NapiEnv::from_raw(env);
+            env: $crate::api::napi_env,
+            exports: $crate::api::napi_value,
+        ) -> $crate::api::napi_value {
+            let exports = $crate::value::JsObject::napi_module_exports(env, exports);
+            let env = $crate::env::NapiEnv::from_raw(env);
 
             // TODO: deal with exception
             match std::panic::catch_unwind(|| $init(env, exports)) {

@@ -8,5 +8,8 @@ crate-type = ["cdylib"]
 
 [dependencies.nodex-api]
 path = "../../crates/nodex-api"
-default-features = false
+features = ["v1"]
+
+[dependencies.nodex]
+path = "../../crates/nodex"
 features = ["v1"]
