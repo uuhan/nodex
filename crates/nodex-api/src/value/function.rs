@@ -78,13 +78,14 @@ impl JsFunction {
 
     /// Create a js function with rust closure
     #[allow(clippy::type_complexity)]
-    pub fn with<Func, const N: usize>(
+    pub fn with<Func, T, const N: usize>(
         env: NapiEnv,
         name: Option<impl AsRef<str>>,
         func: Func,
     ) -> NapiResult<JsFunction>
     where
-        Func: FnMut(JsObject, [JsValue; N]) -> NapiResult<JsValue>,
+        T: NapiValueT,
+        Func: FnMut(JsObject, [T; N]) -> NapiResult<JsValue>,
     {
         let (name, len) = if let Some(name) = name {
             (name.as_ref().as_ptr() as *const c_char, name.as_ref().len())
@@ -93,12 +94,12 @@ impl JsFunction {
         };
 
         // NB: leak the func closure
-        let func: Box<Box<dyn FnMut(JsObject, [JsValue; N]) -> NapiResult<JsValue>>> =
+        let func: Box<Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<JsValue>>> =
             Box::new(Box::new(func));
 
         // TODO: it just works but not very useful by current design
         // use the trampoline function to call into the closure
-        extern "C" fn trampoline<const N: usize>(
+        extern "C" fn trampoline<T: NapiValueT, const N: usize>(
             env: napi_env,
             info: napi_callback_info,
         ) -> napi_value {
@@ -121,15 +122,14 @@ impl JsFunction {
 
                 // NB: this cb is leaked, should collect the box when the function is destroyed
                 // restore the closure from data
-                let func: &mut Box<dyn FnMut(JsObject, [JsValue; N]) -> NapiResult<JsValue>> =
+                let func: &mut Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<JsValue>> =
                     std::mem::transmute(data);
 
                 (argc, argv, this.assume_init(), func)
             };
 
-            let args = unsafe { argv.map(|arg| JsValue::from_raw(env, arg)) };
-
-            let this = JsObject::from_value(JsValue::from_raw(env, this));
+            let args = unsafe { argv.map(|arg| T::from_raw(env, arg)) };
+            let this = JsObject::from_raw(env, this);
 
             let result = if let Ok(result) = func(this, args) {
                 result
@@ -145,7 +145,7 @@ impl JsFunction {
             env.raw(),
             name,
             len,
-            Some(trampoline::<N>),
+            Some(trampoline::<T, N>),
             // pass closure to trampoline function
             Box::into_raw(func) as _,
         );
@@ -157,7 +157,11 @@ impl JsFunction {
     /// the primary mechanism of calling back from the add-on's native code into JavaScript. For
     /// the special case of calling into JavaScript after an async operation, see
     /// napi_make_callback.
-    pub fn call<const N: usize>(&self, this: JsObject, argv: [JsValue; N]) -> NapiResult<JsValue> {
+    pub fn call<const N: usize>(
+        &self,
+        this: JsObject,
+        argv: [impl NapiValueT; N],
+    ) -> NapiResult<JsValue> {
         let value = napi_call!(
             =napi_call_function,
             self.env().raw(),

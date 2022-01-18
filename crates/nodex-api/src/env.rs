@@ -100,9 +100,10 @@ impl NapiEnv {
     }
 
     /// Create a js function with a rust closure.
-    pub fn func<Func, const N: usize>(&self, func: Func) -> NapiResult<JsFunction>
+    pub fn func<Func, T, const N: usize>(&self, func: Func) -> NapiResult<JsFunction>
     where
-        Func: FnMut(JsObject, [JsValue; N]) -> NapiResult<JsValue>,
+        T: NapiValueT,
+        Func: FnMut(JsObject, [T; N]) -> NapiResult<JsValue>,
     {
         JsFunction::with(*self, Option::<String>::None, func)
     }
