@@ -20,10 +20,7 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
             let r = a1.call(this, [env.string("I am from rust world.")?]);
             let result = match r {
                 Ok(result) => result,
-                Err(e) => {
-                    println!("err: {}", e);
-                    this.value()
-                }
+                Err(_) => env.undefined()?.value(),
             };
 
             env.async_work_state(
@@ -31,13 +28,12 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
                 0,
                 move |idx| {
                     *idx += 1;
-                    println!("execute async task");
                 },
-                move |_, status, idx| {
+                move |_, status, &mut idx| {
                     if status == NapiStatus::Cancelled {
                         println!("[{}] task cancelled", status);
                     } else {
-                        println!("[{}] complete async task: {}", status, idx);
+                        assert_eq!(idx, 1);
                     }
                     Ok(())
                 },
@@ -78,23 +74,18 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     env.async_work(
         label,
-        move || {
-            println!("execute async task1");
-        },
+        move || {},
         move |env, status| {
+            assert!(status.ok());
             env.async_work(
                 label,
-                move || {
-                    println!("execute async task2");
-                },
+                move || {},
                 move |_, status| {
-                    println!("[{}] complete async task2", status);
+                    assert!(status.ok());
                     Ok(())
                 },
             )?
             .queue()?;
-            println!("[{}] complete async task1", status);
-
             Ok(())
         },
     )?
