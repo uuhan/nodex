@@ -24,8 +24,8 @@ impl NapiPropertyDescriptor {
 }
 
 #[derive(Debug)]
-pub struct DescriptorBuilder {
-    pub utf8name: Option<String>,
+pub struct DescriptorBuilder<'a> {
+    pub utf8name: Option<&'a str>,
     pub name: napi_value,
     pub method: napi_callback,
     pub getter: napi_callback,
@@ -35,8 +35,8 @@ pub struct DescriptorBuilder {
     pub data: *mut ::std::os::raw::c_void,
 }
 
-impl DescriptorBuilder {
-    pub fn new() -> DescriptorBuilder {
+impl<'a> DescriptorBuilder<'a> {
+    pub fn new() -> DescriptorBuilder<'a> {
         DescriptorBuilder {
             utf8name: None,
             name: std::ptr::null_mut(),
@@ -51,7 +51,7 @@ impl DescriptorBuilder {
 
     /// Optional string describing the key for the property, encoded as UTF8. One of utf8name or
     /// name must be provided for the property.
-    pub fn with_utf8name(mut self, name: impl Into<String>) -> Self {
+    pub fn with_utf8name(mut self, name: impl Into<&'a str>) -> Self {
         self.utf8name.replace(name.into());
         self
     }
@@ -112,7 +112,9 @@ impl DescriptorBuilder {
     /// build finale `NapiPropertyDescriptor`
     pub fn build(mut self) -> NapiResult<NapiPropertyDescriptor> {
         let utf8name = if let Some(name) = self.utf8name {
-            name.as_ptr() as *const std::os::raw::c_char
+            std::ffi::CString::new(name)
+                .map_err(|_| NapiStatus::StringExpected)?
+                .into_raw()
         } else {
             std::ptr::null()
         };
@@ -144,7 +146,7 @@ impl DescriptorBuilder {
     }
 }
 
-impl Default for DescriptorBuilder {
+impl<'a> Default for DescriptorBuilder<'a> {
     fn default() -> Self {
         Self::new()
     }

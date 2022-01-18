@@ -42,11 +42,11 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     exports.define_properties(&[
         DescriptorBuilder::new()
-            .with_name(env.string("utils")?)
+            .with_utf8name("utils")
             .with_value(obj)
             .build()?,
         DescriptorBuilder::new()
-            .with_name(env.string("key1")?)
+            .with_utf8name("key1")
             .with_value(env.double(100.)?)
             .build()?,
     ])?;
