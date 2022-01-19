@@ -78,14 +78,15 @@ impl JsFunction {
 
     /// Create a js function with rust closure
     #[allow(clippy::type_complexity)]
-    pub fn with<Func, T, const N: usize>(
+    pub fn with<Func, T, R, const N: usize>(
         env: NapiEnv,
         name: Option<impl AsRef<str>>,
         func: Func,
     ) -> NapiResult<JsFunction>
     where
         T: NapiValueT,
-        Func: FnMut(JsObject, [T; N]) -> NapiResult<JsValue>,
+        R: NapiValueT,
+        Func: FnMut(JsObject, [T; N]) -> NapiResult<R>,
     {
         let (name, len) = if let Some(name) = name {
             (name.as_ref().as_ptr() as *const c_char, name.as_ref().len())
@@ -94,12 +95,11 @@ impl JsFunction {
         };
 
         // NB: leak the func closure
-        let func: Box<Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<JsValue>>> =
-            Box::new(Box::new(func));
+        let func: Box<Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<R>>> = Box::new(Box::new(func));
 
         // TODO: it just works but not very useful by current design
         // use the trampoline function to call into the closure
-        extern "C" fn trampoline<T: NapiValueT, const N: usize>(
+        extern "C" fn trampoline<T: NapiValueT, R: NapiValueT, const N: usize>(
             env: NapiEnv,
             info: napi_callback_info,
         ) -> napi_value {
@@ -120,7 +120,7 @@ impl JsFunction {
 
                 // NB: this cb is leaked, should collect the box when the function is destroyed
                 // restore the closure from data
-                let func: &mut Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<JsValue>> =
+                let func: &mut Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<R>> =
                     std::mem::transmute(data);
 
                 (argc, argv, this.assume_init(), func)
@@ -129,13 +129,11 @@ impl JsFunction {
             let args = unsafe { argv.map(|arg| T::from_raw(env, arg)) };
             let this = JsObject::from_raw(env, this);
 
-            let result = if let Ok(result) = func(this, args) {
-                result
+            if let Ok(result) = func(this, args) {
+                result.raw()
             } else {
-                env.undefined().unwrap().value()
-            };
-
-            result.raw()
+                env.undefined().unwrap().raw()
+            }
         }
 
         let value = napi_call!(
@@ -143,7 +141,7 @@ impl JsFunction {
             env,
             name,
             len,
-            Some(trampoline::<T, N>),
+            Some(trampoline::<T, R, N>),
             // pass closure to trampoline function
             Box::into_raw(func) as _,
         );
