@@ -28,7 +28,7 @@ It is in a very early stage and heavy development is making.
 crate-type = ["cdylib"]
 
 [dependencies.nodex-api]
-version = "0.1.0-alpha.9"
+version = "0.1.0-alpha.10"
 features = ["v8"]
 ```
 
@@ -43,7 +43,7 @@ We have v1,v2,v3,...v8 versions.
 crate-type = ["cdylib"]
 
 [dependencies.nodex]
-version = "0.1.0-alpha.9"
+version = "0.1.0-alpha.10"
 ```
 
 ## Examples
@@ -130,6 +130,7 @@ let hook_to_remove = env.add_cleanup_hook(|| {
 })?;
 
 hook_to_remove.remove()?;
+```
 
 #### aync
 
@@ -145,8 +146,6 @@ match env.add_async_cleanup_hook(|hook| {
     }
     None => {}
 }
-```
-
 ```
 
 ### Set Property Descriptor
