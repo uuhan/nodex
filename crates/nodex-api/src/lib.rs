@@ -166,6 +166,25 @@ pub const fn napi_version_guard() -> u32 {
     panic!("please select a napi version to use.")
 }
 
+/// The function call does not return, the process will be terminated.
+/// This API can be called even if there is a pending JavaScript exception.
+#[inline]
+pub fn fatal_error(msg: impl AsRef<str>, loc: Option<impl AsRef<str>>) {
+    let (loc, loc_len) = if let Some(loc) = loc {
+        (loc.as_ref().as_ptr() as *const _, loc.as_ref().len())
+    } else {
+        (std::ptr::null(), 0)
+    };
+    unsafe {
+        api::napi_fatal_error(
+            loc,
+            loc_len,
+            msg.as_ref().as_ptr() as *const _,
+            msg.as_ref().len(),
+        );
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -168,7 +168,11 @@ impl NapiEnv {
 
     /// This API throws a JavaScript Error with the text provided.
     #[inline]
-    pub fn error(&self, message: impl AsRef<str>, code: Option<impl AsRef<str>>) -> NapiResult<()> {
+    pub fn throw_error(
+        &self,
+        message: impl AsRef<str>,
+        code: Option<impl AsRef<str>>,
+    ) -> NapiResult<()> {
         use std::ffi::CString;
         let msg = CString::new(message.as_ref()).map_err(|_| NapiStatus::StringExpected)?;
         let code = if let Some(code) = code {
@@ -184,17 +188,14 @@ impl NapiEnv {
 
     /// This API throws a JavaScript TypeError with the text provided.
     #[inline]
-    pub fn type_error(
+    pub fn throw_type_error(
         &self,
         message: impl AsRef<str>,
         code: Option<impl AsRef<str>>,
     ) -> NapiResult<()> {
-        use std::ffi::CString;
-        let msg = CString::new(message.as_ref()).map_err(|_| NapiStatus::StringExpected)?;
+        let msg = napi_s!(message.as_ref()).map_err(|_| NapiStatus::StringExpected)?;
         let code = if let Some(code) = code {
-            CString::new(code.as_ref())
-                .map_err(|_| NapiStatus::StringExpected)?
-                .as_ptr()
+            napi_s!(code.as_ref())?.as_ptr()
         } else {
             std::ptr::null()
         };
@@ -204,7 +205,7 @@ impl NapiEnv {
 
     /// This API throws a JavaScript TypeError with the text provided.
     #[inline]
-    pub fn range_error(
+    pub fn throw_range_error(
         &self,
         message: impl AsRef<str>,
         code: Option<impl AsRef<str>>,
@@ -220,5 +221,38 @@ impl NapiEnv {
         };
         napi_call!(napi_throw_range_error, *self, code, msg.as_ptr());
         Ok(())
+    }
+
+    #[inline]
+    pub fn fatal_error(&self, msg: impl AsRef<str>) {
+        crate::fatal_error(msg, Option::<String>::None);
+    }
+
+    /// Get and clear last exception
+    /// This API can be called even if there is a pending JavaScript exception.
+    #[inline]
+    pub fn get_and_clear_last_exception(&self) -> NapiResult<Option<JsError>> {
+        let err = napi_call!(=napi_get_and_clear_last_exception, *self);
+        if err.is_null() {
+            Ok(None)
+        } else {
+            Ok(Some(JsError(JsValue(*self, err))))
+        }
+    }
+
+    /// Return true if an exception is pending.
+    /// This API can be called even if there is a pending JavaScript exception.
+    #[inline]
+    pub fn is_exception_pending(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_exception_pending, *self))
+    }
+
+    /// Trigger an 'uncaughtException' in JavaScript. Useful if an async callback throws an
+    /// exception with no way to recover.
+    #[inline]
+    #[cfg(features = "v3")]
+    pub fn fatal_exception(&self) -> NapiResult<JsError> {
+        let err = napi_call!(=napi_fatal_exception, *self);
+        Ok(JsError(JsValue(*self, err)))
     }
 }

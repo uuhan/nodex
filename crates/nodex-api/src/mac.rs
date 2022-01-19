@@ -84,3 +84,10 @@ macro_rules! napi_value_t {
         }
     };
 }
+
+#[macro_export]
+macro_rules! napi_s {
+    ($s:expr) => {
+        std::ffi::CString::new($s).map_err(|_| $crate::NapiStatus::StringExpected)
+    };
+}
