@@ -50,7 +50,7 @@ version = "0.1.0-alpha.10"
 
 ### Init Module
 
-simply define you module by:
+simply define your module by:
 
 ```rust
 use nodex_api::prelude::*;
@@ -62,7 +62,7 @@ fn init(env: NapiEnv, exports: JsObject) -> NapiResult<()> {
 
 ### Version Guard
 
-make share the node api version is large or equal than your compiled addon's.
+make sure the node api version is large or equal than your compiled addon's.
 
 ```rust
 nodex_api::napi_guard!(env.napi_version()?);
