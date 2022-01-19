@@ -15,7 +15,9 @@ It is in a very early stage and heavy development is making.
     - [ ] sweet syntax, like: let lodash = nodex::import!(lodash);
 - [ ] nodejs async runtime to drive rust async code
     - [ ] async runtime for async rust
-    - [ ] macros like: #[nodex::rt] async fn main()
+    - [ ] macros like: #[nodex::rt] async fn main(), so you can use nodejs to run any rust async-code.
+        - [ ] node --require=main.node
+        - [ ] rust code introspection with nodejs repl
 - [ ] cargo-nodex cargo subcommand to make ease of create nodejs addons, e.g. auto generate ts typings.
     - [ ] cargo nodex build
     - [ ] cargo nodex typings
@@ -28,7 +30,7 @@ It is in a very early stage and heavy development is making.
 crate-type = ["cdylib"]
 
 [dependencies.nodex-api]
-version = "0.1.0-alpha.11"
+version = "0.1.0-alpha.12"
 features = ["v8"]
 ```
 
@@ -43,8 +45,22 @@ We have v1,v2,v3,...v8 versions.
 crate-type = ["cdylib"]
 
 [dependencies.nodex]
-version = "0.1.0-alpha.11"
+version = "0.1.0-alpha.12"
 ```
+
+## Napi Level
+
+### v3
+
+* NapiEnv::add_cleanup_hook() - Do the cleanup when nodejs environment exits.
+
+### v5
+
+* NapiValueT::finalizer() - Adds a napi_finalize callback which will be called when the JavaScript object is ready for gc.
+
+### v8
+
+* NapiEnv::add_async_cleanup_hook() - Do the cleanup when nodejs environment exits, asynchronous.
 
 ## Examples
 
@@ -91,14 +107,13 @@ obj.set_property(name, env.null()?)?;
 // Function
 let func: JsFunction = env.func(move |this, [a1, a2, a3]: [JsValue; 3]| {
     let env = this.env();
-    let r = a1.as_function()?.call(this, [env.string("I am from rust world.")?.value()])?;
-    Ok(r)
+    a1.as_function()?.call::<JsValue, 0>(this, [])?
+    a1.as_function()?.call(this, [env.string("I am from rust world.")?])
 })?;
 
 let func: JsFunction = env.func(move |this, [a1]: [JsFunction; 1]| {
     let env = this.env();
-    let r = a1.call(this, [env.string("I am from rust world.")?.value()])?;
-    Ok(r)
+    a1.call(this, [env.string("I am from rust world.")?])
 })?;
 
 // Error
@@ -194,6 +209,16 @@ env.async_work_state(
     },
 )?
 .queue()?;
+```
+
+### Add finalizer for js object
+
+```rust
+let mut obj = env.object()?;
+obj.finalizer(move |_| {
+    println!("obj garbage-collected");
+    Ok(())
+});
 ```
 
 ### More

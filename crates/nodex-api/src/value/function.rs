@@ -118,8 +118,10 @@ impl JsFunction {
                     data.as_mut_ptr(),
                 );
 
-                // NB: this cb is leaked, should collect the box when the function is destroyed
-                // restore the closure from data
+                // NB: the JsFunction maybe called multiple times, so we can should leak the
+                // closure memory here.
+                //
+                // With napi >= 5, we can add a finalizer to this function.
                 let func: &mut Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<R>> =
                     std::mem::transmute(data);
 
@@ -136,6 +138,7 @@ impl JsFunction {
             }
         }
 
+        let fn_pointer = Box::into_raw(func) as DataPointer;
         let value = napi_call!(
             =napi_create_function,
             env,
@@ -143,21 +146,30 @@ impl JsFunction {
             len,
             Some(trampoline::<T, R, N>),
             // pass closure to trampoline function
-            Box::into_raw(func) as _,
+            fn_pointer,
         );
 
-        Ok(JsFunction(JsValue::from_raw(env, value)))
+        let func = JsFunction(JsValue::from_raw(env, value));
+
+        #[cfg(feature = "v5")]
+        func.finalizer(move |_| unsafe {
+            // NB: the leaked data is collected here.
+            let _: Box<Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<R>>> =
+                Box::from_raw(fn_pointer as _);
+            Ok(())
+        })?;
+
+        Ok(func)
     }
 
     /// This method allows a JavaScript function object to be called from a native add-on. This is
     /// the primary mechanism of calling back from the add-on's native code into JavaScript. For
     /// the special case of calling into JavaScript after an async operation, see
     /// napi_make_callback.
-    pub fn call<const N: usize>(
-        &self,
-        this: JsObject,
-        argv: [impl NapiValueT; N],
-    ) -> NapiResult<JsValue> {
+    pub fn call<T, const N: usize>(&self, this: JsObject, argv: [T; N]) -> NapiResult<JsValue>
+    where
+        T: NapiValueT,
+    {
         let value = napi_call!(
             =napi_call_function,
             self.env(),

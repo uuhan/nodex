@@ -1,7 +1,5 @@
 use crate::{api, prelude::*};
 
-type DataPointer = *mut std::ffi::c_void;
-
 #[derive(Clone, Debug)]
 pub struct NapiAsyncWork(NapiEnv, napi_async_work, bool);
 
