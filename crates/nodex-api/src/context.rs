@@ -26,7 +26,7 @@ impl NapiAsyncContext {
         let context = unsafe {
             let mut result = MaybeUninit::uninit();
             let status = api::napi_async_init(
-                env.raw(),
+                env,
                 env.object()?.raw(),
                 env.string(name)?.raw(),
                 result.as_mut_ptr(),
@@ -45,7 +45,7 @@ impl NapiAsyncContext {
     /// This API can be called even if there is a pending JavaScript exception.
     pub fn destroy(&mut self) -> NapiResult<()> {
         unsafe {
-            let status = api::napi_async_destroy(self.env().raw(), self.raw());
+            let status = api::napi_async_destroy(self.env(), self.raw());
 
             if status.err() {
                 return Err(status);

@@ -22,7 +22,7 @@ impl NapiHandleScope {
 
     /// This API opens a new scope.
     pub fn open(env: NapiEnv) -> NapiResult<NapiHandleScope> {
-        let handle = napi_call!(=napi_open_handle_scope, env.raw());
+        let handle = napi_call!(=napi_open_handle_scope, env);
         Ok(NapiHandleScope { env, handle })
     }
 
@@ -30,7 +30,7 @@ impl NapiHandleScope {
     /// order from which they were created.
     /// This API can be called even if there is a pending JavaScript exception.
     pub fn close(&mut self) -> NapiResult<()> {
-        napi_call!(napi_close_handle_scope, self.env().raw(), self.raw());
+        napi_call!(napi_close_handle_scope, self.env(), self.raw());
         Ok(())
     }
 }
@@ -65,7 +65,7 @@ impl NapiEscapableHandleScope {
 
     /// This API opens a new scope from which one object can be promoted to the outer scope.
     pub fn open(env: NapiEnv) -> NapiResult<NapiEscapableHandleScope> {
-        let handle = napi_call!(=napi_open_escapable_handle_scope, env.raw());
+        let handle = napi_call!(=napi_open_escapable_handle_scope, env);
         Ok(NapiEscapableHandleScope { env, handle })
     }
 
@@ -73,11 +73,7 @@ impl NapiEscapableHandleScope {
     /// order from which they were created.
     /// This API can be called even if there is a pending JavaScript exception.
     pub fn close(&mut self) -> NapiResult<()> {
-        napi_call!(
-            napi_close_escapable_handle_scope,
-            self.env().raw(),
-            self.raw()
-        );
+        napi_call!(napi_close_escapable_handle_scope, self.env(), self.raw());
         Ok(())
     }
 }

@@ -23,7 +23,7 @@ impl JsDate {
     /// Returns napi_ok if the API succeeded. If a non-date napi_value is passed in it returns napi_date_expected.
     /// This API returns the C double primitive of time value for the given JavaScript Date.
     pub fn get(&self) -> NapiResult<f64> {
-        Ok(napi_call!(=napi_get_date_value, self.env().raw(), self.raw()))
+        Ok(napi_call!(=napi_get_date_value, self.env(), self.raw()))
     }
 }
 

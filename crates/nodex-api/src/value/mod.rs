@@ -22,7 +22,7 @@ impl JsValue {
     /// It detects null as a separate type, while ECMAScript typeof would detect object.
     /// If value has a type that is invalid, an error is returned.
     pub fn value_type(&self) -> NapiResult<NapiValuetype> {
-        Ok(napi_call!(=napi_typeof, self.env().raw(), self.raw()))
+        Ok(napi_call!(=napi_typeof, self.env(), self.raw()))
     }
 
     /// check if it is an object
@@ -70,7 +70,7 @@ impl JsValue {
     /// This API represents invoking the IsArray operation on the object as defined in Section
     /// 7.2.2 of the ECMAScript Language Specification.
     pub fn is_array(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_array, self.env().raw(), self.raw()))
+        Ok(napi_call!(=napi_is_array, self.env(), self.raw()))
     }
 
     /// view it as an array, may fail if it is not an array value
@@ -84,7 +84,7 @@ impl JsValue {
 
     /// This API checks if the Object passed in is a typed array.
     pub fn is_typedarray(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_typedarray, self.env().raw(), self.raw()))
+        Ok(napi_call!(=napi_is_typedarray, self.env(), self.raw()))
     }
 
     /// view it as a typed_array, may fail if it is not a typed_array value
@@ -98,7 +98,7 @@ impl JsValue {
 
     /// This API checks if the Object passed in is an array buffer.
     pub fn is_arraybuffer(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_arraybuffer, self.env().raw(), self.raw()))
+        Ok(napi_call!(=napi_is_arraybuffer, self.env(), self.raw()))
     }
 
     /// view it as an array_buffer, may faile if it is not an array_buffer value
@@ -112,7 +112,7 @@ impl JsValue {
 
     /// This API checks if the Object passed in is a buffer.
     pub fn is_buffer(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_buffer, self.env().raw(), self.raw()))
+        Ok(napi_call!(=napi_is_buffer, self.env(), self.raw()))
     }
 
     /// view it as a buffer, may faile if it is not a buffer value
@@ -126,7 +126,7 @@ impl JsValue {
 
     /// This API checks if the Object passed in is a DataView.
     pub fn is_dataview(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_dataview, self.env().raw(), self.raw()))
+        Ok(napi_call!(=napi_is_dataview, self.env(), self.raw()))
     }
 
     /// view it as a dataview, may faile if it is not a dataview value
@@ -211,7 +211,7 @@ impl JsValue {
     #[cfg(feature = "v5")]
     /// This API checks if the Object passed in is a date.
     pub fn is_date(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_date, self.env().raw(), self.raw()))
+        Ok(napi_call!(=napi_is_date, self.env(), self.raw()))
     }
 
     #[cfg(feature = "v5")]
@@ -234,7 +234,7 @@ impl JsValue {
 
     /// This API checks if the Object passed in is a promise.
     pub fn is_promise(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_promise, self.env().raw(), self.raw()))
+        Ok(napi_call!(=napi_is_promise, self.env(), self.raw()))
     }
 }
 
@@ -258,6 +258,16 @@ pub trait NapiValueT {
     /// napi_value type cast
     fn cast<T: NapiValueT>(&self) -> T {
         T::from_raw(self.env(), self.raw())
+    }
+
+    #[inline]
+    fn kind(&self) -> NapiResult<NapiValuetype> {
+        todo!()
+    }
+
+    #[inline]
+    fn is<T: NapiValueT>(&self) -> bool {
+        false
     }
 
     /// the `NapiEnv` of current value
@@ -296,7 +306,7 @@ pub trait NapiValueT {
     ) -> NapiResult<()> {
         napi_call!(
             napi_define_properties,
-            self.env().raw(),
+            self.env(),
             self.raw(),
             properties.as_ref().len(),
             properties.as_ref().as_ptr() as *const _,

@@ -12,13 +12,13 @@ impl JsSymbol {
     /// This API creates a JavaScript symbol value from a UTF8-encoded C string.
     /// The JavaScript symbol type is described in Section 19.4 of the ECMAScript Language Specification.
     pub fn new(env: NapiEnv) -> NapiResult<JsSymbol> {
-        let value = napi_call!(=napi_create_symbol, env.raw(), std::ptr::null_mut());
+        let value = napi_call!(=napi_create_symbol, env, std::ptr::null_mut());
         Ok(JsSymbol::from_value(JsValue::from_raw(env, value)))
     }
 
     /// Symbol with description.
     pub fn description(env: NapiEnv, desc: JsString) -> NapiResult<JsSymbol> {
-        let value = napi_call!(=napi_create_symbol, env.raw(), desc.raw());
+        let value = napi_call!(=napi_create_symbol, env, desc.raw());
         Ok(JsSymbol::from_value(JsValue::from_raw(env, value)))
     }
 }

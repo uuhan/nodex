@@ -34,13 +34,13 @@ impl NapiEnv {
     /// get node version
     /// the returned buffer is statically allocated and does not need to be freed.
     pub fn node_version(&self) -> NapiResult<napi_node_version> {
-        let value = napi_call!(=napi_get_node_version, self.raw());
+        let value = napi_call!(=napi_get_node_version, *self);
         unsafe { Ok(std::ptr::read(value)) }
     }
 
     /// get napi version
     pub fn napi_version(&self) -> NapiResult<u32> {
-        Ok(napi_call!(=napi_get_version, self.raw()))
+        Ok(napi_call!(=napi_get_version, *self))
     }
 
     /// Return null object
@@ -112,7 +112,7 @@ impl NapiEnv {
     pub fn function_named(
         &self,
         name: impl AsRef<str>,
-        func: extern "C" fn(env: napi_env, info: napi_callback_info) -> napi_value,
+        func: extern "C" fn(env: NapiEnv, info: napi_callback_info) -> napi_value,
     ) -> NapiResult<JsFunction> {
         JsFunction::new(*self, Some(name), func)
     }
@@ -120,7 +120,7 @@ impl NapiEnv {
     /// Create a js function with a rust function
     pub fn function(
         &self,
-        func: extern "C" fn(env: napi_env, info: napi_callback_info) -> napi_value,
+        func: extern "C" fn(env: NapiEnv, info: napi_callback_info) -> napi_value,
     ) -> NapiResult<JsFunction> {
         JsFunction::new(*self, Option::<String>::None, func)
     }
@@ -158,7 +158,7 @@ impl NapiEnv {
     ) -> NapiResult<()> {
         napi_call!(
             napi_define_properties,
-            self.raw(),
+            *self,
             object.raw(),
             properties.as_ref().len(),
             properties.as_ref().as_ptr() as *const _,

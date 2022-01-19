@@ -18,7 +18,7 @@ impl JsArrayBuffer {
         let mut data = MaybeUninit::uninit();
         let value = napi_call!(
             =napi_create_arraybuffer,
-            env.raw(),
+            env,
             len,
             data.as_mut_ptr(),
         );
@@ -45,7 +45,7 @@ impl JsArrayBuffer {
 
         napi_call!(
             napi_get_arraybuffer_info,
-            self.env().raw(),
+            self.env(),
             self.raw(),
             result.as_mut_ptr(),
             len.as_mut_ptr(),

@@ -19,7 +19,7 @@ impl JsPromise {
 
         let promise = napi_call!(
             =napi_create_promise,
-            env.raw(),
+            env,
             deferred.as_mut_ptr(),
         );
 
@@ -36,12 +36,7 @@ impl JsPromise {
     ///
     /// The deferred object is freed upon successful completion.
     pub fn resolve(&self, resolution: impl NapiValueT) -> NapiResult<()> {
-        napi_call!(
-            napi_resolve_deferred,
-            self.env().raw(),
-            self.1,
-            resolution.raw()
-        );
+        napi_call!(napi_resolve_deferred, self.env(), self.1, resolution.raw());
         Ok(())
     }
 
@@ -53,12 +48,7 @@ impl JsPromise {
     ///
     /// The deferred object is freed upon successful completion.
     pub fn reject(&self, rejection: impl NapiValueT) -> NapiResult<()> {
-        napi_call!(
-            napi_reject_deferred,
-            self.env().raw(),
-            self.1,
-            rejection.raw()
-        );
+        napi_call!(napi_reject_deferred, self.env(), self.1, rejection.raw());
         Ok(())
     }
 }
