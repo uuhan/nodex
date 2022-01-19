@@ -18,9 +18,10 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
             let env = this.env();
             let _scope = env.handle_scope()?;
             let result = a1.call(this, [env.string("I am from rust world.")?]);
+
             let result = match result {
                 Ok(result) => result,
-                Err(_) => env.undefined()?.value(),
+                Err(_) => return Ok(env.undefined()?.value()),
             };
 
             env.async_work_state(
