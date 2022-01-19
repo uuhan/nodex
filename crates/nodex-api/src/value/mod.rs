@@ -15,19 +15,9 @@ impl JsValue {
         self.1
     }
 
-    /// Returns napi_ok if the API succeeded.
-    /// - `napi_invalid_arg` if the type of value is not a known ECMAScript type and value is not an External value.
-    /// This API represents behavior similar to invoking the typeof Operator on the object as defined in Section 12.5.5 of the ECMAScript Language Specification. However, there are some differences:
-    /// It has support for detecting an External value.
-    /// It detects null as a separate type, while ECMAScript typeof would detect object.
-    /// If value has a type that is invalid, an error is returned.
-    pub fn value_type(&self) -> NapiResult<NapiValuetype> {
-        Ok(napi_call!(=napi_typeof, self.env(), self.raw()))
-    }
-
     /// check if it is an object
     pub fn is_object(&self) -> NapiResult<bool> {
-        Ok(self.value_type()? == NapiValuetype::Object)
+        Ok(self.kind()? == NapiValuetype::Object)
     }
 
     /// view it as an object, may fail if it is not an object value
@@ -41,7 +31,7 @@ impl JsValue {
 
     /// check if it is a string
     pub fn is_string(&self) -> NapiResult<bool> {
-        Ok(self.value_type()? == NapiValuetype::String)
+        Ok(self.kind()? == NapiValuetype::String)
     }
 
     /// view it as a string, may fail if it is not a string value
@@ -55,7 +45,7 @@ impl JsValue {
 
     /// check if it is a symbol
     pub fn is_symbol(&self) -> NapiResult<bool> {
-        Ok(self.value_type()? == NapiValuetype::Symbol)
+        Ok(self.kind()? == NapiValuetype::Symbol)
     }
 
     /// view it as a symbol, may fail if it is not a symbol value
@@ -140,7 +130,7 @@ impl JsValue {
 
     /// check if it is an external
     pub fn is_external(&self) -> NapiResult<bool> {
-        Ok(self.value_type()? == NapiValuetype::External)
+        Ok(self.kind()? == NapiValuetype::External)
     }
 
     /// view it as an external, may fail if it is not an external value
@@ -154,7 +144,7 @@ impl JsValue {
 
     /// check if it is a function
     pub fn is_function(&self) -> NapiResult<bool> {
-        Ok(self.value_type()? == NapiValuetype::Function)
+        Ok(self.kind()? == NapiValuetype::Function)
     }
 
     /// view it as a number, may fail if it is not a number value
@@ -168,7 +158,7 @@ impl JsValue {
 
     /// check if it is a number
     pub fn is_number(&self) -> NapiResult<bool> {
-        Ok(self.value_type()? == NapiValuetype::Number)
+        Ok(self.kind()? == NapiValuetype::Number)
     }
 
     /// view it as a number, may fail if it is not a number value
@@ -182,7 +172,7 @@ impl JsValue {
 
     /// check if it is a bigint
     pub fn is_bigint(&self) -> NapiResult<bool> {
-        Ok(self.value_type()? == NapiValuetype::Bigint)
+        Ok(self.kind()? == NapiValuetype::Bigint)
     }
 
     /// view it as a bigint, may fail if it is not a bigint value
@@ -196,7 +186,7 @@ impl JsValue {
 
     /// check if it is a boolean
     pub fn is_boolean(&self) -> NapiResult<bool> {
-        Ok(self.value_type()? == NapiValuetype::Boolean)
+        Ok(self.kind()? == NapiValuetype::Boolean)
     }
 
     /// view it as a boolean, may fail if it is not a boolean value
@@ -225,11 +215,11 @@ impl JsValue {
     }
 
     pub fn is_null(&self) -> NapiResult<bool> {
-        Ok(self.value_type()? == NapiValuetype::Null)
+        Ok(self.kind()? == NapiValuetype::Null)
     }
 
     pub fn is_undefined(&self) -> NapiResult<bool> {
-        Ok(self.value_type()? == NapiValuetype::Undefined)
+        Ok(self.kind()? == NapiValuetype::Undefined)
     }
 
     /// This API checks if the Object passed in is a promise.
@@ -260,9 +250,15 @@ pub trait NapiValueT {
         T::from_raw(self.env(), self.raw())
     }
 
+    /// Returns napi_ok if the API succeeded.
+    /// - `napi_invalid_arg` if the type of value is not a known ECMAScript type and value is not an External value.
+    /// This API represents behavior similar to invoking the typeof Operator on the object as defined in Section 12.5.5 of the ECMAScript Language Specification. However, there are some differences:
+    /// It has support for detecting an External value.
+    /// It detects null as a separate type, while ECMAScript typeof would detect object.
+    /// If value has a type that is invalid, an error is returned.
     #[inline]
     fn kind(&self) -> NapiResult<NapiValuetype> {
-        todo!()
+        Ok(napi_call!(=napi_typeof, self.env(), self.raw()))
     }
 
     #[inline]
