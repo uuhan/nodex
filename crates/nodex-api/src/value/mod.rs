@@ -261,11 +261,6 @@ pub trait NapiValueT {
         Ok(napi_call!(=napi_typeof, self.env(), self.raw()))
     }
 
-    #[inline]
-    fn is<T: NapiValueT>(&self) -> bool {
-        false
-    }
-
     /// the `NapiEnv` of current value
     fn env(&self) -> NapiEnv {
         self.value().env()
@@ -289,6 +284,13 @@ pub trait NapiValueT {
     /// get global singleton
     fn global(&self) -> NapiResult<JsGlobal> {
         JsGlobal::new(self.env())
+    }
+
+    /// value is throwable
+    #[inline]
+    fn throw(&self) -> NapiResult<()> {
+        napi_call!(napi_throw, self.env(), self.raw());
+        Ok(())
     }
 
     /// This method allows the efficient definition of multiple properties on a given object. The

@@ -165,4 +165,60 @@ impl NapiEnv {
         );
         Ok(())
     }
+
+    /// This API throws a JavaScript Error with the text provided.
+    #[inline]
+    pub fn error(&self, message: impl AsRef<str>, code: Option<impl AsRef<str>>) -> NapiResult<()> {
+        use std::ffi::CString;
+        let msg = CString::new(message.as_ref()).map_err(|_| NapiStatus::StringExpected)?;
+        let code = if let Some(code) = code {
+            CString::new(code.as_ref())
+                .map_err(|_| NapiStatus::StringExpected)?
+                .as_ptr()
+        } else {
+            std::ptr::null()
+        };
+        napi_call!(napi_throw_error, *self, code, msg.as_ptr());
+        Ok(())
+    }
+
+    /// This API throws a JavaScript TypeError with the text provided.
+    #[inline]
+    pub fn type_error(
+        &self,
+        message: impl AsRef<str>,
+        code: Option<impl AsRef<str>>,
+    ) -> NapiResult<()> {
+        use std::ffi::CString;
+        let msg = CString::new(message.as_ref()).map_err(|_| NapiStatus::StringExpected)?;
+        let code = if let Some(code) = code {
+            CString::new(code.as_ref())
+                .map_err(|_| NapiStatus::StringExpected)?
+                .as_ptr()
+        } else {
+            std::ptr::null()
+        };
+        napi_call!(napi_throw_type_error, *self, code, msg.as_ptr());
+        Ok(())
+    }
+
+    /// This API throws a JavaScript TypeError with the text provided.
+    #[inline]
+    pub fn range_error(
+        &self,
+        message: impl AsRef<str>,
+        code: Option<impl AsRef<str>>,
+    ) -> NapiResult<()> {
+        use std::ffi::CString;
+        let msg = CString::new(message.as_ref()).map_err(|_| NapiStatus::StringExpected)?;
+        let code = if let Some(code) = code {
+            CString::new(code.as_ref())
+                .map_err(|_| NapiStatus::StringExpected)?
+                .as_ptr()
+        } else {
+            std::ptr::null()
+        };
+        napi_call!(napi_throw_range_error, *self, code, msg.as_ptr());
+        Ok(())
+    }
 }
