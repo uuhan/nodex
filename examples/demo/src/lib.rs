@@ -17,12 +17,7 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
         env.func(move |this, [a1]: [JsFunction; 1]| {
             let env = this.env();
             let _scope = env.handle_scope()?;
-            let result = a1.call(this, [env.string("I am from rust world.")?]);
-
-            let result = match result {
-                Ok(result) => result,
-                Err(_) => return Ok(env.undefined()?.value()),
-            };
+            a1.call::<JsValue, 0>(this, [])?;
 
             env.async_work_state(
                 "my-test-async-task",
@@ -43,7 +38,8 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
             times += 1;
             println!("[{}] called", times);
-            Ok(result)
+
+            a1.call(this, [env.string("I am from rust world.")?])
         })?,
     )?;
     obj.set_property(symbol, env.double(100.)?)?;

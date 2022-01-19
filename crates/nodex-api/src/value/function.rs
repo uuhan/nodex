@@ -153,11 +153,10 @@ impl JsFunction {
     /// the primary mechanism of calling back from the add-on's native code into JavaScript. For
     /// the special case of calling into JavaScript after an async operation, see
     /// napi_make_callback.
-    pub fn call<const N: usize>(
-        &self,
-        this: JsObject,
-        argv: [impl NapiValueT; N],
-    ) -> NapiResult<JsValue> {
+    pub fn call<T, const N: usize>(&self, this: JsObject, argv: [T; N]) -> NapiResult<JsValue>
+    where
+        T: NapiValueT,
+    {
         let value = napi_call!(
             =napi_call_function,
             self.env(),

@@ -91,14 +91,13 @@ obj.set_property(name, env.null()?)?;
 // Function
 let func: JsFunction = env.func(move |this, [a1, a2, a3]: [JsValue; 3]| {
     let env = this.env();
-    let r = a1.as_function()?.call(this, [env.string("I am from rust world.")?.value()])?;
-    Ok(r)
+    a1.as_function()?.call::<JsValue, 0>(this, [])?
+    a1.as_function()?.call(this, [env.string("I am from rust world.")?])
 })?;
 
 let func: JsFunction = env.func(move |this, [a1]: [JsFunction; 1]| {
     let env = this.env();
-    let r = a1.call(this, [env.string("I am from rust world.")?.value()])?;
-    Ok(r)
+    a1.call(this, [env.string("I am from rust world.")?.value()])
 })?;
 
 // Error
