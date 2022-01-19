@@ -100,6 +100,53 @@ let func: JsFunction = env.func(move |this, [a1]: [JsFunction; _]| {
     let r = a1.call(this, [env.string("I am from rust world.")?.value()])?;
     Ok(r)
 })?;
+
+// Error
+let error: JsError = JsError::error("error", None)?;
+
+```
+
+### Napi handle scope
+
+```rust
+// napi handle scope
+let _scope: NapiHandleScope = env.handle_scope()?;
+let _escapable_scope: NapiEscapableHandleScope = env.escapable_handle_scope()?;
+```
+
+### Napi cleanup hook
+
+#### sync
+
+```rust
+env.add_cleanup_hook(|| {
+    println!("clean hook fired");
+    Ok(())
+})?;
+
+let hook_to_remove = env.add_cleanup_hook(|| {
+    println!("clean hook fired");
+    Ok(())
+})?;
+
+hook_to_remove.remove()?;
+
+#### aync
+
+```rust
+match env.add_async_cleanup_hook(|hook| {
+    // DO SOME CLEANUP
+    // NB: should call remove after done
+    hook.remove()
+})? {
+    Some(hook) => {
+        // NB: also the hook can be removed before it is fired.
+        hook.remove()?;
+    }
+    None => {}
+}
+```
+
 ```
 
 ### Set Property Descriptor

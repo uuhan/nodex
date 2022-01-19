@@ -250,9 +250,139 @@ impl NapiEnv {
     /// Trigger an 'uncaughtException' in JavaScript. Useful if an async callback throws an
     /// exception with no way to recover.
     #[inline]
-    #[cfg(features = "v3")]
-    pub fn fatal_exception(&self) -> NapiResult<JsError> {
-        let err = napi_call!(=napi_fatal_exception, *self);
-        Ok(JsError(JsValue(*self, err)))
+    #[cfg(feature = "v3")]
+    pub fn fatal_exception(&self, err: JsError) -> NapiResult<()> {
+        napi_call!(napi_fatal_exception, *self, err.raw());
+        Ok(())
+    }
+
+    /// Create a handle scope
+    pub fn handle_scope(&self) -> NapiResult<NapiHandleScope> {
+        NapiHandleScope::open(*self)
+    }
+
+    /// Create a escapable handle scope
+    pub fn escapable_handle_scope(&self) -> NapiResult<NapiEscapableHandleScope> {
+        NapiEscapableHandleScope::open(*self)
+    }
+
+    /// Registers fun as a function to be run with the arg parameter once the current
+    /// Node.js environment exits.
+    ///
+    /// A function can safely be specified multiple times with different arg values.
+    ///
+    /// In that case, it will be called multiple times as well. Providing the same fun
+    /// and arg values multiple times is not allowed and will lead the process to abort.
+    ///
+    /// The hooks will be called in reverse order, i.e. the most recently added one
+    /// will be called first.
+    ///
+    /// Removing this hook can be done by using napi_remove_env_cleanup_hook. Typically,
+    /// that happens when the resource for which this hook was added is being torn down anyway.
+    /// For asynchronous cleanup, napi_add_async_cleanup_hook is available.
+    #[cfg(feature = "v3")]
+    pub fn add_cleanup_hook<Hook>(&mut self, hook: Hook) -> NapiResult<CleanupHookHandler>
+    where
+        Hook: FnOnce() -> NapiResult<()>,
+    {
+        let hook: Box<Box<dyn FnOnce() -> NapiResult<()>>> = Box::new(Box::new(hook));
+
+        unsafe extern "C" fn cleanup_hook(data: *mut std::os::raw::c_void) {
+            unsafe {
+                let hook: Box<Box<dyn FnOnce() -> NapiResult<()>>> = Box::from_raw(data as _);
+                if let Err(e) = hook() {
+                    log::error!("[{}] cleanup hook error.", e);
+                }
+            }
+        }
+
+        let args = Box::into_raw(hook) as _;
+
+        napi_call!(napi_add_env_cleanup_hook, *self, Some(cleanup_hook), args,);
+
+        Ok(CleanupHookHandler {
+            env: *self,
+            hook: Some(cleanup_hook),
+            args,
+        })
+    }
+
+    #[cfg(feature = "v8")]
+    /// Registers hook, which is a function of type napi_async_cleanup_hook, as a function
+    /// to be run with the remove_handle and arg parameters once the current Node.js
+    /// environment exits.
+    ///
+    /// Unlike napi_add_env_cleanup_hook, the hook is allowed to be asynchronous.
+    ///
+    /// Otherwise, behavior generally matches that of napi_add_env_cleanup_hook.
+    ///
+    /// If remove_handle is not NULL, an opaque value will be stored in it that must later
+    /// be passed to napi_remove_async_cleanup_hook, regardless of whether the hook has
+    /// already been invoked. Typically, that happens when the resource for which this hook
+    /// was added is being torn down anyway.
+    pub fn add_async_cleanup_hook<Hook>(
+        &mut self,
+        hook: Hook,
+    ) -> NapiResult<Option<AsyncCleanupHookHandler>>
+    where
+        Hook: FnOnce(AsyncCleanupHookHandler) -> NapiResult<()>,
+    {
+        let hook: Box<Box<dyn FnOnce(AsyncCleanupHookHandler) -> NapiResult<()>>> =
+            Box::new(Box::new(hook));
+
+        // The body of the function should initiate the asynchronous cleanup actions at the end of
+        // which handle must be passed in a call to napi_remove_async_cleanup_hook.
+        unsafe extern "C" fn async_cleanup_hook(
+            handle: napi_async_cleanup_hook_handle,
+            data: *mut std::os::raw::c_void,
+        ) {
+            unsafe {
+                let hook: Box<Box<dyn FnOnce(AsyncCleanupHookHandler) -> NapiResult<()>>> =
+                    Box::from_raw(data as _);
+                if let Err(e) = hook(AsyncCleanupHookHandler(handle)) {
+                    log::error!("[{}] cleanup hook error.", e);
+                }
+            }
+        }
+
+        let maybe_handler = napi_call!(
+            =napi_add_async_cleanup_hook,
+            *self,
+            Some(async_cleanup_hook),
+            Box::into_raw(hook) as _,
+        );
+
+        if maybe_handler.is_null() {
+            return Ok(None);
+        }
+
+        Ok(Some(AsyncCleanupHookHandler(maybe_handler)))
+    }
+}
+
+#[cfg(feature = "v3")]
+pub struct CleanupHookHandler {
+    env: NapiEnv,
+    hook: Option<unsafe extern "C" fn(data: *mut std::os::raw::c_void)>,
+    args: *mut std::os::raw::c_void,
+}
+
+#[cfg(feature = "v3")]
+impl CleanupHookHandler {
+    pub fn remove(self) -> NapiResult<()> {
+        napi_call!(napi_remove_env_cleanup_hook, self.env, self.hook, self.args,);
+        Ok(())
+    }
+}
+
+#[cfg(feature = "v8")]
+#[derive(Debug)]
+pub struct AsyncCleanupHookHandler(napi_async_cleanup_hook_handle);
+
+#[cfg(feature = "v8")]
+impl AsyncCleanupHookHandler {
+    pub fn remove(self) -> NapiResult<()> {
+        napi_call!(napi_remove_async_cleanup_hook, self.0);
+        Ok(())
     }
 }

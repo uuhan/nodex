@@ -56,3 +56,5 @@ impl JsError {
         Ok(JsError(JsValue(env, err)))
     }
 }
+
+napi_value_t!(JsError);

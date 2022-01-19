@@ -2,7 +2,7 @@ use nodex::prelude::*;
 
 nodex::napi_module!(init);
 
-fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
+fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     nodex::napi_guard!(env.napi_version()?);
 
     let mut obj = env.object()?;
@@ -16,8 +16,7 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
         name,
         env.func(move |this, [a1]: [JsFunction; 1]| {
             let env = this.env();
-            let _scope = NapiHandleScope::open(env)?;
-
+            let _scope = env.handle_scope()?;
             let result = a1.call(this, [env.string("I am from rust world.")?]);
             let result = match result {
                 Ok(result) => result,
@@ -91,6 +90,20 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
         },
     )?
     .queue()?;
+
+    env.add_cleanup_hook(|| {
+        println!("clean hook fired");
+        Ok(())
+    })?;
+
+    let hook = env.add_cleanup_hook(|| {
+        println!("clean hook fired");
+        Ok(())
+    })?;
+
+    hook.remove()?;
+
+    if let Some(_hook) = env.add_async_cleanup_hook(|hook| hook.remove())? {}
 
     Ok(())
 }
