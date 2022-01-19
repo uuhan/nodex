@@ -16,9 +16,10 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
         name,
         env.func(move |this, [a1]: [JsFunction; 1]| {
             let env = this.env();
+            let _scope = NapiHandleScope::open(env)?;
 
-            let r = a1.call(this, [env.string("I am from rust world.")?]);
-            let result = match r {
+            let result = a1.call(this, [env.string("I am from rust world.")?]);
+            let result = match result {
                 Ok(result) => result,
                 Err(_) => env.undefined()?.value(),
             };
