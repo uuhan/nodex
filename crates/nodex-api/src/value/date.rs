@@ -14,7 +14,7 @@ impl JsDate {
     /// This API allocates a JavaScript Date object.
     /// JavaScript Date objects are described in Section 20.3 of the ECMAScript Language Specification.
     pub fn new(env: NapiEnv, time: f64) -> NapiResult<JsDate> {
-        let value = napi_call!(=napi_create_date, env.raw(), time);
+        let value = napi_call!(=napi_create_date, env, time);
         Ok(JsDate(JsValue::from_raw(env, value)))
     }
 
