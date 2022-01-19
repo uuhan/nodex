@@ -28,7 +28,7 @@ It is in a very early stage and heavy development is making.
 crate-type = ["cdylib"]
 
 [dependencies.nodex-api]
-version = "0.1.0-alpha.10"
+version = "0.1.0-alpha.11"
 features = ["v8"]
 ```
 
@@ -43,7 +43,7 @@ We have v1,v2,v3,...v8 versions.
 crate-type = ["cdylib"]
 
 [dependencies.nodex]
-version = "0.1.0-alpha.10"
+version = "0.1.0-alpha.11"
 ```
 
 ## Examples
@@ -89,13 +89,13 @@ let mut obj: JsObject = env.object()?;
 obj.set_property(name, env.null()?)?;
 
 // Function
-let func: JsFunction = env.func(move |this, [a1, a2, a3]: [JsValue; _]| {
+let func: JsFunction = env.func(move |this, [a1, a2, a3]: [JsValue; 3]| {
     let env = this.env();
     let r = a1.as_function()?.call(this, [env.string("I am from rust world.")?.value()])?;
     Ok(r)
 })?;
 
-let func: JsFunction = env.func(move |this, [a1]: [JsFunction; _]| {
+let func: JsFunction = env.func(move |this, [a1]: [JsFunction; 1]| {
     let env = this.env();
     let r = a1.call(this, [env.string("I am from rust world.")?.value()])?;
     Ok(r)
