@@ -16,8 +16,8 @@ It is in a very early stage and heavy development is making.
 - [ ] nodejs async runtime to drive rust async code
     - [ ] async runtime for async rust
     - [ ] macros like: #[nodex::rt] async fn main(), so you can use nodejs to run any rust async-code.
-        [ ] node --require=main.node
-        [ ] rust code introspection with nodejs repl
+        - [ ] node --require=main.node
+        - [ ] rust code introspection with nodejs repl
 - [ ] cargo-nodex cargo subcommand to make ease of create nodejs addons, e.g. auto generate ts typings.
     - [ ] cargo nodex build
     - [ ] cargo nodex typings
