@@ -298,10 +298,10 @@ pub trait NapiValueT {
     /// array of such property descriptors, this API will set the properties on the object one at a
     /// time, as defined by DefineOwnProperty() (described in Section 9.1.6 of the ECMA-262
     /// specification).
-    fn define_properties(
-        &self,
-        properties: impl AsRef<[NapiPropertyDescriptor]>,
-    ) -> NapiResult<()> {
+    fn define_properties<P>(&self, properties: P) -> NapiResult<()>
+    where
+        P: AsRef<[NapiPropertyDescriptor]>,
+    {
         napi_call!(
             napi_define_properties,
             self.env(),
@@ -311,6 +311,19 @@ pub trait NapiValueT {
         );
 
         Ok(())
+    }
+
+    /// This is a hook which is fired when the value is gabage-collected.
+    /// For napi >= 5, we use napi_add_finalizer,
+    /// For napi < 5, we use napi_wrap.
+    fn gc<Finalizer>(&mut self, finalizer: Finalizer) -> NapiResult<NapiRef>
+    where
+        Finalizer: FnOnce(NapiEnv) -> NapiResult<()>,
+    {
+        #[cfg(feature = "v5")]
+        return self.finalizer(finalizer);
+        #[cfg(not(feature = "v5"))]
+        return self.wrap((), move |env, _| finalizer(env));
     }
 
     #[cfg(feature = "v5")]
@@ -361,6 +374,92 @@ pub trait NapiValueT {
 
         Ok(NapiRef::from_raw(self.env(), reference))
     }
+
+    #[allow(clippy::type_complexity)]
+    /// Wraps a native instance in a JavaScript object. The native instance can be retrieved
+    /// later using napi_unwrap().
+    ///
+    /// When JavaScript code invokes a constructor for a class that was defined using napi_define_class(),
+    /// the napi_callback for the constructor is invoked. After constructing an instance of the native class, the callback must then call napi_wrap() to wrap the newly constructed instance in the already-created JavaScript object that is the this argument to the constructor callback. (That this object was created from the constructor function's prototype, so it already has definitions of all the instance properties and methods.)
+    ///
+    /// Typically when wrapping a class instance, a finalize callback should be provided that simply
+    /// deletes the native instance that is received as the data argument to the finalize callback.
+    ///
+    /// The optional returned reference is initially a weak reference, meaning it has a reference
+    /// count of 0. Typically this reference count would be incremented temporarily during async
+    /// operations that require the instance to remain valid.
+    ///
+    /// Caution: The optional returned reference (if obtained) should be deleted via napi_delete_reference
+    /// ONLY in response to the finalize callback invocation. If it is deleted before then, then
+    /// the finalize callback may never be invoked. Therefore, when obtaining a reference a finalize
+    /// callback is also required in order to enable correct disposal of the reference.
+    ///
+    /// Calling napi_wrap() a second time on an object will return an error. To associate another
+    /// native instance with the object, use napi_remove_wrap() first.
+    fn wrap<T, Finalizer>(&mut self, data: T, finalizer: Finalizer) -> NapiResult<NapiRef>
+    where
+        Finalizer: FnOnce(NapiEnv, T) -> NapiResult<()>,
+    {
+        // NB: Because we add a closure to the napi finalizer, it's better
+        // to **CAPTURE** the leaked data from rust side, so here we just
+        // ignore the passed in native data pointer.
+        unsafe extern "C" fn finalizer_trampoline<T>(
+            env: NapiEnv,
+            data: DataPointer,
+            finalizer: DataPointer,
+        ) {
+            // NB: here we collect the memory of finalizer closure
+            let finalizer: Box<Box<dyn FnOnce(NapiEnv, T) -> NapiResult<()>>> =
+                Box::from_raw(finalizer as _);
+            let data = Box::<T>::from_raw(data as _);
+            if let Err(err) = finalizer(env, *data) {
+                log::error!("NapiValueT::wrap(): {}", err);
+            }
+        }
+
+        let finalizer: Box<Box<dyn FnOnce(NapiEnv, T) -> NapiResult<()>>> =
+            Box::new(Box::new(finalizer));
+        let reference = napi_call!(
+            =napi_wrap,
+            self.env(),
+            self.raw(),
+            Box::into_raw(Box::new(data)) as DataPointer,
+            Some(finalizer_trampoline::<T>),
+            Box::into_raw(finalizer) as DataPointer,
+        );
+
+        Ok(NapiRef::from_raw(self.env(), reference))
+    }
+
+    /// Retrieves a native instance that was previously wrapped in a JavaScript object using
+    /// napi_wrap().
+    ///
+    /// When JavaScript code invokes a method or property accessor on the class, the corresponding
+    /// napi_callback is invoked. If the callback is for an instance method or accessor, then the
+    /// this argument to the callback is the wrapper object; the wrapped C++ instance that is the
+    /// target of the call can be obtained then by calling napi_unwrap() on the wrapper object.
+    ///
+    /// NB: if a there is no wrap or the wrap is just removed by NapiValue::remove_wrap, return
+    /// None.
+    fn unwrap<T>(&self) -> NapiResult<Option<&T>> {
+        let (status, value) = napi_call!(?napi_unwrap, self.env(), self.raw());
+        match status {
+            NapiStatus::Ok => unsafe { Ok(Some(&*(value as *const T))) },
+            NapiStatus::InvalidArg => Ok(None),
+            err => Err(err),
+        }
+    }
+
+    /// Retrieves a native instance that was previously wrapped in the JavaScript object js_object
+    /// using napi_wrap() and removes the wrapping. If a finalize callback was associated with the
+    /// wrapping, it will no longer be called when the JavaScript object becomes garbage-collected.
+    fn remove_wrap<T>(&mut self) -> NapiResult<T> {
+        let value = napi_call!(=napi_remove_wrap, self.env(), self.raw());
+        unsafe {
+            let value: Box<T> = Box::from_raw(value as *mut _);
+            Ok(*value)
+        }
+    }
 }
 
 mod array;
@@ -368,18 +467,18 @@ mod arraybuffer;
 mod bigint;
 mod boolean;
 mod buffer;
+mod class;
 mod dataview;
 mod date;
 mod error;
 mod external;
 mod function;
 mod global;
+mod name;
 mod null;
 mod number;
 mod object;
 mod promise;
-mod string;
-mod symbol;
 mod typedarray;
 mod undefined;
 
@@ -388,17 +487,17 @@ pub use arraybuffer::JsArrayBuffer;
 pub use bigint::JsBigInt;
 pub use boolean::JsBoolean;
 pub use buffer::JsBuffer;
+pub use class::JsClass;
 pub use dataview::JsDataView;
 pub use date::JsDate;
 pub use error::JsError;
 pub use external::JsExternal;
 pub use function::JsFunction;
 pub use global::JsGlobal;
+pub use name::{JsString, JsSymbol};
 pub use null::JsNull;
 pub use number::JsNumber;
 pub use object::JsObject;
 pub use promise::JsPromise;
-pub use string::JsString;
-pub use symbol::JsSymbol;
 pub use typedarray::JsTypedArray;
 pub use undefined::JsUndefined;

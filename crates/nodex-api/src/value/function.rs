@@ -53,40 +53,16 @@ impl JsFunction {
     /// function and the data to napi_add_finalizer.
     ///
     /// JavaScript Functions are described in Section 19.2 of the ECMAScript Language Specification.
-    pub fn new(
-        env: NapiEnv,
-        name: Option<impl AsRef<str>>,
-        value: extern "C" fn(env: NapiEnv, info: napi_callback_info) -> napi_value,
-    ) -> NapiResult<JsFunction> {
-        let (name, len) = if let Some(name) = name {
-            (name.as_ref().as_ptr() as *const c_char, name.as_ref().len())
-        } else {
-            (std::ptr::null(), 0)
-        };
-
-        let value = napi_call!(
-            =napi_create_function,
-            env,
-            name,
-            len,
-            Some(value),
-            std::ptr::null_mut(),
-        );
-
-        Ok(JsFunction(JsValue::from_raw(env, value)))
-    }
-
-    /// Create a js function with rust closure
     #[allow(clippy::type_complexity)]
-    pub fn with<Func, T, R, const N: usize>(
+    pub fn new<F, T, R, const N: usize>(
         env: NapiEnv,
         name: Option<impl AsRef<str>>,
-        func: Func,
+        func: F,
     ) -> NapiResult<JsFunction>
     where
         T: NapiValueT,
         R: NapiValueT,
-        Func: FnMut(JsObject, [T; N]) -> NapiResult<R>,
+        F: FnMut(JsObject, [T; N]) -> NapiResult<R>,
     {
         let (name, len) = if let Some(name) = name {
             (name.as_ref().as_ptr() as *const c_char, name.as_ref().len())
@@ -149,10 +125,9 @@ impl JsFunction {
             fn_pointer,
         );
 
-        let func = JsFunction(JsValue::from_raw(env, value));
+        let mut func = JsFunction(JsValue::from_raw(env, value));
 
-        #[cfg(feature = "v5")]
-        func.finalizer(move |_| unsafe {
+        func.gc(move |_| unsafe {
             // NB: the leaked data is collected here.
             let _: Box<Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<R>>> =
                 Box::from_raw(fn_pointer as _);

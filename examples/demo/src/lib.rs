@@ -8,10 +8,18 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     let mut obj = env.object()?;
     let mut times = 0;
 
-    obj.finalizer(move |_| {
+    obj.gc(move |_| {
         println!("obj garbage-collected");
         Ok(())
     })?;
+
+    obj.wrap([1usize, 2], move |_, v| {
+        println!("wrap: {:?}", v);
+        Ok(())
+    })?;
+
+    println!("unwrap: {:?}", obj.unwrap::<[usize; 2]>());
+    println!("remove wrap: {:?}", obj.remove_wrap::<[usize; 2]>());
 
     let label = "func";
     let name = env.string(label)?;
@@ -49,6 +57,21 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     )?;
     obj.set_property(symbol, env.double(100.)?)?;
     assert_eq!(label, name.get()?);
+
+    obj.set_named_property(
+        "myclass",
+        env.class(
+            "myclass",
+            |mut this, [a1]: [JsNumber; 1]| {
+                this.set_named_property("a1", a1)?;
+                Ok(this)
+            },
+            [DescriptorBuilder::new()
+                .with_utf8name("prop1")
+                .with_value(env.double(10.)?)
+                .build()?],
+        )?,
+    )?;
 
     let version = env.node_version()?;
     println!(

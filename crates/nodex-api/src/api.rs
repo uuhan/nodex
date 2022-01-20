@@ -129,7 +129,7 @@ pub struct napi_property_descriptor {
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-pub struct napi_extended_error_info {
+pub struct NapiExtendedErrorInfo {
     pub error_message: *const ::std::os::raw::c_char,
     pub engine_reserved: *mut ::std::os::raw::c_void,
     pub engine_error_code: u32,
@@ -157,7 +157,7 @@ pub struct napi_type_tag {
 extern "C" {
     pub fn napi_get_last_error_info(
         env: NapiEnv,
-        result: *mut *const napi_extended_error_info,
+        result: *mut *const NapiExtendedErrorInfo,
     ) -> NapiStatus;
 }
 extern "C" {
