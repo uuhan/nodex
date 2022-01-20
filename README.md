@@ -30,7 +30,7 @@ It is in a very early stage and heavy development is making.
 crate-type = ["cdylib"]
 
 [dependencies.nodex-api]
-version = "0.1.0-alpha.11"
+version = "0.1.0-alpha.12"
 features = ["v8"]
 ```
 
@@ -45,7 +45,7 @@ We have v1,v2,v3,...v8 versions.
 crate-type = ["cdylib"]
 
 [dependencies.nodex]
-version = "0.1.0-alpha.11"
+version = "0.1.0-alpha.12"
 ```
 
 ## Napi Level
