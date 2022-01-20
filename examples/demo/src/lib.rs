@@ -8,6 +8,11 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     let mut obj = env.object()?;
     let mut times = 0;
 
+    obj.finalizer(move |_| {
+        println!("obj garbage-collected");
+        Ok(())
+    })?;
+
     let label = "func";
     let name = env.string(label)?;
     let symbol = env.symbol()?;

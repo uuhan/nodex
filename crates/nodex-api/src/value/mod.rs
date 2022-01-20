@@ -312,6 +312,55 @@ pub trait NapiValueT {
 
         Ok(())
     }
+
+    /// Adds a napi_finalize callback which will be called when the JavaScript object in
+    /// js_object is ready for garbage collection. This API is similar to napi_wrap() except
+    /// that:
+    ///
+    /// * the native data cannot be retrieved later using napi_unwrap(),
+    /// * nor can it be removed later using napi_remove_wrap(), and
+    /// * the API can be called multiple times with different data items in order to attach each of them to the JavaScript object, and
+    /// * the object manipulated by the API can be used with napi_wrap().
+    ///
+    /// Caution: The optional returned reference (if obtained) should be deleted via
+    /// napi_delete_reference ONLY in response to the finalize callback invocation.
+    /// If it is deleted before then, then the finalize callback may never be invoked.
+    /// herefore, when obtaining a reference a finalize callback is also required in order
+    /// to enable correct disposal of the reference.
+    #[cfg(feature = "v5")]
+    fn finalizer<Finalizer>(&self, finalizer: Finalizer) -> NapiResult<NapiRef>
+    where
+        Finalizer: FnOnce(NapiEnv) -> NapiResult<()>,
+    {
+        // NB: Because we add a closure to the napi finalizer, it's better
+        // to **CAPTURE** the leaked data from rust side, so here we just
+        // ignore the passed in native data pointer.
+        unsafe extern "C" fn finalizer_trampoline(
+            env: NapiEnv,
+            _: DataPointer,
+            finalizer: DataPointer,
+        ) {
+            // NB: here we collect the memory of finalizer closure
+            let finalizer: Box<Box<dyn FnOnce(NapiEnv) -> NapiResult<()>>> =
+                Box::from_raw(finalizer as _);
+            if let Err(err) = finalizer(env) {
+                log::error!("NapiValueT::finalizer(): {}", err);
+            }
+        }
+
+        let finalizer: Box<Box<dyn FnOnce(NapiEnv) -> NapiResult<()>>> =
+            Box::new(Box::new(finalizer));
+        let reference = napi_call!(
+            =napi_add_finalizer,
+            self.env(),
+            self.raw(),
+            std::ptr::null_mut(),
+            Some(finalizer_trampoline),
+            Box::into_raw(finalizer) as DataPointer,
+        );
+
+        Ok(NapiRef::from_raw(self.env(), reference))
+    }
 }
 
 mod array;

@@ -48,6 +48,26 @@ crate-type = ["cdylib"]
 version = "0.1.0-alpha.11"
 ```
 
+## Features
+
+### v1
+
+### v2
+
+### v3
+
+### v4
+
+### v5
+
+* NapiValueT::finalizer::<Finalizer>() - Adds a napi_finalize callback which will be called when the JavaScript object is ready for gc.
+
+### v6
+
+### v7
+
+### v8
+
 ## Examples
 
 ### Init Module
@@ -195,6 +215,16 @@ env.async_work_state(
     },
 )?
 .queue()?;
+```
+
+### Add finalizer for js object
+
+```rust
+let mut obj = env.object()?;
+obj.finalizer(move |_| {
+    println!("obj garbage-collected");
+    Ok(())
+});
 ```
 
 ### More

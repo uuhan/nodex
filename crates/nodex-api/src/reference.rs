@@ -4,8 +4,8 @@ use crate::{api, prelude::*};
 pub struct NapiRef(NapiEnv, napi_ref);
 
 impl NapiRef {
-    pub(crate) fn from_raw(env: napi_env, reference: napi_ref) -> NapiRef {
-        NapiRef(NapiEnv(env), reference)
+    pub(crate) fn from_raw(env: NapiEnv, reference: napi_ref) -> NapiRef {
+        NapiRef(env, reference)
     }
 
     /// This API creates a new reference with the specified reference count to the Object passed

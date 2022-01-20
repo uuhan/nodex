@@ -146,6 +146,9 @@ pub mod prelude {
         napi_env, napi_escapable_handle_scope, napi_handle_scope, napi_property_descriptor,
         napi_ref, napi_value,
     };
+
+    pub type DataPointer = *mut std::ffi::c_void;
+    pub type CharPointer = *mut std::os::raw::c_char;
 }
 
 pub const fn napi_version_guard() -> u32 {

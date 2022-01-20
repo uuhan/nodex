@@ -118,8 +118,10 @@ impl JsFunction {
                     data.as_mut_ptr(),
                 );
 
-                // NB: this cb is leaked, should collect the box when the function is destroyed
-                // restore the closure from data
+                // NB: the JsFunction maybe called multiple times, so we can should leak the
+                // closure memory here.
+                //
+                // With napi >= 5, we can add a finalizer to this function.
                 let func: &mut Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<R>> =
                     std::mem::transmute(data);
 
@@ -136,6 +138,9 @@ impl JsFunction {
             }
         }
 
+        let fn_pointer = Box::into_raw(func) as DataPointer;
+        let fn_pointer_1 = fn_pointer.clone();
+
         let value = napi_call!(
             =napi_create_function,
             env,
@@ -143,10 +148,20 @@ impl JsFunction {
             len,
             Some(trampoline::<T, R, N>),
             // pass closure to trampoline function
-            Box::into_raw(func) as _,
+            fn_pointer,
         );
 
-        Ok(JsFunction(JsValue::from_raw(env, value)))
+        let func = JsFunction(JsValue::from_raw(env, value));
+
+        #[cfg(feature = "v5")]
+        func.finalizer(move |_| unsafe {
+            // NB: the leaked data is collected here.
+            let _: Box<Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<R>>> =
+                Box::from_raw(fn_pointer as _);
+            Ok(())
+        })?;
+
+        Ok(func)
     }
 
     /// This method allows a JavaScript function object to be called from a native add-on. This is
