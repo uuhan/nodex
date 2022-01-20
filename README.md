@@ -48,25 +48,19 @@ crate-type = ["cdylib"]
 version = "0.1.0-alpha.11"
 ```
 
-## Features
-
-### v1
-
-### v2
+## Napi Level
 
 ### v3
 
-### v4
+* NapiEnv::add_cleanup_hook() - Do the cleanup when nodejs environment exits.
 
 ### v5
 
-* NapiValueT::finalizer::<Finalizer>() - Adds a napi_finalize callback which will be called when the JavaScript object is ready for gc.
-
-### v6
-
-### v7
+* NapiValueT::finalizer() - Adds a napi_finalize callback which will be called when the JavaScript object is ready for gc.
 
 ### v8
+
+* NapiEnv::add_async_cleanup_hook() - Do the cleanup when nodejs environment exits, asynchronous.
 
 ## Examples
 
