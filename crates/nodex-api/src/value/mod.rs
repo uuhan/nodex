@@ -313,6 +313,7 @@ pub trait NapiValueT {
         Ok(())
     }
 
+    #[cfg(feature = "v5")]
     /// Adds a napi_finalize callback which will be called when the JavaScript object in
     /// js_object is ready for garbage collection. This API is similar to napi_wrap() except
     /// that:
@@ -327,7 +328,6 @@ pub trait NapiValueT {
     /// If it is deleted before then, then the finalize callback may never be invoked.
     /// herefore, when obtaining a reference a finalize callback is also required in order
     /// to enable correct disposal of the reference.
-    #[cfg(feature = "v5")]
     fn finalizer<Finalizer>(&self, finalizer: Finalizer) -> NapiResult<NapiRef>
     where
         Finalizer: FnOnce(NapiEnv) -> NapiResult<()>,

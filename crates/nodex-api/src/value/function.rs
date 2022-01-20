@@ -139,8 +139,6 @@ impl JsFunction {
         }
 
         let fn_pointer = Box::into_raw(func) as DataPointer;
-        let fn_pointer_1 = fn_pointer.clone();
-
         let value = napi_call!(
             =napi_create_function,
             env,
