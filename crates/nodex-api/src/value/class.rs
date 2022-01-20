@@ -30,6 +30,7 @@ impl JsClass {
     /// of the napi_property_descriptor array items can be associated with the resulting JavaScript
     /// constructor (which is returned in the result parameter) and freed whenever the class is
     /// garbage-collected by passing both the JavaScript function and the data to napi_add_finalizer.
+    #[allow(clippy::type_complexity)]
     pub fn new<F, P, T, R, const N: usize>(
         env: NapiEnv,
         name: impl AsRef<str>,
