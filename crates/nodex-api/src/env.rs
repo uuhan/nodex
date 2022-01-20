@@ -98,17 +98,17 @@ impl NapiEnv {
         R: NapiValueT,
         Func: FnMut(JsObject, [T; N]) -> NapiResult<R>,
     {
-        JsFunction::with(*self, Some(name), func)
+        JsFunction::new(*self, Some(name), func)
     }
 
-    /// Create a js function with a rust closure.
+    // Create a js function with a rust closure.
     pub fn func<Func, T, R, const N: usize>(&self, func: Func) -> NapiResult<JsFunction>
     where
         T: NapiValueT,
         R: NapiValueT,
         Func: FnMut(JsObject, [T; N]) -> NapiResult<R>,
     {
-        JsFunction::with(*self, Option::<String>::None, func)
+        JsFunction::new(*self, Option::<String>::None, func)
     }
 
     /// Create a named js function with a rust function
@@ -117,7 +117,16 @@ impl NapiEnv {
         name: impl AsRef<str>,
         func: extern "C" fn(env: NapiEnv, info: napi_callback_info) -> napi_value,
     ) -> NapiResult<JsFunction> {
-        JsFunction::new(*self, Some(name), func)
+        let value = napi_call!(
+            =napi_create_function,
+            *self,
+            name.as_ref().as_ptr() as CharPointer,
+            name.as_ref().len(),
+            Some(func),
+            std::ptr::null_mut(),
+        );
+
+        Ok(JsFunction(JsValue::from_raw(*self, value)))
     }
 
     /// Create a js function with a rust function
@@ -125,7 +134,32 @@ impl NapiEnv {
         &self,
         func: extern "C" fn(env: NapiEnv, info: napi_callback_info) -> napi_value,
     ) -> NapiResult<JsFunction> {
-        JsFunction::new(*self, Option::<String>::None, func)
+        let value = napi_call!(
+            =napi_create_function,
+            *self,
+            std::ptr::null(),
+            0,
+            Some(func),
+            std::ptr::null_mut(),
+        );
+
+        Ok(JsFunction(JsValue::from_raw(*self, value)))
+    }
+
+    /// Create a js class with a rust closure
+    pub fn class<F, P, T, R, const N: usize>(
+        &self,
+        name: impl AsRef<str>,
+        func: F,
+        properties: P,
+    ) -> NapiResult<JsClass>
+    where
+        T: NapiValueT,
+        R: NapiValueT,
+        F: FnMut(JsObject, [T; N]) -> NapiResult<R>,
+        P: AsRef<[NapiPropertyDescriptor]>,
+    {
+        JsClass::new(*self, name, func, properties)
     }
 
     /// Create an async work

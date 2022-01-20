@@ -298,10 +298,10 @@ pub trait NapiValueT {
     /// array of such property descriptors, this API will set the properties on the object one at a
     /// time, as defined by DefineOwnProperty() (described in Section 9.1.6 of the ECMA-262
     /// specification).
-    fn define_properties(
-        &self,
-        properties: impl AsRef<[NapiPropertyDescriptor]>,
-    ) -> NapiResult<()> {
+    fn define_properties<P>(&self, properties: P) -> NapiResult<()>
+    where
+        P: AsRef<[NapiPropertyDescriptor]>,
+    {
         napi_call!(
             napi_define_properties,
             self.env(),
@@ -368,6 +368,7 @@ mod arraybuffer;
 mod bigint;
 mod boolean;
 mod buffer;
+mod class;
 mod dataview;
 mod date;
 mod error;
@@ -388,6 +389,7 @@ pub use arraybuffer::JsArrayBuffer;
 pub use bigint::JsBigInt;
 pub use boolean::JsBoolean;
 pub use buffer::JsBuffer;
+pub use class::JsClass;
 pub use dataview::JsDataView;
 pub use date::JsDate;
 pub use error::JsError;
