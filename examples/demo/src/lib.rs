@@ -54,12 +54,14 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
         "myclass",
         env.class(
             "myclass",
-            |this, [a1]: [JsNumber; 1]| {
-                let mut obj = this.env().object()?;
-                obj.set_named_property("a1", a1)?;
-                Ok(obj)
+            |mut this, [a1]: [JsNumber; 1]| {
+                this.set_named_property("a1", a1)?;
+                Ok(this)
             },
-            [],
+            [DescriptorBuilder::new()
+                .with_utf8name("prop1")
+                .with_value(env.double(10.)?)
+                .build()?],
         )?,
     )?;
 
