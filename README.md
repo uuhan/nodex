@@ -15,7 +15,9 @@ It is in a very early stage and heavy development is making.
     - [ ] sweet syntax, like: let lodash = nodex::import!(lodash);
 - [ ] nodejs async runtime to drive rust async code
     - [ ] async runtime for async rust
-    - [ ] macros like: #[nodex::rt] async fn main()
+    - [ ] macros like: #[nodex::rt] async fn main(), so you can use nodejs to run any rust async-code.
+        [ ] node --require=main.node
+        [ ] rust code introspection with nodejs repl
 - [ ] cargo-nodex cargo subcommand to make ease of create nodejs addons, e.g. auto generate ts typings.
     - [ ] cargo nodex build
     - [ ] cargo nodex typings
@@ -97,7 +99,7 @@ let func: JsFunction = env.func(move |this, [a1, a2, a3]: [JsValue; 3]| {
 
 let func: JsFunction = env.func(move |this, [a1]: [JsFunction; 1]| {
     let env = this.env();
-    a1.call(this, [env.string("I am from rust world.")?.value()])
+    a1.call(this, [env.string("I am from rust world.")?])
 })?;
 
 // Error
