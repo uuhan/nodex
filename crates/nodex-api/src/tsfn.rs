@@ -62,10 +62,17 @@ impl<Data> NapiThreadsafeFunction<Data> {
             }
         }
 
-        let finalizer: Box<Box<dyn FnOnce(NapiEnv) -> NapiResult<()>>> =
-            Box::new(Box::new(finalizer));
         let context: Box<Box<dyn FnMut(Function<R>, Data) -> NapiResult<()>>> =
             Box::new(Box::new(callback));
+        // NB: leak here
+        let context = Box::into_raw(context);
+        let finalizer: Box<Box<dyn FnOnce(NapiEnv) -> NapiResult<()>>> =
+            Box::new(Box::new(move |env| -> NapiResult<()> {
+                unsafe {
+                    Box::from_raw(context);
+                }
+                finalizer(env)
+            }));
 
         let tsfn = napi_call!(
             =napi_create_threadsafe_function,
@@ -77,7 +84,7 @@ impl<Data> NapiThreadsafeFunction<Data> {
             1,
             Box::into_raw(finalizer) as _,
             Some(finalizer_trampoline),
-            Box::into_raw(context) as _,
+            context as _,
             Some(call_js_trampoline::<R, Data>),
         );
 
