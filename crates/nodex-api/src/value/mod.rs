@@ -250,6 +250,48 @@ pub trait NapiValueT {
         T::from_raw(self.env(), self.raw())
     }
 
+    /// This API implements the abstract operation ToBoolean() as defined in Section 7.1.2 of the
+    /// ECMAScript Language Specification.
+    #[inline]
+    fn coerce_to_bool(&self) -> NapiResult<JsBoolean> {
+        Ok(JsBoolean::from_raw(
+            self.env(),
+            napi_call!(=napi_coerce_to_bool, self.env(), self.raw()),
+        ))
+    }
+
+    /// This API implements the abstract operation ToNumber() as defined in Section 7.1.3 of the
+    /// ECMAScript Language Specification. This function potentially runs JS code if the passed-in
+    /// value is an object.
+    #[inline]
+    fn coerce_coerce_to_number(&self) -> NapiResult<JsNumber> {
+        Ok(JsNumber::from_raw(
+            self.env(),
+            napi_call!(=napi_coerce_to_number, self.env(), self.raw()),
+        ))
+    }
+
+    /// This API implements the abstract operation ToObject() as defined in Section 7.1.13 of the
+    /// ECMAScript Language Specification.
+    #[inline]
+    fn coerce_to_object(&self) -> NapiResult<JsObject> {
+        Ok(JsObject::from_raw(
+            self.env(),
+            napi_call!(=napi_coerce_to_object, self.env(), self.raw()),
+        ))
+    }
+
+    /// This API implements the abstract operation ToString() as defined in Section 7.1.13 of the
+    /// ECMAScript Language Specification. This function potentially runs JS code if the passed-in
+    /// value is an object.
+    #[inline]
+    fn coerce_to_string(&self) -> NapiResult<JsString> {
+        Ok(JsString::from_raw(
+            self.env(),
+            napi_call!(=napi_coerce_to_string, self.env(), self.raw()),
+        ))
+    }
+
     /// Returns napi_ok if the API succeeded.
     /// - `napi_invalid_arg` if the type of value is not a known ECMAScript type and value is not an External value.
     /// This API represents behavior similar to invoking the typeof Operator on the object as defined in
