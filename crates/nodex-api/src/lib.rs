@@ -110,6 +110,8 @@ mod error;
 pub mod reference;
 pub mod rt;
 pub mod scope;
+#[cfg(feature = "v4")]
+pub mod tsfn;
 pub mod value;
 pub mod work;
 
@@ -139,16 +141,20 @@ pub mod prelude {
     pub use descriptor::{DescriptorBuilder, NapiPropertyDescriptor};
     pub use reference::NapiRef;
     pub use scope::*;
+    #[cfg(feature = "v4")]
+    pub use tsfn::NapiThreadsafeFunction;
     pub use value::*;
     pub use work::NapiAsyncWork;
 
     #[cfg(feature = "v8")]
     pub use api::napi_async_cleanup_hook_handle;
+    #[cfg(feature = "v4")]
+    pub use api::napi_threadsafe_function;
     pub use api::{
         napi_async_context, napi_async_work, napi_callback, napi_callback_info,
-        napi_callback_scope, napi_deferred, napi_env, napi_escapable_handle_scope,
-        napi_handle_scope, napi_property_descriptor, napi_ref, napi_value, uv_loop_s,
-        NapiExtendedErrorInfo, NapiTypeTag,
+        napi_callback_scope, napi_deferred, napi_env, napi_escapable_handle_scope, napi_finalize,
+        napi_handle_scope, napi_property_descriptor, napi_ref, napi_threadsafe_function_call_js,
+        napi_value, uv_loop_s, NapiExtendedErrorInfo, NapiTypeTag,
     };
 
     pub type DataPointer = *mut std::ffi::c_void;
