@@ -224,18 +224,22 @@ impl NapiEnv {
 
     /// This API throws a JavaScript TypeError with the text provided.
     #[inline]
-    pub fn throw_type_error(
+    pub fn throw_type_error(&self, msg: impl AsRef<str>) -> NapiResult<()> {
+        let msg = napi_s!(msg.as_ref()).map_err(|_| NapiStatus::StringExpected)?;
+        napi_call!(napi_throw_type_error, *self, std::ptr::null(), msg.as_ptr());
+        Ok(())
+    }
+
+    /// This API throws a JavaScript TypeError with the text provided.
+    #[inline]
+    pub fn throw_type_error_code(
         &self,
-        message: impl AsRef<str>,
-        code: Option<impl AsRef<str>>,
+        msg: impl AsRef<str>,
+        code: impl AsRef<str>,
     ) -> NapiResult<()> {
-        let msg = napi_s!(message.as_ref()).map_err(|_| NapiStatus::StringExpected)?;
-        let code = if let Some(code) = code {
-            napi_s!(code.as_ref())?.as_ptr()
-        } else {
-            std::ptr::null()
-        };
-        napi_call!(napi_throw_type_error, *self, code, msg.as_ptr());
+        let msg = napi_s!(msg.as_ref()).map_err(|_| NapiStatus::StringExpected)?;
+        let code = napi_s!(code.as_ref())?;
+        napi_call!(napi_throw_type_error, *self, code.as_ptr(), msg.as_ptr());
         Ok(())
     }
 
@@ -243,19 +247,31 @@ impl NapiEnv {
     #[inline]
     pub fn throw_range_error(
         &self,
-        message: impl AsRef<str>,
+        msg: impl AsRef<str>,
         code: Option<impl AsRef<str>>,
     ) -> NapiResult<()> {
         use std::ffi::CString;
-        let msg = CString::new(message.as_ref()).map_err(|_| NapiStatus::StringExpected)?;
-        let code = if let Some(code) = code {
-            CString::new(code.as_ref())
-                .map_err(|_| NapiStatus::StringExpected)?
-                .as_ptr()
-        } else {
-            std::ptr::null()
-        };
-        napi_call!(napi_throw_range_error, *self, code, msg.as_ptr());
+        let msg = napi_s!(msg.as_ref())?;
+        napi_call!(
+            napi_throw_range_error,
+            *self,
+            std::ptr::null(),
+            msg.as_ptr()
+        );
+        Ok(())
+    }
+
+    /// This API throws a JavaScript TypeError with the text provided.
+    #[inline]
+    pub fn throw_range_error_code(
+        &self,
+        msg: impl AsRef<str>,
+        code: impl AsRef<str>,
+    ) -> NapiResult<()> {
+        use std::ffi::CString;
+        let msg = napi_s!(msg.as_ref())?;
+        let code = napi_s!(code.as_ref())?;
+        napi_call!(napi_throw_range_error, *self, code.as_ptr(), msg.as_ptr());
         Ok(())
     }
 
