@@ -148,7 +148,7 @@ pub mod prelude {
         napi_async_context, napi_async_work, napi_callback, napi_callback_info,
         napi_callback_scope, napi_deferred, napi_env, napi_escapable_handle_scope,
         napi_handle_scope, napi_property_descriptor, napi_ref, napi_value, uv_loop_s,
-        NapiExtendedErrorInfo,
+        NapiExtendedErrorInfo, NapiTypeTag,
     };
 
     pub type DataPointer = *mut std::ffi::c_void;

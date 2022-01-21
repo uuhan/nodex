@@ -460,9 +460,7 @@ impl NapiEnv {
 
     #[cfg(feature = "v2")]
     pub fn get_uv_event_loop(&self) -> NapiResult<uv_loop_s> {
-        unsafe {
-            Ok(*napi_call!(=napi_get_uv_event_loop, *self))
-        }
+        unsafe { Ok(*napi_call!(=napi_get_uv_event_loop, *self)) }
     }
 }
 

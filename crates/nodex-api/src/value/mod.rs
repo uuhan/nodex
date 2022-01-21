@@ -525,6 +525,24 @@ pub trait NapiValueT {
             Ok(*value)
         }
     }
+
+    #[cfg(feature = "v8")]
+    /// Associates the value of the type_tag pointer with the JavaScript object.
+    /// napi_check_object_type_tag() can then be used to compare the tag that was attached to the
+    /// object with one owned by the addon to ensure that the object has the right type.
+    /// If the object already has an associated type tag, this API will return napi_invalid_arg.
+    fn type_tag_object(&self, tag: &NapiTypeTag) -> NapiResult<()> {
+        napi_call!(napi_type_tag_object, self.env(), self.raw(), tag);
+        Ok(())
+    }
+
+    #[cfg(feature = "v8")]
+    /// Compares the pointer given as type_tag with any that can be found on js_object. If no tag
+    /// is found on js_object or, if a tag is found but it does not match type_tag, then result is
+    /// set to false. If a tag is found and it matches type_tag, then result is set to true.
+    fn check_object_type_tag(&self, tag: &NapiTypeTag) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_check_object_type_tag, self.env(), self.raw(), tag))
+    }
 }
 
 mod array;
