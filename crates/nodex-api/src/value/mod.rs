@@ -252,7 +252,8 @@ pub trait NapiValueT {
 
     /// Returns napi_ok if the API succeeded.
     /// - `napi_invalid_arg` if the type of value is not a known ECMAScript type and value is not an External value.
-    /// This API represents behavior similar to invoking the typeof Operator on the object as defined in Section 12.5.5 of the ECMAScript Language Specification. However, there are some differences:
+    /// This API represents behavior similar to invoking the typeof Operator on the object as defined in
+    /// Section 12.5.5 of the ECMAScript Language Specification. However, there are some differences:
     /// It has support for detecting an External value.
     /// It detects null as a separate type, while ECMAScript typeof would detect object.
     /// If value has a type that is invalid, an error is returned.
@@ -333,7 +334,8 @@ pub trait NapiValueT {
     ///
     /// * the native data cannot be retrieved later using napi_unwrap(),
     /// * nor can it be removed later using napi_remove_wrap(), and
-    /// * the API can be called multiple times with different data items in order to attach each of them to the JavaScript object, and
+    /// * the API can be called multiple times with different data items in order to attach
+    /// each of them to the JavaScript object, and
     /// * the object manipulated by the API can be used with napi_wrap().
     ///
     /// Caution: The optional returned reference (if obtained) should be deleted via
@@ -380,7 +382,11 @@ pub trait NapiValueT {
     /// later using napi_unwrap().
     ///
     /// When JavaScript code invokes a constructor for a class that was defined using napi_define_class(),
-    /// the napi_callback for the constructor is invoked. After constructing an instance of the native class, the callback must then call napi_wrap() to wrap the newly constructed instance in the already-created JavaScript object that is the this argument to the constructor callback. (That this object was created from the constructor function's prototype, so it already has definitions of all the instance properties and methods.)
+    /// the napi_callback for the constructor is invoked. After constructing an instance of the native class,
+    /// the callback must then call napi_wrap() to wrap the newly constructed instance in the already-created
+    /// JavaScript object that is the this argument to the constructor callback. (That this object was
+    /// created from the constructor function's prototype, so it already has definitions of all the instance
+    /// properties and methods.)
     ///
     /// Typically when wrapping a class instance, a finalize callback should be provided that simply
     /// deletes the native instance that is received as the data argument to the finalize callback.
