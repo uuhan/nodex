@@ -12,24 +12,40 @@ impl<T> JsExternal<T> {
     /// This API allocates a JavaScript value with external data attached to it. This is used to
     /// pass external data through JavaScript code, so it can be retrieved later by native code
     /// using napi_get_value_external.
-    pub fn new(env: NapiEnv, value: T) -> NapiResult<JsExternal<T>> {
+    pub fn new(
+        env: NapiEnv,
+        value: T,
+        finalizer: impl FnOnce(NapiEnv, T) -> NapiResult<()> + 'static,
+    ) -> NapiResult<JsExternal<T>> {
+        type FnOnceBoxed<T> = Box<dyn FnOnce(NapiEnv, T) -> NapiResult<()>>;
         // NB: first leak value.
         let value = Box::into_raw(Box::new(value));
 
-        unsafe extern "C" fn finalize<T>(_env: NapiEnv, data: *mut c_void, _hint: *mut c_void) {
-            // NB: collect leaked value when the external value is being collected.
-            Box::from_raw(data as *mut T);
+        unsafe extern "C" fn finalize<T>(env: NapiEnv, data: DataPointer, hint: DataPointer) {
+            let ext: Box<T> = Box::from_raw(data as *mut T);
+            let finalizer: Box<FnOnceBoxed<T>> = Box::from_raw(hint as _);
+            if let Err(e) = finalizer(env, *ext) {
+                log::error!("JsExternal::<T>::finalize: {}", e);
+            }
         }
+
+        let finalizer: Box<FnOnceBoxed<T>> = Box::new(Box::new(finalizer));
 
         let value = napi_call!(
             =napi_create_external,
             env,
             value as *mut c_void,
             Some(finalize::<T>),
-            std::ptr::null_mut(),
+            Box::into_raw(finalizer) as DataPointer,
         );
 
         Ok(JsExternal(JsValue::from_raw(env, value), PhantomData))
+    }
+
+    /// Access the underlaying data.
+    pub fn get(&self) -> NapiResult<&mut T> {
+        let ext = napi_call!(=napi_get_value_external, self.env(), self.raw());
+        unsafe { Ok(&mut *(ext as *mut T)) }
     }
 
     /// This API returns a Node-API value corresponding to a JavaScript ArrayBuffer. The underlying byte buffer of the ArrayBuffer is externally allocated and managed. The caller must ensure that the byte buffer remains valid until the finalize callback is called.
@@ -53,19 +69,6 @@ impl<T> JsExternal<T> {
     /// For Node.js >=4 Buffers are Uint8Arrays.
     pub fn buffer<'a>(env: NapiEnv, value: impl AsRef<[T]>) -> NapiResult<JsExternal<&'a [T]>> {
         todo!()
-    }
-
-    /// get the underlaying external value
-    pub fn get(&self) -> NapiResult<&T> {
-        let value = napi_call!(
-            =napi_get_value_external,
-            self.env(),
-            self.raw(),
-        );
-
-        let value = unsafe { &*(value as *const T) };
-
-        Ok(value)
     }
 }
 

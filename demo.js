@@ -15,3 +15,10 @@ console.log(demo.names({
   1: 1,
   a: 2,
 }))
+
+demo.thread((result) => {
+  console.log("Get From Thread:", result)
+})
+
+console.log('array_index[0]:', demo.buffer_index(Buffer.from([1,2,3,4,5])))
+console.log(demo.buffer)

@@ -109,12 +109,7 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     env.async_work(
         label,
-        move || {
-            for i in 1..=5 {
-                println!("async work executing: {}", i);
-                std::thread::sleep(std::time::Duration::from_secs(1));
-            }
-        },
+        move || {},
         move |env, status| {
             assert!(status.ok());
             println!("async work complete");
@@ -153,41 +148,64 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     if let Some(_hook) = env.add_async_cleanup_hook(|hook| hook.remove())? {}
 
-    let tsfn = NapiThreadsafeFunction::new(
-        env,
-        "tsfn-context",
-        env.func(|this, [a1]: [JsString; 1]| {
-            println!("callback result: {}", a1.get()?);
-            this.env().undefined()
+    exports.set_named_property(
+        "thread",
+        env.func(move |this, [a1]: [JsFunction; 1]| {
+            let tsfn = NapiTsfn::new(
+                env,
+                "tsfn-context",
+                a1,
+                move |_| Ok(()),
+                move |f, data: String| {
+                    f.call::<JsString, 1>(env.object()?, [env.string(&data)?])?;
+                    Ok(())
+                },
+            )?;
+
+            std::thread::spawn(move || {
+                std::thread::sleep(std::time::Duration::from_secs(1));
+                tsfn.call("hello, world - 1".into(), NapiTsfnMode::Nonblocking)
+                    .unwrap();
+
+                std::thread::sleep(std::time::Duration::from_secs(1));
+                tsfn.call("hello, world - 2".into(), NapiTsfnMode::Nonblocking)
+                    .unwrap();
+
+                tsfn.release(NapiTsfnReleaseMode::Release).unwrap();
+            });
+
+            this.undefined()
         })?,
-        move |_| Ok(()),
-        move |f, data: String| {
-            f.call::<JsString, 1>(env.object()?, [env.string(&data)?])?;
-            Ok(())
-        },
     )?;
 
-    std::thread::spawn(move || {
-        tsfn.call(
-            "hello, world - 1".into(),
-            NapiThreadsafeFunctionCallMode::Nonblocking,
-        )
-        .unwrap();
+    env.set_instance_data(100usize, |_, value| {
+        println!("drop instance data: {}", value);
+        Ok(())
+    })?;
 
-        tsfn.call(
-            "hello, world - 2".into(),
-            NapiThreadsafeFunctionCallMode::Nonblocking,
-        )
-        .unwrap();
+    let value = env.get_instance_data::<usize>()?;
+    println!("get instance data: {:?}", value);
+    if let Ok(Some(data)) = env.get_instance_data::<usize>() {
+        *data = 200;
+    }
+    let value = env.get_instance_data::<usize>()?;
+    println!("get instance data: {:?}", value);
 
-        tsfn.release(NapiThreadsafeFunctionReleaseMode::Release)
-            .unwrap();
-    });
+    exports.set_named_property(
+        "buffer_index",
+        env.func(|this, [a1]: [JsValue; 1]| {
+            let a1 = a1.as_buffer::<5>()?;
+            this.env().double(a1[0] as f64)
+        })?,
+    )?;
 
-    // tsfn.call(
-    //     "hello, world - 2".into(),
-    //     NapiThreadsafeFunctionCallMode::Nonblocking,
-    // )?;
+    let external = env.external("ext data".into(), |_, _: String| Ok(()))?;
+    assert_eq!("ext data", external.get()?);
+
+    let buff = std::mem::ManuallyDrop::new([10u8; 10]);
+    let ext_buffer: JsBuffer<10> = env.create_buffer(buff.as_ref())?;
+
+    exports.set_named_property("buffer", ext_buffer)?;
 
     Ok(())
 }

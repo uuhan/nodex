@@ -30,7 +30,7 @@ This crate aims to make creating native nodejs addons very easy and comfortable.
 crate-type = ["cdylib"]
 
 [dependencies.nodex-api]
-version = "0.1.0-alpha.15"
+version = "0.1.0-beta.1"
 features = ["v8"]
 ```
 
@@ -38,14 +38,14 @@ The default napi version is set to v1, you can use other version with your need.
 
 We have v1,v2,v3,...v8 versions.
 
-**Currently, nodex just exports nodex-api:**
+**Currently, nodex just reexports nodex-api:**
 
 ```toml
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies.nodex]
-version = "0.1.0-alpha.15"
+version = "0.1.0-beta.1"
 ```
 
 ## Napi Level
@@ -68,6 +68,11 @@ version = "0.1.0-alpha.15"
 ### v5
 
 * NapiValueT::finalizer() - Adds a napi_finalize callback which will be called when the JavaScript object is ready for gc.
+
+### v6
+
+* NapiEnv::set_instance_data::\<Data, Finalizer> - Set data to current agent.
+* NapiENv::get_instance_data::\<Data> - Get Option\<&mut Data> from current agent.
 
 ### v8
 

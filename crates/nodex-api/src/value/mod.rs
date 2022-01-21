@@ -85,7 +85,7 @@ impl JsValue {
     }
 
     /// view it as a buffer, may faile if it is not a buffer value
-    pub fn as_buffer(&self) -> NapiResult<JsBuffer> {
+    pub fn as_buffer<const N: usize>(&self) -> NapiResult<JsBuffer<N>> {
         if self.is_buffer()? {
             Ok(JsBuffer::from_value(*self))
         } else {
