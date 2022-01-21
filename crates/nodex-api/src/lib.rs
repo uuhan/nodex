@@ -102,6 +102,7 @@ pub enum NapiThreadsafeFunctionCallMode {
 }
 
 pub mod args;
+pub mod callback;
 pub mod context;
 pub mod descriptor;
 pub mod env;
@@ -133,6 +134,7 @@ pub mod prelude {
     pub use error::{NapiResult, NapiStatus};
 
     pub use args::*;
+    pub use callback::CallbackInfo;
     pub use context::NapiAsyncContext;
     pub use descriptor::{DescriptorBuilder, NapiPropertyDescriptor};
     pub use reference::NapiRef;
