@@ -205,21 +205,20 @@ impl NapiEnv {
 
     /// This API throws a JavaScript Error with the text provided.
     #[inline]
-    pub fn throw_error(
-        &self,
-        message: impl AsRef<str>,
-        code: Option<impl AsRef<str>>,
-    ) -> NapiResult<()> {
+    pub fn throw_error(&self, msg: impl AsRef<str>) -> NapiResult<()> {
         use std::ffi::CString;
-        let msg = CString::new(message.as_ref()).map_err(|_| NapiStatus::StringExpected)?;
-        let code = if let Some(code) = code {
-            CString::new(code.as_ref())
-                .map_err(|_| NapiStatus::StringExpected)?
-                .as_ptr()
-        } else {
-            std::ptr::null()
-        };
-        napi_call!(napi_throw_error, *self, code, msg.as_ptr());
+        let msg = napi_s!(msg.as_ref())?;
+        napi_call!(napi_throw_error, *self, std::ptr::null(), msg.as_ptr());
+        Ok(())
+    }
+
+    /// This API throws a JavaScript Error with the text provided.
+    #[inline]
+    pub fn throw_error_code(&self, msg: impl AsRef<str>, code: impl AsRef<str>) -> NapiResult<()> {
+        use std::ffi::CString;
+        let msg = napi_s!(msg.as_ref())?;
+        let code = napi_s!(code.as_ref())?;
+        napi_call!(napi_throw_error, *self, code.as_ptr(), msg.as_ptr());
         Ok(())
     }
 
@@ -275,6 +274,26 @@ impl NapiEnv {
         } else {
             Ok(Some(JsError(JsValue(*self, err))))
         }
+    }
+
+    /// This API retrieves a napi_extended_error_info structure with information about the last
+    /// error that occurred.
+    ///
+    /// The content of the napi_extended_error_info returned is only valid up until a Node-API
+    /// function is called on the same env. This includes a call to napi_is_exception_pending
+    /// so it may often be necessary to make a copy of the information so that it can be used
+    /// later. The pointer returned in error_message points to a statically-defined string so
+    /// it is safe to use that pointer if you have copied it out of the error_message field
+    /// (which will be overwritten) before another Node-API function was called.
+    ///
+    /// Do not rely on the content or format of any of the extended information as it is not
+    /// subject to SemVer and may change at any time. It is intended only for logging purposes.
+    ///
+    /// This API can be called even if there is a pending JavaScript exception.
+    #[inline]
+    pub fn get_last_error_info(&self) -> NapiResult<NapiExtendedErrorInfo> {
+        let info = napi_call!(=napi_get_last_error_info, *self);
+        unsafe { Ok(std::ptr::read(info)) }
     }
 
     /// Return true if an exception is pending.
