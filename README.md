@@ -61,6 +61,10 @@ version = "0.1.0-alpha.14"
 
 * NapiEnv::add_cleanup_hook() - Do the cleanup when nodejs environment exits.
 
+### v4
+
+* NapiThreadsafeFunction::\<Data> - Thread safe function.
+
 ### v5
 
 * NapiValueT::finalizer() - Adds a napi_finalize callback which will be called when the JavaScript object is ready for gc.
@@ -239,6 +243,45 @@ obj.wrap([1usize; 2], move |_, wrapped| {
 })?;
 obj.unwrap::<[usize; 2]>()?; // access the wrapped instance
 obj.remove_wrap::<[usize; 2]>()?; // the finalizer will not be called
+```
+
+### Thread safe function
+
+require: napi >= 4
+
+```rust
+let tsfn = NapiThreadsafeFunction::new(
+    env,
+    "tsfn-task",
+    env.func(|this, [a1]: [JsString; 1]| {
+        println!("callback result: {}", a1.get()?);
+        this.env().undefined()
+    })?,
+    // finalizer
+    move |_| Ok(()),
+    // js-callback
+    move |f, data: String| {
+        f.call::<JsString, 1>(env.object()?, [env.string(&data)?])?;
+        Ok(())
+    },
+)?;
+
+std::thread::spawn(move || {
+    tsfn.call(
+        "hello, world - 1".into(),
+        NapiThreadsafeFunctionCallMode::Nonblocking,
+    )
+    .unwrap();
+
+    tsfn.call(
+        "hello, world - 2".into(),
+        NapiThreadsafeFunctionCallMode::Nonblocking,
+    )
+    .unwrap();
+
+    tsfn.release(NapiThreadsafeFunctionReleaseMode::Release)
+        .unwrap();
+});
 ```
 
 ### More
