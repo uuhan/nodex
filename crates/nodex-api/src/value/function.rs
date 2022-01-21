@@ -1,12 +1,12 @@
 use crate::{api, prelude::*};
-use std::{mem::MaybeUninit, os::raw::c_char};
+use std::{marker::PhantomData, mem::MaybeUninit, os::raw::c_char};
 
 #[derive(Copy, Clone, Debug)]
-pub struct JsFunction(pub(crate) JsValue);
+pub struct Function<A>(pub(crate) JsValue, PhantomData<A>);
 
-impl JsFunction {
-    pub(crate) fn from_value(value: JsValue) -> JsFunction {
-        JsFunction(value)
+impl<A: NapiValueT> Function<A> {
+    pub(crate) fn from_value(value: JsValue) -> Function<A> {
+        Function::<A>(value, PhantomData)
     }
 
     /// This API allows an add-on author to create a function object in native code.
@@ -58,7 +58,7 @@ impl JsFunction {
         env: NapiEnv,
         name: Option<impl AsRef<str>>,
         func: F,
-    ) -> NapiResult<JsFunction>
+    ) -> NapiResult<Function<R>>
     where
         T: NapiValueT,
         R: NapiValueT,
@@ -94,7 +94,7 @@ impl JsFunction {
                     data.as_mut_ptr(),
                 );
 
-                // NB: the JsFunction maybe called multiple times, so we can should leak the
+                // NB: the Function maybe called multiple times, so we can should leak the
                 // closure memory here.
                 //
                 // With napi >= 5, we can add a finalizer to this function.
@@ -125,8 +125,7 @@ impl JsFunction {
             fn_pointer,
         );
 
-        let mut func = JsFunction(JsValue::from_raw(env, value));
-
+        let mut func = Function::<R>(JsValue::from_raw(env, value), PhantomData);
         func.gc(move |_| unsafe {
             // NB: the leaked data is collected here.
             let _: Box<Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<R>>> =
@@ -157,4 +156,14 @@ impl JsFunction {
     }
 }
 
-napi_value_t!(JsFunction);
+impl<A> NapiValueT for Function<A> {
+    fn from_raw(env: NapiEnv, raw: napi_value) -> Function<A> {
+        Function::<A>(JsValue(env, raw), PhantomData)
+    }
+
+    fn value(&self) -> JsValue {
+        self.0
+    }
+}
+
+pub type JsFunction = Function<JsValue>;

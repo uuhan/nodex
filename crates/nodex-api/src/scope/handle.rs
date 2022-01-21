@@ -14,7 +14,7 @@ use std::mem::MaybeUninit;
 pub struct NapiHandleScope(NapiEnv, napi_handle_scope);
 
 impl NapiHandleScope {
-    pub(crate) fn from_value(env: NapiEnv, handle: napi_handle_scope) -> NapiHandleScope {
+    pub(crate) fn from_raw(env: NapiEnv, handle: napi_handle_scope) -> NapiHandleScope {
         NapiHandleScope(env, handle)
     }
 

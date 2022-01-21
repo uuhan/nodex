@@ -492,7 +492,7 @@ pub use dataview::JsDataView;
 pub use date::JsDate;
 pub use error::JsError;
 pub use external::JsExternal;
-pub use function::JsFunction;
+pub use function::{Function, JsFunction};
 pub use global::JsGlobal;
 pub use name::{JsString, JsSymbol};
 pub use null::JsNull;

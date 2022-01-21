@@ -106,9 +106,9 @@ pub mod context;
 pub mod descriptor;
 pub mod env;
 mod error;
-pub mod handle;
 pub mod reference;
 pub mod rt;
+pub mod scope;
 pub mod value;
 pub mod work;
 
@@ -135,17 +135,17 @@ pub mod prelude {
     pub use args::*;
     pub use context::NapiAsyncContext;
     pub use descriptor::{DescriptorBuilder, NapiPropertyDescriptor};
-    pub use handle::{NapiEscapableHandleScope, NapiHandleScope};
     pub use reference::NapiRef;
+    pub use scope::*;
     pub use value::*;
     pub use work::NapiAsyncWork;
 
     #[cfg(feature = "v8")]
     pub use api::napi_async_cleanup_hook_handle;
     pub use api::{
-        napi_async_context, napi_async_work, napi_callback, napi_callback_info, napi_deferred,
-        napi_env, napi_escapable_handle_scope, napi_handle_scope, napi_property_descriptor,
-        napi_ref, napi_value, NapiExtendedErrorInfo,
+        napi_async_context, napi_async_work, napi_callback, napi_callback_info,
+        napi_callback_scope, napi_deferred, napi_env, napi_escapable_handle_scope,
+        napi_handle_scope, napi_property_descriptor, napi_ref, napi_value, NapiExtendedErrorInfo,
     };
 
     pub type DataPointer = *mut std::ffi::c_void;
