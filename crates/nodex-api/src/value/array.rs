@@ -22,6 +22,11 @@ impl JsArray {
         let len = napi_call!(=napi_get_array_length, self.env(), self.raw());
         Ok(len)
     }
+
+    /// This array is empty.
+    pub fn is_empty(&self) -> NapiResult<bool> {
+        Ok(self.len()? == 0)
+    }
 }
 
 napi_value_t!(JsArray);

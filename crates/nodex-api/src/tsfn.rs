@@ -17,6 +17,7 @@ impl<Data> NapiThreadsafeFunction<Data> {
         self.1
     }
 
+    #[allow(clippy::type_complexity)]
     /// Create a napi_threadsafe_function
     pub fn new<R, Finalizer, Callback>(
         env: NapiEnv,
@@ -50,7 +51,7 @@ impl<Data> NapiThreadsafeFunction<Data> {
             data: DataPointer,
         ) {
             let context: &mut Box<dyn FnMut(Function<R>, Data) -> NapiResult<()>> =
-                std::mem::transmute(context);
+                std::mem::transmute(&mut *(context as *mut _));
             let data: Box<Data> = Box::from_raw(data as _);
 
             if let Err(e) = context(Function::<R>::from_raw(env, cb), *data) {
