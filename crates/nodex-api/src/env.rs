@@ -92,23 +92,23 @@ impl NapiEnv {
         &self,
         name: impl AsRef<str>,
         func: Func,
-    ) -> NapiResult<JsFunction>
+    ) -> NapiResult<Function<R>>
     where
         T: NapiValueT,
         R: NapiValueT,
         Func: FnMut(JsObject, [T; N]) -> NapiResult<R>,
     {
-        JsFunction::new(*self, Some(name), func)
+        Function::<R>::new(*self, Some(name), func)
     }
 
     // Create a js function with a rust closure.
-    pub fn func<Func, T, R, const N: usize>(&self, func: Func) -> NapiResult<JsFunction>
+    pub fn func<Func, T, R, const N: usize>(&self, func: Func) -> NapiResult<Function<R>>
     where
         T: NapiValueT,
         R: NapiValueT,
         Func: FnMut(JsObject, [T; N]) -> NapiResult<R>,
     {
-        JsFunction::new(*self, Option::<String>::None, func)
+        Function::<R>::new(*self, Option::<String>::None, func)
     }
 
     /// Create a named js function with a rust function
@@ -116,7 +116,7 @@ impl NapiEnv {
         &self,
         name: impl AsRef<str>,
         func: extern "C" fn(env: NapiEnv, info: napi_callback_info) -> napi_value,
-    ) -> NapiResult<JsFunction> {
+    ) -> NapiResult<Function<JsValue>> {
         let value = napi_call!(
             =napi_create_function,
             *self,
@@ -126,14 +126,16 @@ impl NapiEnv {
             std::ptr::null_mut(),
         );
 
-        Ok(JsFunction(JsValue::from_raw(*self, value)))
+        Ok(Function::<JsValue>::from_value(JsValue::from_raw(
+            *self, value,
+        )))
     }
 
     /// Create a js function with a rust function
     pub fn function(
         &self,
         func: extern "C" fn(env: NapiEnv, info: napi_callback_info) -> napi_value,
-    ) -> NapiResult<JsFunction> {
+    ) -> NapiResult<Function<JsValue>> {
         let value = napi_call!(
             =napi_create_function,
             *self,
@@ -143,7 +145,9 @@ impl NapiEnv {
             std::ptr::null_mut(),
         );
 
-        Ok(JsFunction(JsValue::from_raw(*self, value)))
+        Ok(Function::<JsValue>::from_value(JsValue::from_raw(
+            *self, value,
+        )))
     }
 
     /// Create a js class with a rust closure

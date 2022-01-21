@@ -148,9 +148,9 @@ impl JsValue {
     }
 
     /// view it as a number, may fail if it is not a number value
-    pub fn as_function(&self) -> NapiResult<JsFunction> {
+    pub fn as_function<A: NapiValueT>(&self) -> NapiResult<Function<A>> {
         if self.is_function()? {
-            Ok(JsFunction::from_value(*self))
+            Ok(Function::<A>::from_value(*self))
         } else {
             Err(NapiStatus::FunctionExpected)
         }
@@ -492,7 +492,7 @@ pub use dataview::JsDataView;
 pub use date::JsDate;
 pub use error::JsError;
 pub use external::JsExternal;
-pub use function::JsFunction;
+pub use function::{Function, JsFunction};
 pub use global::JsGlobal;
 pub use name::{JsString, JsSymbol};
 pub use null::JsNull;

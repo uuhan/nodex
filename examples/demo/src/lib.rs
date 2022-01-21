@@ -99,9 +99,15 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     env.async_work(
         label,
-        move || {},
+        move || {
+            for i in 1..=10 {
+                println!("async work executing: {}", i);
+                std::thread::sleep(std::time::Duration::from_secs(1));
+            }
+        },
         move |env, status| {
             assert!(status.ok());
+            println!("async work complete");
             env.async_work(
                 label,
                 move || {},
@@ -127,6 +133,13 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     })?;
 
     hook.remove()?;
+
+    let context = NapiAsyncContext::new(env, "my-async-context")?;
+    let _callback = context.callback(
+        exports,
+        env.func(move |this, []: [JsValue; 0]| Ok(this))?,
+        [env.undefined()?],
+    )?;
 
     if let Some(_hook) = env.add_async_cleanup_hook(|hook| hook.remove())? {}
 
