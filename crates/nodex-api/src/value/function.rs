@@ -53,9 +53,6 @@ impl JsFunction {
     /// function and the data to napi_add_finalizer.
     ///
     /// JavaScript Functions are described in Section 19.2 of the ECMAScript Language Specification.
-    ///
-    /// You should always use `JsFunction::new()`, but if it does not meet your need, e.g. you use
-    /// napi < 5 which **LEAKs** the `F`-closure.
     #[allow(clippy::type_complexity)]
     pub fn new<F, T, R, const N: usize>(
         env: NapiEnv,
@@ -128,10 +125,9 @@ impl JsFunction {
             fn_pointer,
         );
 
-        let func = JsFunction(JsValue::from_raw(env, value));
+        let mut func = JsFunction(JsValue::from_raw(env, value));
 
-        #[cfg(feature = "v5")]
-        func.finalizer(move |_| unsafe {
+        func.gc(move |_| unsafe {
             // NB: the leaked data is collected here.
             let _: Box<Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<R>>> =
                 Box::from_raw(fn_pointer as _);

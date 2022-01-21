@@ -99,10 +99,9 @@ impl JsClass {
             properties.as_ref().as_ptr() as *const _,
         );
 
-        let class = JsClass(JsValue(env, value));
+        let mut class = JsClass(JsValue(env, value));
 
-        #[cfg(feature = "v5")]
-        class.finalizer(move |_| unsafe {
+        class.gc(move |_| unsafe {
             // NB: the leaked data is collected here.
             let _: Box<Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<R>>> =
                 Box::from_raw(fn_pointer as _);

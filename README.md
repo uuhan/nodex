@@ -50,6 +50,13 @@ version = "0.1.0-alpha.12"
 
 ## Napi Level
 
+### v1
+
+* NapiValueT::wrap::<T, Finalizer>() - Wraps a native instance, call finalizer when value is garbage-collected.
+* NapiValueT::remove_wrap::<T>() - Remove the wrapped native instance. The finalizer will not be called if the wrapped instance is removed.
+* NapiValueT::unwrap::<T>() - Access the wrapped instance.
+* NapiValueT::gc::<Finalizer>() - Hook fired when value is gabage-collected.
+
 ### v3
 
 * NapiEnv::add_cleanup_hook() - Do the cleanup when nodejs environment exits.
@@ -211,14 +218,27 @@ env.async_work_state(
 .queue()?;
 ```
 
-### Add finalizer for js object
+### gabage-collected hook
+
+for napi less than 5, implement by napi_wrap, otherwise by napi_add_finalizer.
 
 ```rust
 let mut obj = env.object()?;
-obj.finalizer(move |_| {
+obj.gc(move |_| {
     println!("obj garbage-collected");
     Ok(())
 });
+```
+
+### Wrap native instance
+
+```rust
+let mut obj = env.object()?;
+obj.wrap([1usize, 2], move |_, wrapped| {
+    Ok(())
+})?;
+obj.unwrap::<[usize 2]>()?; // access the wrapped instance
+obj.remove_wrap::<[usize 2]>()?; // the finalizer will not be called
 ```
 
 ### More
