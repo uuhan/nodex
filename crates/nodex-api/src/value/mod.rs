@@ -57,12 +57,6 @@ impl JsValue {
         }
     }
 
-    /// This API represents invoking the IsArray operation on the object as defined in Section
-    /// 7.2.2 of the ECMAScript Language Specification.
-    pub fn is_array(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_array, self.env(), self.raw()))
-    }
-
     /// view it as an array, may fail if it is not an array value
     pub fn as_array(&self) -> NapiResult<JsArray> {
         if self.is_array()? {
@@ -70,11 +64,6 @@ impl JsValue {
         } else {
             Err(NapiStatus::ArrayExpected)
         }
-    }
-
-    /// This API checks if the Object passed in is a typed array.
-    pub fn is_typedarray(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_typedarray, self.env(), self.raw()))
     }
 
     /// view it as a typed_array, may fail if it is not a typed_array value
@@ -86,11 +75,6 @@ impl JsValue {
         }
     }
 
-    /// This API checks if the Object passed in is an array buffer.
-    pub fn is_arraybuffer(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_arraybuffer, self.env(), self.raw()))
-    }
-
     /// view it as an array_buffer, may faile if it is not an array_buffer value
     pub fn as_arraybuffer(&self) -> NapiResult<JsArrayBuffer> {
         if self.is_arraybuffer()? {
@@ -100,11 +84,6 @@ impl JsValue {
         }
     }
 
-    /// This API checks if the Object passed in is a buffer.
-    pub fn is_buffer(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_buffer, self.env(), self.raw()))
-    }
-
     /// view it as a buffer, may faile if it is not a buffer value
     pub fn as_buffer(&self) -> NapiResult<JsBuffer> {
         if self.is_buffer()? {
@@ -112,11 +91,6 @@ impl JsValue {
         } else {
             Err(NapiStatus::GenericFailure)
         }
-    }
-
-    /// This API checks if the Object passed in is a DataView.
-    pub fn is_dataview(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_dataview, self.env(), self.raw()))
     }
 
     /// view it as a dataview, may faile if it is not a dataview value
@@ -196,12 +170,6 @@ impl JsValue {
         } else {
             Err(NapiStatus::BooleanExpected)
         }
-    }
-
-    #[cfg(feature = "v5")]
-    /// This API checks if the Object passed in is a date.
-    pub fn is_date(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_date, self.env(), self.raw()))
     }
 
     #[cfg(feature = "v5")]
@@ -290,6 +258,55 @@ pub trait NapiValueT {
             self.env(),
             napi_call!(=napi_coerce_to_string, self.env(), self.raw()),
         ))
+    }
+
+    /// This API represents invoking the instanceof Operator on the object as defined in Section
+    /// 12.10.4 of the ECMAScript Language Specification.
+    fn instance_of(&self, constructor: JsFunction) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_instanceof, self.env(), self.raw(), constructor.raw()))
+    }
+
+    /// This API represents invoking the IsArray operation on the object as defined in Section
+    /// 7.2.2 of the ECMAScript Language Specification.
+    fn is_array(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_array, self.env(), self.raw()))
+    }
+
+    /// This API checks if the Object passed in is an array buffer.
+    fn is_arraybuffer(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_arraybuffer, self.env(), self.raw()))
+    }
+
+    /// This API checks if the Object passed in is a buffer.
+    fn is_buffer(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_buffer, self.env(), self.raw()))
+    }
+
+    #[cfg(feature = "v5")]
+    /// This API checks if the Object passed in is a date.
+    fn is_date(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_date, self.env(), self.raw()))
+    }
+
+    /// This API checks if the Object passed in is a error.
+    fn is_error(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_error, self.env(), self.raw()))
+    }
+
+    /// This API checks if the Object passed in is a typed array.
+    fn is_typedarray(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_typedarray, self.env(), self.raw()))
+    }
+
+    /// This API checks if the Object passed in is a DataView.
+    fn is_dataview(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_dataview, self.env(), self.raw()))
+    }
+
+    /// This API represents the invocation of the Strict Equality algorithm as defined in
+    /// Section 7.2.14 of the ECMAScript Language Specification.
+    fn equals(&self, rhs: impl NapiValueT) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_strict_equals, self.env(), self.raw(), rhs.raw()))
     }
 
     /// Returns napi_ok if the API succeeded.
