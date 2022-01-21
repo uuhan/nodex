@@ -1,11 +1,12 @@
 use crate::{api, prelude::*};
+use std::marker::PhantomData;
 
 #[derive(Copy, Clone, Debug)]
-pub struct NapiThreadsafeFunction(NapiEnv, napi_threadsafe_function);
+pub struct NapiThreadsafeFunction<Data>(NapiEnv, napi_threadsafe_function, PhantomData<Data>);
 
-impl NapiThreadsafeFunction {
+impl<Data> NapiThreadsafeFunction<Data> {
     pub(crate) fn from_raw(env: NapiEnv, tsfn: napi_threadsafe_function) -> Self {
-        NapiThreadsafeFunction(env, tsfn)
+        NapiThreadsafeFunction(env, tsfn, PhantomData)
     }
 
     pub fn env(&self) -> NapiEnv {
@@ -17,61 +18,72 @@ impl NapiThreadsafeFunction {
     }
 
     /// Create a napi_threadsafe_function
-    pub fn new<R, C, Finalizer>(
+    pub fn new<R, Finalizer, Callback>(
         env: NapiEnv,
+        name: impl AsRef<str>,
         func: Function<R>,
-        context: C,
         finalizer: Finalizer,
-        // call_js: napi_threadsafe_function_call_js,
-    ) -> NapiResult<NapiThreadsafeFunction>
+        callback: Callback,
+    ) -> NapiResult<NapiThreadsafeFunction<Data>>
     where
         R: NapiValueT,
         Finalizer: FnOnce(NapiEnv) -> NapiResult<()>,
+        Callback: FnMut(Function<R>, Data) -> NapiResult<()>,
     {
         unsafe extern "C" fn finalizer_trampoline(
             env: NapiEnv,
             finalizer: DataPointer,
             _: DataPointer,
         ) {
-            // NB: here we collect the memory of finalizer closure
             let finalizer: Box<Box<dyn FnOnce(NapiEnv) -> NapiResult<()>>> =
                 Box::from_raw(finalizer as _);
+
             if let Err(err) = finalizer(env) {
-                log::error!("NapiValueT::finalizer(): {}", err);
+                log::error!("NapiThreadsafeFunction::finalizer(): {}", err);
             }
         }
 
-        unsafe extern "C" fn call_js_trampoline<C>(
+        unsafe extern "C" fn call_js_trampoline<R, Data>(
             env: NapiEnv,
             cb: napi_value,
             context: DataPointer,
             data: DataPointer,
         ) {
-            let context: &mut Box<C> = std::mem::transmute(context);
+            let context: &mut Box<dyn FnMut(Function<R>, Data) -> NapiResult<()>> =
+                std::mem::transmute(context);
+            let data: Box<Data> = Box::from_raw(data as _);
+
+            if let Err(e) = context(Function::<R>::from_raw(env, cb), *data) {
+                log::error!("NapiThreadsafeFunction::call_js_trampoline: {}", e);
+            }
         }
 
         let finalizer: Box<Box<dyn FnOnce(NapiEnv) -> NapiResult<()>>> =
             Box::new(Box::new(finalizer));
+        let context: Box<Box<dyn FnMut(Function<R>, Data) -> NapiResult<()>>> =
+            Box::new(Box::new(callback));
+
         let tsfn = napi_call!(
             =napi_create_threadsafe_function,
             env,
             func.raw(),
             std::ptr::null_mut(),
-            std::ptr::null_mut(),
+            env.string(name.as_ref())?.raw(),
             0,
-            0,
+            1,
             Box::into_raw(finalizer) as _,
             Some(finalizer_trampoline),
-            Box::into_raw(Box::new(context)) as _,
-            None,
-            // Some(call_js_trampoline::<C>),
+            Box::into_raw(context) as _,
+            Some(call_js_trampoline::<R, Data>),
         );
-        Ok(NapiThreadsafeFunction(env, tsfn))
+
+        Ok(NapiThreadsafeFunction(env, tsfn, PhantomData))
     }
 
-    pub fn get_context(&self) -> NapiResult<DataPointer> {
-        Ok(napi_call!(=napi_get_threadsafe_function_context, self.raw()))
-    }
+    // pub fn context<C>(&self) -> NapiResult<&mut C> {
+    //     let context = napi_call!(=napi_get_threadsafe_function_context, self.raw());
+    //     unsafe { Ok(std::mem::transmute(context)) }
+    // }
 
     /// This API should not be called with napi_tsfn_blocking from a JavaScript thread, because,
     /// if the queue is full, it may cause the JavaScript thread to deadlock.
@@ -81,8 +93,13 @@ impl NapiThreadsafeFunction {
     /// the API returns napi_ok.
     ///
     /// This API may be called from any thread which makes use of func.
-    pub fn call(&self, data: DataPointer, mode: NapiThreadsafeFunctionCallMode) -> NapiResult<()> {
-        napi_call!(napi_call_threadsafe_function, self.raw(), data, mode);
+    pub fn call(&self, data: Data, mode: NapiThreadsafeFunctionCallMode) -> NapiResult<()> {
+        napi_call!(
+            napi_call_threadsafe_function,
+            self.raw(),
+            Box::into_raw(Box::new(data)) as _,
+            mode,
+        );
         Ok(())
     }
 
