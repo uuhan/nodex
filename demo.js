@@ -15,3 +15,7 @@ console.log(demo.names({
   1: 1,
   a: 2,
 }))
+
+demo.thread((result) => {
+  console.log("Get From Thread:", result)
+})
