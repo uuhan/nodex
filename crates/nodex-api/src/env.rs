@@ -434,6 +434,36 @@ impl NapiEnv {
 
         Ok(Some(AsyncCleanupHookHandler(maybe_handler)))
     }
+
+    /// This function gives V8 an indication of the amount of externally allocated memory that is
+    /// kept alive by JavaScript objects (i.e. a JavaScript object that points to its own memory
+    /// allocated by a native module). Registering externally allocated memory will trigger global
+    /// garbage collections more often than it would otherwise.
+    pub fn adjust_external_memory(&self, changes: i64) -> NapiResult<i64> {
+        Ok(napi_call!(=napi_adjust_external_memory, *self, changes))
+    }
+
+    /// This function executes a string of JavaScript code and returns its result with the
+    /// following caveats:
+    ///
+    /// * Unlike eval, this function does not allow the script to access the current lexical
+    /// scope, and therefore also does not allow to access the module scope, meaning that
+    /// pseudo-globals such as require will not be available.
+    /// * The script can access the global scope. Function and var declarations in the script
+    /// will be added to the global object. Variable declarations made using let and const will
+    /// be visible globally, but will not be added to the global object.
+    /// * The value of this is global within the script.
+    pub fn run_script<R: NapiValueT>(&self, script: JsString) -> NapiResult<R> {
+        let result = napi_call!(=napi_run_script, *self, script.raw());
+        Ok(R::from_raw(*self, result))
+    }
+
+    #[cfg(feature = "v2")]
+    pub fn get_uv_event_loop(&self) -> NapiResult<uv_loop_s> {
+        unsafe {
+            Ok(*napi_call!(=napi_get_uv_event_loop, *self))
+        }
+    }
 }
 
 #[cfg(feature = "v3")]
