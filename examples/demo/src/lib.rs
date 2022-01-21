@@ -153,5 +153,23 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     if let Some(_hook) = env.add_async_cleanup_hook(|hook| hook.remove())? {}
 
+    let tsfn = NapiThreadsafeFunction::new(
+        env,
+        env.func(|this, []: [JsValue; 0]| {
+            println!("tsfn called");
+            this.env().undefined()
+        })?,
+        (),
+        move |_| {
+            println!("destroyed");
+            Ok(())
+        },
+    )?;
+
+    tsfn.call(
+        std::ptr::null_mut(),
+        NapiThreadsafeFunctionCallMode::Nonblocking,
+    )?;
+
     Ok(())
 }

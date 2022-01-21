@@ -17,30 +17,54 @@ impl NapiThreadsafeFunction {
     }
 
     /// Create a napi_threadsafe_function
-    pub fn new(
+    pub fn new<R, C, Finalizer>(
         env: NapiEnv,
-        func: JsFunction,
-        resource: JsValue,
-        resource_name: JsValue,
-        queue: usize,
-        count: usize,
-        data: DataPointer,
-        finalizer: napi_finalize,
-        context: DataPointer,
-        call_js: napi_threadsafe_function_call_js,
-    ) -> NapiResult<NapiThreadsafeFunction> {
+        func: Function<R>,
+        context: C,
+        finalizer: Finalizer,
+        // call_js: napi_threadsafe_function_call_js,
+    ) -> NapiResult<NapiThreadsafeFunction>
+    where
+        R: NapiValueT,
+        Finalizer: FnOnce(NapiEnv) -> NapiResult<()>,
+    {
+        unsafe extern "C" fn finalizer_trampoline(
+            env: NapiEnv,
+            finalizer: DataPointer,
+            _: DataPointer,
+        ) {
+            // NB: here we collect the memory of finalizer closure
+            let finalizer: Box<Box<dyn FnOnce(NapiEnv) -> NapiResult<()>>> =
+                Box::from_raw(finalizer as _);
+            if let Err(err) = finalizer(env) {
+                log::error!("NapiValueT::finalizer(): {}", err);
+            }
+        }
+
+        unsafe extern "C" fn call_js_trampoline<C>(
+            env: NapiEnv,
+            cb: napi_value,
+            context: DataPointer,
+            data: DataPointer,
+        ) {
+            let context: &mut Box<C> = std::mem::transmute(context);
+        }
+
+        let finalizer: Box<Box<dyn FnOnce(NapiEnv) -> NapiResult<()>>> =
+            Box::new(Box::new(finalizer));
         let tsfn = napi_call!(
             =napi_create_threadsafe_function,
             env,
             func.raw(),
-            resource.raw(),
-            resource_name.raw(),
+            std::ptr::null_mut(),
+            std::ptr::null_mut(),
             0,
             0,
-            data,
-            finalizer,
-            context,
-            call_js,
+            Box::into_raw(finalizer) as _,
+            Some(finalizer_trampoline),
+            Box::into_raw(Box::new(context)) as _,
+            None,
+            // Some(call_js_trampoline::<C>),
         );
         Ok(NapiThreadsafeFunction(env, tsfn))
     }
