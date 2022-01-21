@@ -4,7 +4,7 @@ Yet another crate to create native nodejs addons :)
 
 This crate aims to make creating native nodejs addons very easy and comfortable.
 
-It is in a very early stage and heavy development is making.
+[click here: uuhan/nodex@dev](https://github.com/uuhan/nodex) to see the most recently developments.
 
 ## Features
 
@@ -114,7 +114,7 @@ obj.set_property(name, env.null()?)?;
 // Function
 let func: JsFunction = env.func(move |this, [a1, a2, a3]: [JsValue; 3]| {
     let env = this.env();
-    a1.as_function()?.call::<JsValue, 0>(this, [])?
+    a1.as_function()?.call::<JsValue, 0>(this, [])?;
     a1.as_function()?.call(this, [env.string("I am from rust world.")?])
 })?;
 

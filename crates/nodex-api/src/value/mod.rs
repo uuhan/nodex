@@ -148,9 +148,9 @@ impl JsValue {
     }
 
     /// view it as a number, may fail if it is not a number value
-    pub fn as_function<A: NapiValueT>(&self) -> NapiResult<Function<A>> {
+    pub fn as_function(&self) -> NapiResult<JsFunction> {
         if self.is_function()? {
-            Ok(Function::<A>::from_value(*self))
+            Ok(JsFunction::from_value(*self))
         } else {
             Err(NapiStatus::FunctionExpected)
         }
