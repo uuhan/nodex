@@ -95,12 +95,21 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
             .build()?,
     ])?;
 
+    exports.set_named_property(
+        "names",
+        env.func(move |_, [a1]: [JsObject; 1]| {
+            let names = a1.get_property_names()?;
+            println!("len: {}", names.len()?);
+            Ok(names)
+        })?,
+    )?;
+
     let label = "my-task-async-work";
 
     env.async_work(
         label,
         move || {
-            for i in 1..=10 {
+            for i in 1..=5 {
                 println!("async work executing: {}", i);
                 std::thread::sleep(std::time::Duration::from_secs(1));
             }

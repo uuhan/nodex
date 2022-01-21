@@ -84,6 +84,13 @@ impl JsObject {
         ))
     }
 
+    /// This API returns the names of the enumerable properties of object as an array of strings.
+    /// The properties of object whose key is a symbol will not be included.
+    pub fn get_property_names(&self) -> NapiResult<JsArray> {
+        let array = napi_call!(=napi_get_property_names, self.env(), self.raw());
+        Ok(JsArray::from_raw(self.env(), array))
+    }
+
     /// This API returns if the Object passed in has an element at the requested index.
     pub fn has_element(&mut self, index: u32) -> NapiResult<bool> {
         Ok(napi_call!(

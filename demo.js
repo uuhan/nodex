@@ -8,5 +8,10 @@ console.log(demo.utils.func((value) => {
 
 let obj = new demo.utils.myclass(1);
 console.log(obj, obj.prop1)
-
 console.log(demo.key1)
+
+let lable = Symbol()
+console.log(demo.names({
+  1: 1,
+  a: 2,
+}))
