@@ -154,6 +154,23 @@ impl<A: NapiValueT> Function<A> {
         );
         Ok(JsValue::from_raw(self.env(), value))
     }
+
+    /// This method is used to instantiate a new JavaScript value using a given napi_value
+    /// that represents the constructor for the object.
+    pub fn new_instance<T, Args>(&self, args: Args) -> NapiResult<JsObject>
+    where
+        T: NapiValueT,
+        Args: AsRef<[T]>,
+    {
+        let instance = napi_call!(
+            =napi_new_instance,
+            self.env(),
+            self.raw(),
+            args.as_ref().len(),
+            args.as_ref().as_ptr() as _,
+        );
+        Ok(JsObject::from_raw(self.env(), instance))
+    }
 }
 
 impl<A> NapiValueT for Function<A> {

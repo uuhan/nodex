@@ -58,20 +58,21 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     obj.set_property(symbol, env.double(100.)?)?;
     assert_eq!(label, name.get()?);
 
-    obj.set_named_property(
+    let class = env.class(
         "myclass",
-        env.class(
-            "myclass",
-            |mut this, [a1]: [JsNumber; 1]| {
-                this.set_named_property("a1", a1)?;
-                Ok(this)
-            },
-            [DescriptorBuilder::new()
-                .with_utf8name("prop1")
-                .with_value(env.double(10.)?)
-                .build()?],
-        )?,
+        |mut this, [a1]: [JsNumber; 1]| {
+            this.set_named_property("a1", a1)?;
+            Ok(this)
+        },
+        [DescriptorBuilder::new()
+            .with_utf8name("prop1")
+            .with_value(env.double(10.)?)
+            .build()?],
     )?;
+
+    obj.set_named_property("myclass", class)?;
+
+    obj.set_named_property("instance", class.new_instance::<JsValue>(&[])?)?;
 
     let version = env.node_version()?;
     println!(
