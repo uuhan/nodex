@@ -6,7 +6,12 @@ console.log(demo.utils.func((value) => {
   return "I am from js world."
 }))
 
-let obj = new demo.utils.myclass(1);
-console.log(obj, obj.prop1)
-
+let obj = new demo.utils.myclass(1)
+console.log(demo.utils.instance)
 console.log(demo.key1)
+
+let lable = Symbol()
+console.log(demo.names({
+  1: 1,
+  a: 2,
+}))

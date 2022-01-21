@@ -110,6 +110,22 @@ impl JsClass {
 
         Ok(class)
     }
+
+    /// This method is used to instantiate a new JavaScript value using a given napi_value
+    /// that represents the constructor for the object.
+    pub fn new_instance<T>(&self, args: &[T]) -> NapiResult<JsObject>
+    where
+        T: NapiValueT,
+    {
+        let instance = napi_call!(
+            =napi_new_instance,
+            self.env(),
+            self.raw(),
+            args.as_ref().len(),
+            args.as_ref().as_ptr() as _,
+        );
+        Ok(JsObject::from_raw(self.env(), instance))
+    }
 }
 
 napi_value_t!(JsClass);

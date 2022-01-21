@@ -57,12 +57,6 @@ impl JsValue {
         }
     }
 
-    /// This API represents invoking the IsArray operation on the object as defined in Section
-    /// 7.2.2 of the ECMAScript Language Specification.
-    pub fn is_array(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_array, self.env(), self.raw()))
-    }
-
     /// view it as an array, may fail if it is not an array value
     pub fn as_array(&self) -> NapiResult<JsArray> {
         if self.is_array()? {
@@ -70,11 +64,6 @@ impl JsValue {
         } else {
             Err(NapiStatus::ArrayExpected)
         }
-    }
-
-    /// This API checks if the Object passed in is a typed array.
-    pub fn is_typedarray(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_typedarray, self.env(), self.raw()))
     }
 
     /// view it as a typed_array, may fail if it is not a typed_array value
@@ -86,11 +75,6 @@ impl JsValue {
         }
     }
 
-    /// This API checks if the Object passed in is an array buffer.
-    pub fn is_arraybuffer(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_arraybuffer, self.env(), self.raw()))
-    }
-
     /// view it as an array_buffer, may faile if it is not an array_buffer value
     pub fn as_arraybuffer(&self) -> NapiResult<JsArrayBuffer> {
         if self.is_arraybuffer()? {
@@ -100,11 +84,6 @@ impl JsValue {
         }
     }
 
-    /// This API checks if the Object passed in is a buffer.
-    pub fn is_buffer(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_buffer, self.env(), self.raw()))
-    }
-
     /// view it as a buffer, may faile if it is not a buffer value
     pub fn as_buffer(&self) -> NapiResult<JsBuffer> {
         if self.is_buffer()? {
@@ -112,11 +91,6 @@ impl JsValue {
         } else {
             Err(NapiStatus::GenericFailure)
         }
-    }
-
-    /// This API checks if the Object passed in is a DataView.
-    pub fn is_dataview(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_dataview, self.env(), self.raw()))
     }
 
     /// view it as a dataview, may faile if it is not a dataview value
@@ -199,12 +173,6 @@ impl JsValue {
     }
 
     #[cfg(feature = "v5")]
-    /// This API checks if the Object passed in is a date.
-    pub fn is_date(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_date, self.env(), self.raw()))
-    }
-
-    #[cfg(feature = "v5")]
     /// view it as a date, may fail if it is not a date value
     pub fn as_date(&self) -> NapiResult<JsDate> {
         if self.is_date()? {
@@ -250,9 +218,101 @@ pub trait NapiValueT {
         T::from_raw(self.env(), self.raw())
     }
 
+    /// This API implements the abstract operation ToBoolean() as defined in Section 7.1.2 of the
+    /// ECMAScript Language Specification.
+    #[inline]
+    fn coerce_to_bool(&self) -> NapiResult<JsBoolean> {
+        Ok(JsBoolean::from_raw(
+            self.env(),
+            napi_call!(=napi_coerce_to_bool, self.env(), self.raw()),
+        ))
+    }
+
+    /// This API implements the abstract operation ToNumber() as defined in Section 7.1.3 of the
+    /// ECMAScript Language Specification. This function potentially runs JS code if the passed-in
+    /// value is an object.
+    #[inline]
+    fn coerce_coerce_to_number(&self) -> NapiResult<JsNumber> {
+        Ok(JsNumber::from_raw(
+            self.env(),
+            napi_call!(=napi_coerce_to_number, self.env(), self.raw()),
+        ))
+    }
+
+    /// This API implements the abstract operation ToObject() as defined in Section 7.1.13 of the
+    /// ECMAScript Language Specification.
+    #[inline]
+    fn coerce_to_object(&self) -> NapiResult<JsObject> {
+        Ok(JsObject::from_raw(
+            self.env(),
+            napi_call!(=napi_coerce_to_object, self.env(), self.raw()),
+        ))
+    }
+
+    /// This API implements the abstract operation ToString() as defined in Section 7.1.13 of the
+    /// ECMAScript Language Specification. This function potentially runs JS code if the passed-in
+    /// value is an object.
+    #[inline]
+    fn coerce_to_string(&self) -> NapiResult<JsString> {
+        Ok(JsString::from_raw(
+            self.env(),
+            napi_call!(=napi_coerce_to_string, self.env(), self.raw()),
+        ))
+    }
+
+    /// This API represents invoking the instanceof Operator on the object as defined in Section
+    /// 12.10.4 of the ECMAScript Language Specification.
+    fn instance_of(&self, constructor: JsFunction) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_instanceof, self.env(), self.raw(), constructor.raw()))
+    }
+
+    /// This API represents invoking the IsArray operation on the object as defined in Section
+    /// 7.2.2 of the ECMAScript Language Specification.
+    fn is_array(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_array, self.env(), self.raw()))
+    }
+
+    /// This API checks if the Object passed in is an array buffer.
+    fn is_arraybuffer(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_arraybuffer, self.env(), self.raw()))
+    }
+
+    /// This API checks if the Object passed in is a buffer.
+    fn is_buffer(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_buffer, self.env(), self.raw()))
+    }
+
+    #[cfg(feature = "v5")]
+    /// This API checks if the Object passed in is a date.
+    fn is_date(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_date, self.env(), self.raw()))
+    }
+
+    /// This API checks if the Object passed in is a error.
+    fn is_error(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_error, self.env(), self.raw()))
+    }
+
+    /// This API checks if the Object passed in is a typed array.
+    fn is_typedarray(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_typedarray, self.env(), self.raw()))
+    }
+
+    /// This API checks if the Object passed in is a DataView.
+    fn is_dataview(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_dataview, self.env(), self.raw()))
+    }
+
+    /// This API represents the invocation of the Strict Equality algorithm as defined in
+    /// Section 7.2.14 of the ECMAScript Language Specification.
+    fn equals(&self, rhs: impl NapiValueT) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_strict_equals, self.env(), self.raw(), rhs.raw()))
+    }
+
     /// Returns napi_ok if the API succeeded.
     /// - `napi_invalid_arg` if the type of value is not a known ECMAScript type and value is not an External value.
-    /// This API represents behavior similar to invoking the typeof Operator on the object as defined in Section 12.5.5 of the ECMAScript Language Specification. However, there are some differences:
+    /// This API represents behavior similar to invoking the typeof Operator on the object as defined in
+    /// Section 12.5.5 of the ECMAScript Language Specification. However, there are some differences:
     /// It has support for detecting an External value.
     /// It detects null as a separate type, while ECMAScript typeof would detect object.
     /// If value has a type that is invalid, an error is returned.
@@ -333,7 +393,8 @@ pub trait NapiValueT {
     ///
     /// * the native data cannot be retrieved later using napi_unwrap(),
     /// * nor can it be removed later using napi_remove_wrap(), and
-    /// * the API can be called multiple times with different data items in order to attach each of them to the JavaScript object, and
+    /// * the API can be called multiple times with different data items in order to attach
+    /// each of them to the JavaScript object, and
     /// * the object manipulated by the API can be used with napi_wrap().
     ///
     /// Caution: The optional returned reference (if obtained) should be deleted via
@@ -380,7 +441,11 @@ pub trait NapiValueT {
     /// later using napi_unwrap().
     ///
     /// When JavaScript code invokes a constructor for a class that was defined using napi_define_class(),
-    /// the napi_callback for the constructor is invoked. After constructing an instance of the native class, the callback must then call napi_wrap() to wrap the newly constructed instance in the already-created JavaScript object that is the this argument to the constructor callback. (That this object was created from the constructor function's prototype, so it already has definitions of all the instance properties and methods.)
+    /// the napi_callback for the constructor is invoked. After constructing an instance of the native class,
+    /// the callback must then call napi_wrap() to wrap the newly constructed instance in the already-created
+    /// JavaScript object that is the this argument to the constructor callback. (That this object was
+    /// created from the constructor function's prototype, so it already has definitions of all the instance
+    /// properties and methods.)
     ///
     /// Typically when wrapping a class instance, a finalize callback should be provided that simply
     /// deletes the native instance that is received as the data argument to the finalize callback.
@@ -459,6 +524,24 @@ pub trait NapiValueT {
             let value: Box<T> = Box::from_raw(value as *mut _);
             Ok(*value)
         }
+    }
+
+    #[cfg(feature = "v8")]
+    /// Associates the value of the type_tag pointer with the JavaScript object.
+    /// napi_check_object_type_tag() can then be used to compare the tag that was attached to the
+    /// object with one owned by the addon to ensure that the object has the right type.
+    /// If the object already has an associated type tag, this API will return napi_invalid_arg.
+    fn type_tag_object(&self, tag: &NapiTypeTag) -> NapiResult<()> {
+        napi_call!(napi_type_tag_object, self.env(), self.raw(), tag);
+        Ok(())
+    }
+
+    #[cfg(feature = "v8")]
+    /// Compares the pointer given as type_tag with any that can be found on js_object. If no tag
+    /// is found on js_object or, if a tag is found but it does not match type_tag, then result is
+    /// set to false. If a tag is found and it matches type_tag, then result is set to true.
+    fn check_object_type_tag(&self, tag: &NapiTypeTag) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_check_object_type_tag, self.env(), self.raw(), tag))
     }
 }
 

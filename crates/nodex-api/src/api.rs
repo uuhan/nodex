@@ -150,7 +150,7 @@ pub const napi_key_conversion_napi_key_numbers_to_strings: napi_key_conversion =
 pub type napi_key_conversion = ::std::os::raw::c_uint;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-pub struct napi_type_tag {
+pub struct NapiTypeTag {
     pub lower: u64,
     pub upper: u64,
 }
@@ -884,7 +884,7 @@ extern "C" {
     pub fn napi_type_tag_object(
         env: NapiEnv,
         value: napi_value,
-        type_tag: *const napi_type_tag,
+        type_tag: *const NapiTypeTag,
     ) -> NapiStatus;
 }
 #[cfg(feature = "v8")]
@@ -892,7 +892,7 @@ extern "C" {
     pub fn napi_check_object_type_tag(
         env: NapiEnv,
         value: napi_value,
-        type_tag: *const napi_type_tag,
+        type_tag: *const NapiTypeTag,
         result: *mut bool,
     ) -> NapiStatus;
 }

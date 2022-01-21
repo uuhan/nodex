@@ -58,20 +58,21 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     obj.set_property(symbol, env.double(100.)?)?;
     assert_eq!(label, name.get()?);
 
-    obj.set_named_property(
+    let class = env.class(
         "myclass",
-        env.class(
-            "myclass",
-            |mut this, [a1]: [JsNumber; 1]| {
-                this.set_named_property("a1", a1)?;
-                Ok(this)
-            },
-            [DescriptorBuilder::new()
-                .with_utf8name("prop1")
-                .with_value(env.double(10.)?)
-                .build()?],
-        )?,
+        |mut this, [a1]: [JsNumber; 1]| {
+            this.set_named_property("a1", a1)?;
+            Ok(this)
+        },
+        [DescriptorBuilder::new()
+            .with_utf8name("prop1")
+            .with_value(env.double(10.)?)
+            .build()?],
     )?;
+
+    obj.set_named_property("myclass", class)?;
+
+    obj.set_named_property("instance", class.new_instance::<JsValue>(&[])?)?;
 
     let version = env.node_version()?;
     println!(
@@ -95,12 +96,21 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
             .build()?,
     ])?;
 
+    exports.set_named_property(
+        "names",
+        env.func(move |_, [a1]: [JsObject; 1]| {
+            let names = a1.get_property_names()?;
+            println!("len: {}", names.len()?);
+            Ok(names)
+        })?,
+    )?;
+
     let label = "my-task-async-work";
 
     env.async_work(
         label,
         move || {
-            for i in 1..=10 {
+            for i in 1..=5 {
                 println!("async work executing: {}", i);
                 std::thread::sleep(std::time::Duration::from_secs(1));
             }
@@ -142,6 +152,42 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     )?;
 
     if let Some(_hook) = env.add_async_cleanup_hook(|hook| hook.remove())? {}
+
+    let tsfn = NapiThreadsafeFunction::new(
+        env,
+        "tsfn-context",
+        env.func(|this, [a1]: [JsString; 1]| {
+            println!("callback result: {}", a1.get()?);
+            this.env().undefined()
+        })?,
+        move |_| Ok(()),
+        move |f, data: String| {
+            f.call::<JsString, 1>(env.object()?, [env.string(&data)?])?;
+            Ok(())
+        },
+    )?;
+
+    std::thread::spawn(move || {
+        tsfn.call(
+            "hello, world - 1".into(),
+            NapiThreadsafeFunctionCallMode::Nonblocking,
+        )
+        .unwrap();
+
+        tsfn.call(
+            "hello, world - 2".into(),
+            NapiThreadsafeFunctionCallMode::Nonblocking,
+        )
+        .unwrap();
+
+        tsfn.release(NapiThreadsafeFunctionReleaseMode::Release)
+            .unwrap();
+    });
+
+    // tsfn.call(
+    //     "hello, world - 2".into(),
+    //     NapiThreadsafeFunctionCallMode::Nonblocking,
+    // )?;
 
     Ok(())
 }

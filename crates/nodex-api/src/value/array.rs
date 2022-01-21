@@ -18,18 +18,15 @@ impl JsArray {
 
     /// This API returns the length of an array.
     /// Array length is described in Section 22.1.4.1 of the ECMAScript Language Specification.
-    pub fn size(&self) -> NapiResult<u32> {
+    pub fn len(&self) -> NapiResult<u32> {
         let len = napi_call!(=napi_get_array_length, self.env(), self.raw());
         Ok(len)
     }
-}
 
-impl NapiValueT for JsArray {
-    fn from_raw(env: NapiEnv, value: napi_value) -> Self {
-        JsArray(JsValue::from_raw(env, value))
-    }
-
-    fn value(&self) -> JsValue {
-        self.0
+    /// This array is empty.
+    pub fn is_empty(&self) -> NapiResult<bool> {
+        Ok(self.len()? == 0)
     }
 }
+
+napi_value_t!(JsArray);

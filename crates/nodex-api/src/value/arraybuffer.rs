@@ -57,6 +57,29 @@ impl JsArrayBuffer {
             Ok(slice)
         }
     }
+
+    #[cfg(feature = "v7")]
+    /// If a non-detachable ArrayBuffer is passed in it returns napi_detachable_arraybuffer_expected.
+    ///
+    /// Generally, an ArrayBuffer is non-detachable if it has been detached before. The engine
+    /// may impose additional conditions on whether an ArrayBuffer is detachable. For example,
+    /// V8 requires that the ArrayBuffer be external, that is, created with napi_create_external_arraybuffer.
+    ///
+    /// This API represents the invocation of the ArrayBuffer detach operation as defined in
+    /// Section 24.1.1.3 of the ECMAScript Language Specification.
+    pub fn detach(&mut self) -> NapiResult<()> {
+        napi_call!(napi_detach_arraybuffer, self.env(), self.raw());
+        Ok(())
+    }
+
+    #[cfg(feature = "v7")]
+    /// The ArrayBuffer is considered detached if its internal data is null.
+    ///
+    /// This API represents the invocation of the ArrayBuffer IsDetachedBuffer operation as
+    /// defined in Section 24.1.1.2 of the ECMAScript Language Specification.
+    pub fn is_detached(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_detached_arraybuffer, self.env(), self.raw()))
+    }
 }
 
 napi_value_t!(JsArrayBuffer);
