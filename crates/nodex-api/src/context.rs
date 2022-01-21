@@ -68,8 +68,6 @@ impl NapiAsyncContext {
             args.as_ref().as_ptr() as *const _,
         );
 
-        println!("make callback: {:?}", napi_call!(=napi_typeof, env, value));
-
         Ok(R::from_raw(env, value))
     }
 
