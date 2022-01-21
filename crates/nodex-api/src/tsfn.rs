@@ -4,6 +4,9 @@ use std::marker::PhantomData;
 #[derive(Copy, Clone, Debug)]
 pub struct NapiThreadsafeFunction<Data>(NapiEnv, napi_threadsafe_function, PhantomData<Data>);
 
+unsafe impl<Data> Send for NapiThreadsafeFunction<Data> {}
+unsafe impl<Data> Sync for NapiThreadsafeFunction<Data> {}
+
 impl<Data> NapiThreadsafeFunction<Data> {
     pub(crate) fn from_raw(env: NapiEnv, tsfn: napi_threadsafe_function) -> Self {
         NapiThreadsafeFunction(env, tsfn, PhantomData)

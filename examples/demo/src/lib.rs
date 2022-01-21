@@ -153,37 +153,41 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     if let Some(_hook) = env.add_async_cleanup_hook(|hook| hook.remove())? {}
 
-    match NapiThreadsafeFunction::new(
+    let tsfn = NapiThreadsafeFunction::new(
         env,
         "tsfn-context",
-        env.func(|this, []: [JsValue; 0]| {
-            println!("tsfn called");
+        env.func(|this, [a1]: [JsString; 1]| {
+            println!("callback result: {}", a1.get()?);
             this.env().undefined()
         })?,
         move |_| Ok(()),
         move |f, data: String| {
-            f.call::<JsUndefined, 0>(env.object()?, [])?;
-            println!("callback: {}", data);
+            f.call::<JsString, 1>(env.object()?, [env.string(&data)?])?;
             Ok(())
         },
-    ) {
-        Err(e) => {
-            println!("tsfn: {}", e);
-        }
-        Ok(tsfn) => {
-            tsfn.call(
-                "hello, world - 1".into(),
-                NapiThreadsafeFunctionCallMode::Nonblocking,
-            )?;
+    )?;
 
-            tsfn.call(
-                "hello, world - 2".into(),
-                NapiThreadsafeFunctionCallMode::Nonblocking,
-            )?;
+    std::thread::spawn(move || {
+        tsfn.call(
+            "hello, world - 1".into(),
+            NapiThreadsafeFunctionCallMode::Nonblocking,
+        )
+        .unwrap();
 
-            tsfn.release(NapiThreadsafeFunctionReleaseMode::Release)?;
-        }
-    }
+        tsfn.call(
+            "hello, world - 2".into(),
+            NapiThreadsafeFunctionCallMode::Nonblocking,
+        )
+        .unwrap();
+
+        tsfn.release(NapiThreadsafeFunctionReleaseMode::Release)
+            .unwrap();
+    });
+
+    // tsfn.call(
+    //     "hello, world - 2".into(),
+    //     NapiThreadsafeFunctionCallMode::Nonblocking,
+    // )?;
 
     Ok(())
 }
