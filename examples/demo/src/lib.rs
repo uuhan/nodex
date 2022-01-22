@@ -191,5 +191,21 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     let value = env.get_instance_data::<usize>()?;
     println!("get instance data: {:?}", value);
 
+    exports.set_named_property(
+        "buffer_index",
+        env.func(|this, [a1]: [JsValue; 1]| {
+            let a1 = a1.as_buffer::<5>()?;
+            this.env().double(a1[0] as f64)
+        })?,
+    )?;
+
+    let external = env.external("ext data".into(), |_, _: String| Ok(()))?;
+    assert_eq!("ext data", external.get()?);
+
+    let buff = std::mem::ManuallyDrop::new([10u8; 10]);
+    let ext_buffer: JsBuffer<10> = env.create_buffer(buff.as_ref())?;
+
+    exports.set_named_property("buffer", ext_buffer)?;
+
     Ok(())
 }

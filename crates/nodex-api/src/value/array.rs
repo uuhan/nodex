@@ -11,7 +11,7 @@ impl JsArray {
 
     /// This API returns a Node-API value corresponding to a JavaScript Array type. JavaScript
     /// arrays are described in Section 22.1 of the ECMAScript Language Specification.
-    pub fn new(env: NapiEnv, value: impl AsRef<str>) -> NapiResult<JsArray> {
+    pub fn new(env: NapiEnv) -> NapiResult<JsArray> {
         let value = napi_call!(=napi_create_array, env);
         Ok(JsArray(JsValue::from_raw(env, value)))
     }

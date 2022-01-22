@@ -87,6 +87,21 @@ impl NapiEnv {
         NapiAsyncContext::new(*self, name)
     }
 
+    /// Create a JsBuffer::<N>
+    pub fn create_buffer<const N: usize>(&self, data: impl AsRef<[u8]>) -> NapiResult<JsBuffer<N>> {
+        JsBuffer::create_copy(*self, data)
+    }
+
+    /// Create an external data.
+    #[inline]
+    pub fn external<T>(
+        &self,
+        value: T,
+        finalizer: impl FnOnce(NapiEnv, T) -> NapiResult<()> + 'static,
+    ) -> NapiResult<JsExternal<T>> {
+        JsExternal::<T>::new(*self, value, finalizer)
+    }
+
     /// Create a named js function with a rust closure.
     pub fn func_named<Func, T, R, const N: usize>(
         &self,

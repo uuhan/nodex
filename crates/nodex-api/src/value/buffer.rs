@@ -30,6 +30,42 @@ impl<const N: usize> JsBuffer<N> {
         Ok(JsBuffer::from_raw(env, buffer))
     }
 
+    // pub fn create_external(
+    //     env: NapiEnv,
+    //     data: impl AsRef<[u8]>,
+    //     finalizer: impl FnOnce(NapiEnv, [u8; N]) -> NapiResult<()> + 'static,
+    // ) -> NapiResult<JsBuffer<N>>
+    // {
+    //     type FnOnceBoxed<const N: usize> = Box<dyn FnOnce(NapiEnv, [u8; N]) -> NapiResult<()>>;
+    //
+    //     unsafe extern "C" fn finalize<const N: usize>(
+    //         env: NapiEnv,
+    //         data: DataPointer,
+    //         hint: DataPointer,
+    //     ) {
+    //         let ext: [u8; N] = *(data as *const [u8; N]);
+    //         let finalizer: Box<FnOnceBoxed::<N>> = Box::from_raw(hint as _);
+    //         if let Err(e) = finalizer(env, ext) {
+    //             log::error!("JsExternal::<T>::finalize: {}", e);
+    //         }
+    //         std::ptr::drop_in_place(data as *mut [u8; N]);
+    //     }
+    //
+    //     let finalizer: Box<FnOnceBoxed::<N>> = Box::new(Box::new(finalizer));
+    //     let data = std::mem::ManuallyDrop::new([10; 10]);
+    //
+    //     let buffer = napi_call!(
+    //         =napi_create_external_buffer,
+    //         env,
+    //         N,
+    //         data.as_ptr() as DataPointer,
+    //         Some(finalize::<N>),
+    //         Box::into_raw(finalizer) as DataPointer,
+    //     );
+    //
+    //     Ok(JsBuffer::from_raw(env, buffer))
+    // }
+
     /// Get the underlaying array
     pub fn get(&self) -> NapiResult<&[u8]> {
         let mut data = MaybeUninit::uninit();
@@ -76,5 +112,12 @@ impl<const N: usize> NapiValueT for JsBuffer<N> {
 
     fn value(&self) -> JsValue {
         self.0
+    }
+}
+
+impl<const N: usize> std::ops::Index<usize> for JsBuffer<N> {
+    type Output = u8;
+    fn index(&self, idx: usize) -> &Self::Output {
+        &self.get().unwrap()[idx]
     }
 }
