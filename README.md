@@ -69,6 +69,11 @@ version = "0.1.0-beta.1"
 
 * NapiValueT::finalizer() - Adds a napi_finalize callback which will be called when the JavaScript object is ready for gc.
 
+### v6
+
+* NapiEnv::set_instance_data::\<Data, Finalizer> - Set data to current agent.
+* NapiENv::get_instance_data::\<Data> - Get Option\<&mut Data> from current agent.
+
 ### v8
 
 * NapiEnv::add_async_cleanup_hook() - Do the cleanup when nodejs environment exits, asynchronous.

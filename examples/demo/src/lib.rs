@@ -178,5 +178,18 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
         })?,
     )?;
 
+    env.set_instance_data(100usize, |_, value| {
+        println!("drop instance data: {}", value);
+        Ok(())
+    })?;
+
+    let value = env.get_instance_data::<usize>()?;
+    println!("get instance data: {:?}", value);
+    if let Ok(Some(data)) = env.get_instance_data::<usize>() {
+        *data = 200;
+    }
+    let value = env.get_instance_data::<usize>()?;
+    println!("get instance data: {:?}", value);
+
     Ok(())
 }

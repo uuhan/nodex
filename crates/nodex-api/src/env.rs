@@ -462,6 +462,64 @@ impl NapiEnv {
     pub fn get_uv_event_loop(&self) -> NapiResult<uv_loop_s> {
         unsafe { Ok(*napi_call!(=napi_get_uv_event_loop, *self)) }
     }
+
+    #[cfg(feature = "v6")]
+    #[allow(clippy::type_complexity)]
+    /// This API associates data with the currently running Agent. data can later be retrieved
+    /// using napi_get_instance_data(). Any existing data associated with the currently running
+    /// Agent which was set by means of a previous call to napi_set_instance_data() will be
+    /// overwritten. If a finalize_cb was provided by the previous call, it will not be called.
+    pub fn set_instance_data<T, F>(&self, data: T, finalizer: F) -> NapiResult<()>
+    where
+        F: FnOnce(NapiEnv, T) -> NapiResult<()>,
+    {
+        let data = Box::into_raw(Box::new(data)) as DataPointer;
+
+        // NB: Because we add a closure to the napi finalizer, it's better
+        // to **CAPTURE** the leaked data from rust side, so here we just
+        // ignore the passed in native data pointer.
+        unsafe extern "C" fn finalizer_trampoline<T>(
+            env: NapiEnv,
+            data: DataPointer,
+            finalizer: DataPointer,
+        ) {
+            // NB: here we collect the memory of finalizer closure
+            let finalizer: Box<Box<dyn FnOnce(NapiEnv, T) -> NapiResult<()>>> =
+                Box::from_raw(finalizer as _);
+
+            let data: Box<T> = Box::from_raw(data as _);
+
+            if let Err(err) = finalizer(env, *data) {
+                log::error!("NapiValueT::finalizer(): {}", err);
+            }
+        }
+
+        let finalizer: Box<Box<dyn FnOnce(NapiEnv, T) -> NapiResult<()>>> =
+            Box::new(Box::new(finalizer));
+
+        napi_call!(
+            napi_set_instance_data,
+            *self,
+            data,
+            Some(finalizer_trampoline::<T>),
+            Box::into_raw(finalizer) as _,
+        );
+
+        Ok(())
+    }
+
+    #[cfg(feature = "v6")]
+    /// This API retrieves data that was previously associated with the currently running Agent via
+    /// napi_set_instance_data(). If no data is set, the call will succeed and data will be set to
+    /// NULL.
+    pub fn get_instance_data<T>(&self) -> NapiResult<Option<&mut T>> {
+        let data = napi_call!(=napi_get_instance_data, *self) as *mut T;
+        if data.is_null() {
+            Ok(None)
+        } else {
+            unsafe { Ok(Some(&mut *data)) }
+        }
+    }
 }
 
 #[cfg(feature = "v3")]
