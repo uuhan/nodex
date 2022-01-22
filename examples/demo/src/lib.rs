@@ -164,21 +164,14 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
             std::thread::spawn(move || {
                 std::thread::sleep(std::time::Duration::from_secs(1));
-                tsfn.call(
-                    "hello, world - 1".into(),
-                    NapiTsfnMode::Nonblocking,
-                )
-                .unwrap();
+                tsfn.call("hello, world - 1".into(), NapiTsfnMode::Nonblocking)
+                    .unwrap();
 
                 std::thread::sleep(std::time::Duration::from_secs(1));
-                tsfn.call(
-                    "hello, world - 2".into(),
-                    NapiTsfnMode::Nonblocking,
-                )
-                .unwrap();
-
-                tsfn.release(NapiTsfnReleaseMode::Release)
+                tsfn.call("hello, world - 2".into(), NapiTsfnMode::Nonblocking)
                     .unwrap();
+
+                tsfn.release(NapiTsfnReleaseMode::Release).unwrap();
             });
 
             this.undefined()
