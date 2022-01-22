@@ -2,12 +2,79 @@ use crate::{api, prelude::*};
 use std::{mem::MaybeUninit, os::raw::c_char};
 
 #[derive(Copy, Clone, Debug)]
-pub struct JsBuffer(pub(crate) JsValue);
+pub struct JsBuffer<const N: usize>(pub(crate) JsValue);
 
-impl JsBuffer {
-    pub(crate) fn from_value(value: JsValue) -> JsBuffer {
+impl<const N: usize> JsBuffer<N> {
+    pub(crate) fn from_value(value: JsValue) -> JsBuffer<N> {
         JsBuffer(value)
+    }
+
+    /// This API allocates a node::Buffer object. While this is still a fully-supported data
+    /// structure, in most cases using a TypedArray will suffice.
+    pub fn create(env: NapiEnv) -> NapiResult<JsBuffer<N>> {
+        let buffer = napi_call!(=napi_create_buffer, env, N, std::ptr::null_mut());
+        Ok(JsBuffer::<N>::from_raw(env, buffer))
+    }
+
+    /// This API allocates a node::Buffer object and initializes it with data copied from the
+    /// passed-in buffer. While this is still a fully-supported data structure, in most cases using
+    /// a TypedArray will suffice.
+    pub fn create_copy(env: NapiEnv, data: impl AsRef<[u8]>) -> NapiResult<JsBuffer<N>> {
+        let buffer = napi_call!(
+            =napi_create_buffer_copy,
+            env,
+            N,
+            data.as_ref().as_ptr() as _,
+            std::ptr::null_mut(),
+        );
+        Ok(JsBuffer::from_raw(env, buffer))
+    }
+
+    /// Get the underlaying array
+    pub fn get(&self) -> NapiResult<&[u8]> {
+        let mut data = MaybeUninit::uninit();
+        let length = napi_call!(=napi_get_buffer_info, self.env(), self.raw(), data.as_mut_ptr());
+        if length != N {
+            return Err(NapiStatus::InvalidArg);
+        }
+
+        unsafe {
+            let data = data.assume_init();
+            Ok(std::slice::from_raw_parts(data as *mut u8, N))
+        }
+    }
+
+    /// Get the underlaying array (mut)
+    pub fn get_mut(&mut self) -> NapiResult<&mut [u8]> {
+        let mut data = MaybeUninit::uninit();
+        let length = napi_call!(=napi_get_buffer_info, self.env(), self.raw(), data.as_mut_ptr());
+        if length != N {
+            return Err(NapiStatus::InvalidArg);
+        }
+
+        unsafe {
+            let data = data.assume_init();
+            Ok(std::slice::from_raw_parts_mut(data as *mut u8, N))
+        }
+    }
+
+    /// The length of current buffer.
+    pub const fn len(&self) -> usize {
+        N
+    }
+
+    /// The buffer is empty
+    pub const fn is_empty(&self) -> bool {
+        N == 0
     }
 }
 
-napi_value_t!(JsBuffer);
+impl<const N: usize> NapiValueT for JsBuffer<N> {
+    fn from_raw(env: NapiEnv, raw: napi_value) -> JsBuffer<N> {
+        JsBuffer(JsValue(env, raw))
+    }
+
+    fn value(&self) -> JsValue {
+        self.0
+    }
+}
