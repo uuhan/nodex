@@ -1,4 +1,4 @@
-use crate::{api, prelude::*};
+use crate::prelude::*;
 use std::marker::PhantomData;
 
 #[derive(Copy, Clone, Debug)]
@@ -157,3 +157,5 @@ impl<Data> NapiThreadsafeFunction<Data> {
         Ok(())
     }
 }
+
+pub type NapiTsfn<Data> = NapiThreadsafeFunction<Data>;

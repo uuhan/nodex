@@ -151,7 +151,7 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     exports.set_named_property(
         "thread",
         env.func(move |this, [a1]: [JsFunction; 1]| {
-            let tsfn = NapiThreadsafeFunction::new(
+            let tsfn = NapiTsfn::new(
                 env,
                 "tsfn-context",
                 a1,

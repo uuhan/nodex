@@ -146,7 +146,7 @@ pub mod prelude {
     pub use reference::NapiRef;
     pub use scope::*;
     #[cfg(feature = "v4")]
-    pub use tsfn::NapiThreadsafeFunction;
+    pub use tsfn::*;
     pub use value::*;
     pub use work::NapiAsyncWork;
 
