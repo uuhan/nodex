@@ -128,7 +128,11 @@ pub mod prelude {
     #[cfg(feature = "v4")]
     pub use super::NapiThreadsafeFunctionCallMode;
     #[cfg(feature = "v4")]
+    pub type NapiTsfnMode = NapiThreadsafeFunctionCallMode;
+    #[cfg(feature = "v4")]
     pub use super::NapiThreadsafeFunctionReleaseMode;
+    #[cfg(feature = "v4")]
+    pub type NapiTsfnReleaseMode = NapiThreadsafeFunctionReleaseMode;
     pub use super::NapiTypedarrayType;
     pub use super::NapiValuetype;
 
