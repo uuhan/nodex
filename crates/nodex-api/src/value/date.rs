@@ -15,7 +15,7 @@ impl JsDate {
     /// JavaScript Date objects are described in Section 20.3 of the ECMAScript Language Specification.
     pub fn new(env: NapiEnv, time: f64) -> NapiResult<JsDate> {
         let value = napi_call!(=napi_create_date, env, time);
-        Ok(JsDate(JsValue::from_raw(env, value)))
+        Ok(JsDate::from_raw(env, value))
     }
 
     #[cfg(feature = "v5")]

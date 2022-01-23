@@ -10,6 +10,8 @@ members = [
   "examples/func",
   "examples/promise",
   "examples/tsfn",
+  "examples/script",
+  "examples/element",
 ]
 
 [patch.crates-io]

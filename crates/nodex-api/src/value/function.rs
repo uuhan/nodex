@@ -2,11 +2,11 @@ use crate::{api, prelude::*};
 use std::{marker::PhantomData, mem::MaybeUninit, os::raw::c_char};
 
 #[derive(Copy, Clone, Debug)]
-pub struct Function<A>(pub(crate) JsValue, PhantomData<A>);
+pub struct Function<F>(pub(crate) JsValue, PhantomData<F>);
 
-impl<A: NapiValueT> Function<A> {
-    pub(crate) fn from_value(value: JsValue) -> Function<A> {
-        Function::<A>(value, PhantomData)
+impl<F: NapiValueT> Function<F> {
+    pub(crate) fn from_value(value: JsValue) -> Function<F> {
+        Function::<F>(value, PhantomData)
     }
 
     /// This API allows an add-on author to create a function object in native code.
@@ -137,7 +137,7 @@ impl<A: NapiValueT> Function<A> {
     /// the primary mechanism of calling back from the add-on's native code into JavaScript. For
     /// the special case of calling into JavaScript after an async operation, see
     /// napi_make_callback.
-    pub fn call<T, const N: usize>(&self, this: JsObject, argv: [T; N]) -> NapiResult<JsValue>
+    pub fn call<T, const N: usize>(&self, this: JsObject, argv: [T; N]) -> NapiResult<F>
     where
         T: NapiValueT,
     {
@@ -149,7 +149,7 @@ impl<A: NapiValueT> Function<A> {
             argv.len(),
             argv.map(|arg| arg.raw()).as_ptr(),
         );
-        Ok(JsValue::from_raw(self.env(), value))
+        Ok(F::from_raw(self.env(), value))
     }
 
     /// This method is used to instantiate a new JavaScript value using a given napi_value
@@ -170,9 +170,9 @@ impl<A: NapiValueT> Function<A> {
     }
 }
 
-impl<A> NapiValueT for Function<A> {
-    fn from_raw(env: NapiEnv, raw: napi_value) -> Function<A> {
-        Function::<A>(JsValue(env, raw), PhantomData)
+impl<F> NapiValueT for Function<F> {
+    fn from_raw(env: NapiEnv, raw: napi_value) -> Function<F> {
+        Function::<F>(JsValue(env, raw), PhantomData)
     }
 
     fn value(&self) -> JsValue {

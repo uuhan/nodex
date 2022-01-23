@@ -19,7 +19,7 @@ impl<const N: usize> JsBuffer<N> {
     /// This API allocates a node::Buffer object and initializes it with data copied from the
     /// passed-in buffer. While this is still a fully-supported data structure, in most cases using
     /// a TypedArray will suffice.
-    pub fn create_copy(env: NapiEnv, data: impl AsRef<[u8]>) -> NapiResult<JsBuffer<N>> {
+    pub fn create_copy(env: NapiEnv, data: [u8; N]) -> NapiResult<JsBuffer<N>> {
         let buffer = napi_call!(
             =napi_create_buffer_copy,
             env,
@@ -27,7 +27,7 @@ impl<const N: usize> JsBuffer<N> {
             data.as_ref().as_ptr() as _,
             std::ptr::null_mut(),
         );
-        Ok(JsBuffer::from_raw(env, buffer))
+        Ok(JsBuffer::<N>::from_raw(env, buffer))
     }
 
     // pub fn create_external(

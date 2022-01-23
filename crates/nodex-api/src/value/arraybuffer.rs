@@ -11,12 +11,12 @@ impl JsArrayBuffer {
 
     /// This API returns a Node-API value corresponding to a JavaScript ArrayBuffer. ArrayBuffers are used to represent fixed-length binary data buffers. They are normally used as a backing-buffer for TypedArray objects. The ArrayBuffer allocated will have an underlying byte buffer whose size is determined by the length parameter that's passed in. The underlying buffer is optionally returned back to the caller in case the caller wants to directly manipulate the buffer. This buffer can only be written to directly from native code. To write to this buffer from JavaScript, a typed array or DataView object would need to be created.
     /// JavaScript ArrayBuffer objects are described in Section 24.1 of the ECMAScript Language Specification.
-    pub fn new(env: NapiEnv, value: impl AsRef<[u8]>) -> NapiResult<JsArrayBuffer> {
-        let bytes = value.as_ref();
+    pub fn new(env: NapiEnv, buffer: impl AsRef<[u8]>) -> NapiResult<JsArrayBuffer> {
+        let bytes = buffer.as_ref();
         let len = bytes.len();
 
         let mut data = MaybeUninit::uninit();
-        let value = napi_call!(
+        let buffer = napi_call!(
             =napi_create_arraybuffer,
             env,
             len,
@@ -28,7 +28,40 @@ impl JsArrayBuffer {
             std::ptr::copy_nonoverlapping(bytes.as_ptr(), data as *mut u8, len);
         }
 
-        Ok(JsArrayBuffer(JsValue::from_raw(env, value)))
+        Ok(JsArrayBuffer(JsValue::from_raw(env, buffer)))
+    }
+
+    /// This API creates a JavaScript DataView object over an existing ArrayBuffer. DataView
+    /// objects provide an array-like view over an underlying data buffer, but one which allows
+    /// items of different size and type in the ArrayBuffer.
+    ///
+    /// It is required that byte_length + byte_offset is less than or equal to the size in bytes
+    /// of the array passed in. If not, a RangeError exception is raised.
+    ///
+    /// JavaScript DataView objects are described in Section 24.3 of the ECMAScript Language Specification.
+    pub fn view(&self, offset: usize, length: usize) -> NapiResult<JsDataView> {
+        let value = napi_call!(=napi_create_dataview, self.env(), length, self.raw(), offset);
+        Ok(JsDataView::from_raw(self.env(), value))
+    }
+
+    /// This API creates a JavaScript TypedArray object over an existing ArrayBuffer. TypedArray
+    /// objects provide an array-like view over an underlying data buffer where each element has
+    /// the same underlying binary scalar datatype.
+    ///
+    /// It's required that (length * size_of_element) + byte_offset should be <= the size in bytes
+    /// of the array passed in. If not, a RangeError exception is raised.
+    ///
+    /// JavaScript TypedArray objects are described in Section 22.2 of the ECMAScript Language
+    /// Specification.
+    pub fn typedarray(
+        &self,
+        typed: NapiTypedarrayType,
+        offset: usize,
+        length: usize,
+    ) -> NapiResult<JsTypedArray> {
+        let typed =
+            napi_call!(=napi_create_typedarray, self.env(), typed, length, self.raw(), offset);
+        Ok(JsTypedArray::from_raw(self.env(), typed))
     }
 
     /// This API is used to retrieve the underlying data buffer of an ArrayBuffer and its length.
