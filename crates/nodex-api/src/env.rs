@@ -103,25 +103,26 @@ impl NapiEnv {
     }
 
     /// Create a named js function with a rust closure.
-    pub fn func_named<Func, T, R, const N: usize>(
+    pub fn func_named<T, R, const N: usize>(
         &self,
         name: impl AsRef<str>,
-        func: Func,
+        func: impl FnMut(JsObject, [T; N]) -> NapiResult<R>,
     ) -> NapiResult<Function<R>>
     where
         T: NapiValueT,
         R: NapiValueT,
-        Func: FnMut(JsObject, [T; N]) -> NapiResult<R>,
     {
         Function::<R>::new(*self, Some(name), func)
     }
 
     // Create a js function with a rust closure.
-    pub fn func<Func, T, R, const N: usize>(&self, func: Func) -> NapiResult<Function<R>>
+    pub fn func<T, R, const N: usize>(
+        &self,
+        func: impl FnMut(JsObject, [T; N]) -> NapiResult<R>,
+    ) -> NapiResult<Function<R>>
     where
         T: NapiValueT,
         R: NapiValueT,
-        Func: FnMut(JsObject, [T; N]) -> NapiResult<R>,
     {
         Function::<R>::new(*self, Option::<String>::None, func)
     }
@@ -166,40 +167,43 @@ impl NapiEnv {
     }
 
     /// Create a js class with a rust closure
-    pub fn class<F, P, T, R, const N: usize>(
+    pub fn class<T, R, const N: usize>(
         &self,
         name: impl AsRef<str>,
-        func: F,
-        properties: P,
+        func: impl FnMut(JsObject, [T; N]) -> NapiResult<R>,
+        properties: impl AsRef<[NapiPropertyDescriptor]>,
     ) -> NapiResult<JsClass>
     where
         T: NapiValueT,
         R: NapiValueT,
-        F: FnMut(JsObject, [T; N]) -> NapiResult<R>,
-        P: AsRef<[NapiPropertyDescriptor]>,
     {
         JsClass::new(*self, name, func, properties)
     }
 
-    /// Create an async work
-    pub fn async_work(
-        &self,
-        name: impl AsRef<str>,
-        execute: impl FnMut(),
-        complete: impl FnMut(NapiEnv, NapiStatus) -> NapiResult<()>,
-    ) -> NapiResult<NapiAsyncWork> {
-        NapiAsyncWork::new(*self, name, execute, complete)
-    }
-
     /// Create an async work with shared state
-    pub fn async_work_state<T>(
+    pub fn async_work<T>(
         &self,
         name: impl AsRef<str>,
         state: T,
         execute: impl FnMut(&mut T),
-        complete: impl FnMut(NapiEnv, NapiStatus, &mut T) -> NapiResult<()>,
-    ) -> NapiResult<NapiAsyncWork> {
-        NapiAsyncWork::state(*self, name, state, execute, complete)
+        complete: impl FnMut(NapiEnv, NapiStatus, T) -> NapiResult<()>,
+    ) -> NapiResult<NapiAsyncWork<T>> {
+        NapiAsyncWork::new(*self, name, state, execute, complete)
+    }
+
+    #[cfg(feature = "v4")]
+    /// Create a NapiThreadsafeFunction.
+    pub fn tsfn<Data, R, const N: usize>(
+        &self,
+        name: impl AsRef<str>,
+        func: Function<R>,
+        finalizer: impl FnOnce(NapiEnv) -> NapiResult<()>,
+        callback: impl FnMut(Function<R>, Data) -> NapiResult<()>,
+    ) -> NapiResult<NapiThreadsafeFunction<Data, N>>
+    where
+        R: NapiValueT,
+    {
+        NapiThreadsafeFunction::<Data, N>::new(*self, name, func, finalizer, callback)
     }
 
     /// This method allows the efficient definition of multiple properties on a given object. The
@@ -336,6 +340,11 @@ impl NapiEnv {
     #[inline]
     pub fn is_exception_pending(&self) -> NapiResult<bool> {
         Ok(napi_call!(=napi_is_exception_pending, *self))
+    }
+
+    /// Create a js Error.
+    pub fn error(&self, msg: impl AsRef<str>) -> NapiResult<JsError> {
+        JsError::error(*self, msg, Option::<String>::None)
     }
 
     /// Trigger an 'uncaughtException' in JavaScript. Useful if an async callback throws an

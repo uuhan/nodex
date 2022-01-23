@@ -7,6 +7,8 @@ members = [
 
   # examples
   "examples/demo",
+  "examples/func",
+  "examples/promise",
 ]
 
 [patch.crates-io]

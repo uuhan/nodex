@@ -1,20 +1,33 @@
 use crate::{api, prelude::*};
-use std::{mem::MaybeUninit, os::raw::c_char};
+use std::{marker::PhantomData, mem::MaybeUninit, os::raw::c_char};
 
 #[derive(Copy, Clone, Debug)]
-pub struct JsPromise(pub(crate) JsValue, pub(crate) napi_deferred);
+pub struct JsPromise<L, R>(
+    pub(crate) JsValue,
+    pub(crate) napi_deferred,
+    PhantomData<L>,
+    PhantomData<R>,
+);
 
-impl JsPromise {
-    pub(crate) fn from_value(value: JsValue, deferred: napi_deferred) -> JsPromise {
-        JsPromise(value, deferred)
+impl<L: NapiValueT + Copy + Clone, R: NapiValueT + Copy + Clone> JsPromise<L, R> {
+    pub(crate) fn from_raw(value: JsValue, deferred: napi_deferred) -> JsPromise<L, R> {
+        JsPromise(value, deferred, PhantomData, PhantomData)
     }
 
     pub fn env(&self) -> NapiEnv {
         self.0.env()
     }
 
+    pub fn raw(&self) -> napi_value {
+        self.0.raw()
+    }
+
+    pub fn value(&self) -> JsValue {
+        self.0
+    }
+
     /// This API creates a deferred object and a JavaScript promise.
-    pub fn new(env: NapiEnv) -> NapiResult<JsPromise> {
+    pub fn new(env: NapiEnv) -> NapiResult<JsPromise<L, R>> {
         let mut deferred = MaybeUninit::uninit();
 
         let promise = napi_call!(
@@ -25,7 +38,29 @@ impl JsPromise {
 
         let deferred = unsafe { deferred.assume_init() };
 
-        Ok(JsPromise(JsValue::from_raw(env, promise), deferred))
+        Ok(Self::from_raw(JsValue(env, promise), deferred))
+    }
+
+    /// Spawn a busy task in the libuv pool.
+    pub fn spawn<T>(
+        env: NapiEnv,
+        mut work: impl FnMut(&mut T),
+        mut complete: impl FnMut(Self, NapiStatus, T) -> NapiResult<()>,
+    ) -> NapiResult<JsPromise<L, R>>
+    where
+        T: Default,
+    {
+        let promise: JsPromise<L, R> = JsPromise::new(env)?;
+        env.async_work(
+            "napi-promise-task",
+            T::default(),
+            move |state| work(state),
+            // NB: execute in the main js thread.
+            move |_, status, state| complete(promise, status, state),
+        )?
+        .queue()?;
+
+        Ok(promise)
     }
 
     /// This API resolves a JavaScript promise by way of the deferred object with which it is
@@ -35,7 +70,7 @@ impl JsPromise {
     /// call must have been retained in order to be passed to this API.
     ///
     /// The deferred object is freed upon successful completion.
-    pub fn resolve(&self, resolution: impl NapiValueT) -> NapiResult<()> {
+    pub fn resolve(&self, resolution: L) -> NapiResult<()> {
         napi_call!(napi_resolve_deferred, self.env(), self.1, resolution.raw());
         Ok(())
     }
@@ -47,7 +82,7 @@ impl JsPromise {
     /// from that call must have been retained in order to be passed to this API.
     ///
     /// The deferred object is freed upon successful completion.
-    pub fn reject(&self, rejection: impl NapiValueT) -> NapiResult<()> {
+    pub fn reject(&self, rejection: R) -> NapiResult<()> {
         napi_call!(napi_reject_deferred, self.env(), self.1, rejection.raw());
         Ok(())
     }

@@ -22,3 +22,7 @@ demo.thread((result) => {
 
 console.log('array_index[0]:', demo.buffer_index(Buffer.from([1,2,3,4,5])))
 console.log(demo.buffer)
+
+demo.delay(() => {
+  console.log("delayed")
+})

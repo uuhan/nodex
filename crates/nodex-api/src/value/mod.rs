@@ -1,6 +1,7 @@
 use crate::{api, env::NapiEnv, prelude::*};
 use std::mem::MaybeUninit;
 
+#[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct JsValue(pub(crate) NapiEnv, pub(crate) napi_value);
 
@@ -206,6 +207,7 @@ impl NapiValueT for JsValue {
     }
 }
 
+/// The trait for js value, which just store napi_value raw pointer.
 pub trait NapiValueT {
     /// construct value from raw pointer
     fn from_raw(env: NapiEnv, value: napi_value) -> Self;
@@ -214,6 +216,7 @@ pub trait NapiValueT {
     fn value(&self) -> JsValue;
 
     /// napi_value type cast
+    #[inline]
     fn cast<T: NapiValueT>(&self) -> T {
         T::from_raw(self.env(), self.raw())
     }

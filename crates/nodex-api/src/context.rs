@@ -51,11 +51,15 @@ impl NapiAsyncContext {
     ///
     /// Any process.nextTicks or Promises scheduled on the microtask queue by JavaScript during
     /// he callback are ran before returning back to C/C++.
-    pub fn callback<R, T, A>(&self, this: JsObject, func: Function<R>, args: A) -> NapiResult<R>
+    pub fn make_callback<R, T, const N: usize>(
+        &self,
+        this: JsObject,
+        func: Function<R>,
+        args: [T; N],
+    ) -> NapiResult<R>
     where
         R: NapiValueT,
-        T: NapiValueT,
-        A: AsRef<[T]>,
+        T: NapiValueT + Clone,
     {
         let env = self.env();
         let value = napi_call!(
@@ -64,8 +68,8 @@ impl NapiAsyncContext {
             self.raw(),
             this.raw(),
             func.raw(),
-            args.as_ref().len(),
-            args.as_ref().as_ptr() as *const _,
+            args.len(),
+            args.map(|arg| arg.raw()).as_ptr(),
         );
 
         Ok(R::from_raw(env, value))
