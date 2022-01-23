@@ -101,8 +101,7 @@ impl JsArrayBuffer {
     /// This API represents the invocation of the ArrayBuffer detach operation as defined in
     /// Section 24.1.1.3 of the ECMAScript Language Specification.
     pub fn detach(&mut self) -> NapiResult<()> {
-        napi_call!(napi_detach_arraybuffer, self.env(), self.raw());
-        Ok(())
+        napi_call!(napi_detach_arraybuffer, self.env(), self.raw())
     }
 
     #[cfg(feature = "v7")]

@@ -1,2 +1,2 @@
-const script = require('./tsfn.node')
+const script = require('./script.node')
 

@@ -352,8 +352,7 @@ pub trait NapiValueT {
     /// value is throwable
     #[inline]
     fn throw(&self) -> NapiResult<()> {
-        napi_call!(napi_throw, self.env(), self.raw());
-        Ok(())
+        napi_call!(napi_throw, self.env(), self.raw())
     }
 
     /// This method allows the efficient definition of multiple properties on a given object. The
@@ -371,9 +370,7 @@ pub trait NapiValueT {
             self.raw(),
             properties.as_ref().len(),
             properties.as_ref().as_ptr() as *const _,
-        );
-
-        Ok(())
+        )
     }
 
     /// This is a hook which is fired when the value is gabage-collected.
@@ -535,8 +532,7 @@ pub trait NapiValueT {
     /// object with one owned by the addon to ensure that the object has the right type.
     /// If the object already has an associated type tag, this API will return napi_invalid_arg.
     fn type_tag_object(&self, tag: &NapiTypeTag) -> NapiResult<()> {
-        napi_call!(napi_type_tag_object, self.env(), self.raw(), tag);
-        Ok(())
+        napi_call!(napi_type_tag_object, self.env(), self.raw(), tag)
     }
 
     #[cfg(feature = "v8")]

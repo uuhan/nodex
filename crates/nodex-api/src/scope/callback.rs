@@ -22,8 +22,7 @@ impl NapiCallbackScope {
     }
 
     pub fn close(&mut self) -> NapiResult<()> {
-        napi_call!(napi_close_callback_scope, self.env(), self.raw());
-        Ok(())
+        napi_call!(napi_close_callback_scope, self.env(), self.raw())
     }
 }
 

@@ -71,8 +71,7 @@ impl<L: NapiValueT + Copy + Clone, R: NapiValueT + Copy + Clone> JsPromise<L, R>
     ///
     /// The deferred object is freed upon successful completion.
     pub fn resolve(&self, resolution: L) -> NapiResult<()> {
-        napi_call!(napi_resolve_deferred, self.env(), self.1, resolution.raw());
-        Ok(())
+        napi_call!(napi_resolve_deferred, self.env(), self.1, resolution.raw())
     }
 
     /// This API rejects a JavaScript promise by way of the deferred object with which it is
@@ -83,7 +82,6 @@ impl<L: NapiValueT + Copy + Clone, R: NapiValueT + Copy + Clone> JsPromise<L, R>
     ///
     /// The deferred object is freed upon successful completion.
     pub fn reject(&self, rejection: R) -> NapiResult<()> {
-        napi_call!(napi_reject_deferred, self.env(), self.1, rejection.raw());
-        Ok(())
+        napi_call!(napi_reject_deferred, self.env(), self.1, rejection.raw())
     }
 }

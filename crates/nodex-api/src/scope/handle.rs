@@ -36,8 +36,7 @@ impl NapiHandleScope {
     /// order from which they were created.
     /// This API can be called even if there is a pending JavaScript exception.
     pub fn close(&mut self) -> NapiResult<()> {
-        napi_call!(napi_close_handle_scope, self.env(), self.raw());
-        Ok(())
+        napi_call!(napi_close_handle_scope, self.env(), self.raw())
     }
 }
 
@@ -89,8 +88,7 @@ impl NapiEscapableHandleScope {
     /// order from which they were created.
     /// This API can be called even if there is a pending JavaScript exception.
     pub fn close(&mut self) -> NapiResult<()> {
-        napi_call!(napi_close_escapable_handle_scope, self.env(), self.raw());
-        Ok(())
+        napi_call!(napi_close_escapable_handle_scope, self.env(), self.raw())
     }
 
     /// This API promotes the handle to the JavaScript object so that it is valid for

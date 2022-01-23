@@ -85,8 +85,8 @@ version = "0.1.0"
 simply define your module by:
 
 ```rust
-use nodex_api::prelude::*;
-nodex_api::napi_module!(init);
+use nodex::prelude::*;
+nodex::napi_module!(init);
 fn init(env: NapiEnv, exports: JsObject) -> NapiResult<()> {
     Ok(())
 }
@@ -97,7 +97,7 @@ fn init(env: NapiEnv, exports: JsObject) -> NapiResult<()> {
 make sure the node api version is large or equal than your compiled addon's.
 
 ```rust
-nodex_api::napi_guard!(env.napi_version()?);
+nodex::napi_guard!(env.napi_version()?);
 ```
 
 ### Nodejs Version & Napi Version

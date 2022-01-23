@@ -115,8 +115,7 @@ impl<Data, const N: usize> NapiThreadsafeFunction<Data, N> {
             self.raw(),
             Box::into_raw(Box::new(data)) as _,
             mode,
-        );
-        Ok(())
+        )
     }
 
     #[inline]
@@ -135,8 +134,7 @@ impl<Data, const N: usize> NapiThreadsafeFunction<Data, N> {
     ///
     /// This API may be called from any thread which will start making use of func.
     pub fn acquire(&self) -> NapiResult<()> {
-        napi_call!(napi_acquire_threadsafe_function, self.raw());
-        Ok(())
+        napi_call!(napi_acquire_threadsafe_function, self.raw())
     }
 
     /// A thread should call this API when it stops making use of func. Passing func to any
@@ -149,8 +147,7 @@ impl<Data, const N: usize> NapiThreadsafeFunction<Data, N> {
             napi_release_threadsafe_function,
             self.raw(),
             NapiTsfnReleaseMode::Release
-        );
-        Ok(())
+        )
     }
 
     /// A thread should call this API when it stops making use of func. Passing func to any
@@ -163,8 +160,7 @@ impl<Data, const N: usize> NapiThreadsafeFunction<Data, N> {
             napi_release_threadsafe_function,
             self.raw(),
             NapiTsfnReleaseMode::Abort
-        );
-        Ok(())
+        )
     }
 
     /// This API is used to indicate that the event loop running on the main thread should not
@@ -177,8 +173,7 @@ impl<Data, const N: usize> NapiThreadsafeFunction<Data, N> {
     ///
     /// This API may only be called from the main thread.
     pub fn refer(&self) -> NapiResult<()> {
-        napi_call!(napi_ref_threadsafe_function, self.env(), self.raw());
-        Ok(())
+        napi_call!(napi_ref_threadsafe_function, self.env(), self.raw())
     }
 
     /// This API is used to indicate that the event loop running on the main thread may exit
@@ -186,8 +181,7 @@ impl<Data, const N: usize> NapiThreadsafeFunction<Data, N> {
     ///
     /// This API may only be called from the main thread.
     pub fn unref(&self) -> NapiResult<()> {
-        napi_call!(napi_unref_threadsafe_function, self.env(), self.raw());
-        Ok(())
+        napi_call!(napi_unref_threadsafe_function, self.env(), self.raw())
     }
 }
 
