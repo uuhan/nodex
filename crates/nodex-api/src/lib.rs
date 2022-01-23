@@ -163,6 +163,9 @@ pub mod prelude {
 
     pub type DataPointer = *mut std::ffi::c_void;
     pub type CharPointer = *mut std::os::raw::c_char;
+
+    pub type Args<const N: usize> = [JsValue; N];
+    pub type ArgsT<T, const N: usize> = [T; N];
 }
 
 pub const fn napi_version_guard() -> u32 {

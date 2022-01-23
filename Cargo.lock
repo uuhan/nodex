@@ -325,6 +325,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "promise"
+version = "0.1.0"
+dependencies = [
+ "nodex",
+ "nodex-api",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
