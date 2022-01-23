@@ -206,6 +206,7 @@ impl NapiEnv {
 
     #[cfg(feature = "v4")]
     /// Create a NapiThreadsafeFunction.
+    #[inline]
     pub fn tsfn<Data, R, const N: usize>(
         &self,
         name: impl AsRef<str>,

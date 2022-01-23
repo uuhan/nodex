@@ -122,7 +122,7 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     exports.set_named_property(
         "delay",
         env.func(move |_, [cb]: [Function<JsUndefined>; 1]| {
-            let tsfn: NapiTsfn<(), 1> = env.tsfn(
+            let tsfn: NapiTsfn<(), 0> = env.tsfn(
                 "delay-callback",
                 cb,
                 move |_| Ok(()),
@@ -175,7 +175,7 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
         "thread",
         env.func(move |this, [a1]: [JsFunction; 1]| {
             let env = this.env();
-            let tsfn = NapiTsfn::<_, 1>::new(
+            let tsfn = NapiTsfn::<_, 0>::new(
                 env,
                 "tsfn-context",
                 a1,
