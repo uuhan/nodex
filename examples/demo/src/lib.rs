@@ -122,7 +122,7 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     exports.set_named_property(
         "delay",
         env.func(move |_, [cb]: [Function<JsUndefined>; 1]| {
-            let tsfn: NapiTsfn<(), 0> = env.tsfn(
+            let tsfn: NapiTsfn<(), 1> = env.tsfn(
                 "delay-callback",
                 cb,
                 move |_| Ok(()),
@@ -134,8 +134,12 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
             env.async_work(
                 "delay-async-work",
                 (),
-                move |_| std::thread::sleep(std::time::Duration::from_secs(5)),
+                move |_| {
+                    println!("delay async work executing...");
+                    std::thread::sleep(std::time::Duration::from_secs(5));
+                },
                 move |_, _, _| {
+                    println!("delay async work complete");
                     tsfn.blocking(())?;
                     tsfn.release()?;
                     Ok(())
