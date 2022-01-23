@@ -32,7 +32,7 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
             let _scope = env.handle_scope()?;
             a1.call::<JsValue, 0>(this, [])?;
 
-            env.async_work_state(
+            env.async_work(
                 "my-test-async-task",
                 0,
                 move |idx| {
@@ -109,19 +109,11 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     env.async_work(
         label,
-        move || {},
-        move |env, status| {
+        (),
+        move |_| {},
+        move |_, status, _| {
             assert!(status.ok());
             println!("async work complete");
-            env.async_work(
-                label,
-                move || {},
-                move |_, status| {
-                    assert!(status.ok());
-                    Ok(())
-                },
-            )?
-            .queue()?;
             Ok(())
         },
     )?
@@ -142,8 +134,9 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
             )?;
             env.async_work(
                 "delay-async-work",
-                move || std::thread::sleep(std::time::Duration::from_secs(5)),
-                move |_, _| {
+                (),
+                move |_| std::thread::sleep(std::time::Duration::from_secs(5)),
+                move |_, _, _| {
                     tsfn.blocking(())?;
                     tsfn.release()?;
                     Ok(())

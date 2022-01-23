@@ -180,25 +180,15 @@ impl NapiEnv {
         JsClass::new(*self, name, func, properties)
     }
 
-    /// Create an async work
-    pub fn async_work(
-        &self,
-        name: impl AsRef<str>,
-        execute: impl FnMut(),
-        complete: impl FnMut(NapiEnv, NapiStatus) -> NapiResult<()>,
-    ) -> NapiResult<NapiAsyncWork> {
-        NapiAsyncWork::new(*self, name, execute, complete)
-    }
-
     /// Create an async work with shared state
-    pub fn async_work_state<T>(
+    pub fn async_work<T>(
         &self,
         name: impl AsRef<str>,
         state: T,
         execute: impl FnMut(&mut T),
         complete: impl FnMut(NapiEnv, NapiStatus, &mut T) -> NapiResult<()>,
-    ) -> NapiResult<NapiAsyncWork> {
-        NapiAsyncWork::state(*self, name, state, execute, complete)
+    ) -> NapiResult<NapiAsyncWork<T>> {
+        NapiAsyncWork::new(*self, name, state, execute, complete)
     }
 
     /// This method allows the efficient definition of multiple properties on a given object. The

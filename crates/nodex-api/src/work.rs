@@ -1,11 +1,12 @@
 use crate::{api, prelude::*};
+use std::marker::PhantomData;
 
 #[derive(Clone, Debug)]
-pub struct NapiAsyncWork(NapiEnv, napi_async_work, bool);
+pub struct NapiAsyncWork<T>(NapiEnv, napi_async_work, bool, PhantomData<T>);
 
-impl NapiAsyncWork {
-    pub(crate) fn from_value(env: NapiEnv, work: napi_async_work) -> NapiAsyncWork {
-        NapiAsyncWork(env, work, false)
+impl<T> NapiAsyncWork<T> {
+    pub(crate) fn from_raw(env: NapiEnv, work: napi_async_work) -> NapiAsyncWork<T> {
+        NapiAsyncWork(env, work, false, PhantomData)
     }
 
     pub fn env(&self) -> NapiEnv {
@@ -29,81 +30,17 @@ impl NapiAsyncWork {
     ///
     /// * `env` - napi_env
     /// * `name` - napi async work identifier
+    /// * `state` - The state shared between `execute` & `complete`
     /// * `execute` - The native function which should be called to execute the logic asynchronously. The given function is called from a worker pool thread and can execute in parallel with the main event loop thread.
     /// * `complete` - The native function which will be called when the asynchronous logic is completed or is cancelled. The given function is called from the main event loop thread.
     #[allow(clippy::type_complexity)]
     pub fn new(
         env: NapiEnv,
         name: impl AsRef<str>,
-        execute: impl FnMut(),
-        complete: impl FnMut(NapiEnv, NapiStatus) -> NapiResult<()>,
-    ) -> NapiResult<NapiAsyncWork> {
-        extern "C" fn napi_async_execute_callback(env: NapiEnv, data: DataPointer) {
-            unsafe {
-                let (execute, _): &mut (
-                    Box<dyn FnMut()>,
-                    Box<dyn FnMut(NapiEnv, NapiStatus) -> NapiResult<()>>,
-                ) = std::mem::transmute(&mut *(data as *mut _));
-                execute();
-            }
-        }
-        extern "C" fn napi_async_complete_callback(
-            env: NapiEnv,
-            status: NapiStatus,
-            data: DataPointer,
-        ) {
-            unsafe {
-                let mut pair: Box<(
-                    Box<dyn FnMut()>,
-                    Box<dyn FnMut(NapiEnv, NapiStatus) -> NapiResult<()>>,
-                )> = Box::from_raw(data as _);
-                let mut complete = pair.1;
-                complete(env, status);
-            }
-        }
-
-        let pair: Box<(
-            Box<dyn FnMut()>,
-            Box<dyn FnMut(NapiEnv, NapiStatus) -> NapiResult<()>>,
-        )> = Box::new((Box::new(execute), Box::new(complete)));
-
-        let work = napi_call!(
-            =napi_create_async_work,
-            env,
-            env.object()?.raw(),
-            env.string(name)?.raw(),
-            Some(napi_async_execute_callback),
-            Some(napi_async_complete_callback),
-            Box::into_raw(pair) as _,
-        );
-
-        Ok(NapiAsyncWork(env, work, false))
-    }
-
-    /// This API allocates a work object that is used to execute logic asynchronously.
-    /// It should be freed using napi_delete_async_work once the work is no longer required.
-    /// async_resource_name should be a null-terminated, UTF-8-encoded string.
-    ///
-    /// The async_resource_name identifier is provided by the user and should be representative
-    /// of the type of async work being performed. It is also recommended to apply namespacing
-    /// to the identifier, e.g. by including the module name. See the async_hooks documentation
-    /// for more information.
-    ///
-    /// # Arguments
-    ///
-    /// * `env` - napi_env
-    /// * `name` - napi async work identifier
-    /// * `state` - The state shared between `execute` & `complete`
-    /// * `execute` - The native function which should be called to execute the logic asynchronously. The given function is called from a worker pool thread and can execute in parallel with the main event loop thread.
-    /// * `complete` - The native function which will be called when the asynchronous logic is completed or is cancelled. The given function is called from the main event loop thread.
-    #[allow(clippy::type_complexity)]
-    pub fn state<T>(
-        env: NapiEnv,
-        name: impl AsRef<str>,
         state: T,
         execute: impl FnMut(&mut T),
         complete: impl FnMut(NapiEnv, NapiStatus, &mut T) -> NapiResult<()>,
-    ) -> NapiResult<NapiAsyncWork> {
+    ) -> NapiResult<NapiAsyncWork<T>> {
         extern "C" fn napi_async_execute_callback<T>(env: NapiEnv, data: DataPointer) {
             unsafe {
                 let (execute, _, state): &mut (
@@ -146,7 +83,7 @@ impl NapiAsyncWork {
             Box::into_raw(pair) as _,
         );
 
-        Ok(NapiAsyncWork(env, work, false))
+        Ok(NapiAsyncWork::from_raw(env, work))
     }
 
     /// This API requests that the previously allocated work be scheduled for execution. Once it
