@@ -1,7 +1,7 @@
 use crate::{api, prelude::*};
 use std::marker::PhantomData;
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct NapiAsyncWork<T>(NapiEnv, napi_async_work, bool, PhantomData<T>);
 
 impl<T> NapiAsyncWork<T> {
