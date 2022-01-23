@@ -191,6 +191,21 @@ impl NapiEnv {
         NapiAsyncWork::new(*self, name, state, execute, complete)
     }
 
+    #[cfg(feature = "v4")]
+    /// Create a NapiThreadsafeFunction.
+    pub fn tsfn<Data, R, const N: usize>(
+        &self,
+        name: impl AsRef<str>,
+        func: Function<R>,
+        finalizer: impl FnOnce(NapiEnv) -> NapiResult<()>,
+        callback: impl FnMut(Function<R>, Data) -> NapiResult<()>,
+    ) -> NapiResult<NapiThreadsafeFunction<Data, N>>
+    where
+        R: NapiValueT,
+    {
+        NapiThreadsafeFunction::<Data, N>::new(*self, name, func, finalizer, callback)
+    }
+
     /// This method allows the efficient definition of multiple properties on a given object. The
     /// properties are defined using property descriptors (see napi_property_descriptor). Given an
     /// array of such property descriptors, this API will set the properties on the object one at a

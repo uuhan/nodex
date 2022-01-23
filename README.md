@@ -63,7 +63,7 @@ version = "0.1.0-beta.2"
 
 ### v4
 
-* NapiThreadsafeFunction::\<Data> - Thread safe function.
+* NapiThreadsafeFunction::\<Data, const N: usize> - Thread safe function.
 
 ### v5
 
@@ -196,31 +196,16 @@ obj.define_properties(&[
 ```rust
 // without shared state
 env.async_work(
-    env,
     "my-test-async-task",
-    move || {
+    (),
+    move |_| {
         // you can do the hard work in the thread-pool context.
         // NB: js work is not allowed here.
         println!("execute async task");
     },
-    move |_, status| {
+    move |_, status, _| {
         // you can do some js work in this context
         println!("[{}] complete async task", status);
-        Ok(())
-    },
-)?
-.queue()?;
-
-// with shared state
-env.async_work_state(
-    "my-test-async-task",
-    0,
-    move |idx| {
-        *idx += 1;
-        println!("execute async task");
-    },
-    move |_, status, idx| {
-        println!("[{}] complete async task: {}", status, idx);
         Ok(())
     },
 )?
@@ -255,7 +240,7 @@ obj.remove_wrap::<[usize; 2]>()?; // the finalizer will not be called
 require: napi >= 4
 
 ```rust
-let tsfn = NapiThreadsafeFunction::new(
+let tsfn = NapiThreadsafeFunction::<_, 0>::new(
     env,
     "tsfn-task",
     env.func(|this, [a1]: [JsString; 1]| {
@@ -272,20 +257,9 @@ let tsfn = NapiThreadsafeFunction::new(
 )?;
 
 std::thread::spawn(move || {
-    tsfn.call(
-        "hello, world - 1".into(),
-        NapiThreadsafeFunctionCallMode::Nonblocking,
-    )
-    .unwrap();
-
-    tsfn.call(
-        "hello, world - 2".into(),
-        NapiThreadsafeFunctionCallMode::Nonblocking,
-    )
-    .unwrap();
-
-    tsfn.release(NapiThreadsafeFunctionReleaseMode::Release)
-        .unwrap();
+    tsfn.non_blocking("hello, world - 1".into()).unwrap();
+    tsfn.non_blocking("hello, world - 2".into()).unwrap();
+    tsfn.release().unwrap();
 });
 ```
 
