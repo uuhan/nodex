@@ -191,8 +191,22 @@ impl NapiEnv {
         NapiAsyncWork::new(*self, name, state, execute, complete)
     }
 
+    /// Create a promise with a work & complete closure.
+    #[inline]
+    pub fn promise<T, L: NapiValueT + Copy + Clone, R: NapiValueT + Copy + Clone>(
+        &self,
+        mut work: impl FnMut(&mut T),
+        mut complete: impl FnMut(JsPromise<L, R>, NapiStatus, T) -> NapiResult<()>,
+    ) -> NapiResult<JsPromise<L, R>>
+    where
+        T: Default,
+    {
+        JsPromise::<L, R>::spawn(*self, work, complete)
+    }
+
     #[cfg(feature = "v4")]
     /// Create a NapiThreadsafeFunction.
+    #[inline]
     pub fn tsfn<Data, R, const N: usize>(
         &self,
         name: impl AsRef<str>,

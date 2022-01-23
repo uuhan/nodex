@@ -263,6 +263,31 @@ std::thread::spawn(move || {
 });
 ```
 
+### Promise for some heavy work
+
+```rust
+let promise: JsPromise<JsString, JsError> = env.promise(
+    move |result| {
+        for i in 1..=3 {
+            std::thread::sleep(std::time::Duration::from_secs(1));
+            println!("[{}] Doing...", i);
+        }
+
+        *result = resolve;
+    },
+    move |promise, _, result| {
+        let env = promise.env();
+        if result {
+            promise.resolve(env.string("the promise is resolved.")?)?;
+        } else {
+            promise.reject(env.error("the promise is rejected.")?)?;
+        }
+        Ok(())
+    },
+)?;
+// the `promise.value()` can return to js world as a Promise
+```
+
 ### More
 
 [examples/demo](./examples/demo)

@@ -432,6 +432,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "tsfn"
+version = "0.1.0"
+dependencies = [
+ "nodex",
+ "nodex-api",
+]
+
+[[package]]
 name = "unicode-width"
 version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -134,8 +134,12 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
             env.async_work(
                 "delay-async-work",
                 (),
-                move |_| std::thread::sleep(std::time::Duration::from_secs(5)),
+                move |_| {
+                    println!("delay async work executing...");
+                    std::thread::sleep(std::time::Duration::from_secs(5));
+                },
                 move |_, _, _| {
+                    println!("delay async work complete");
                     tsfn.blocking(())?;
                     tsfn.release()?;
                     Ok(())
@@ -171,7 +175,7 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
         "thread",
         env.func(move |this, [a1]: [JsFunction; 1]| {
             let env = this.env();
-            let tsfn = NapiTsfn::<_, 1>::new(
+            let tsfn = NapiTsfn::<_, 0>::new(
                 env,
                 "tsfn-context",
                 a1,

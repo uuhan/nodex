@@ -7,8 +7,7 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
         env.func(|this, [resolve]: ArgsT<JsBoolean, 1>| {
             let env = this.env();
             let resolve = resolve.get()?;
-            let promise: JsPromise<JsString, JsError> = JsPromise::spawn(
-                env,
+            let promise: JsPromise<JsString, JsError> = env.promise(
                 move |result| {
                     for i in 1..=3 {
                         std::thread::sleep(std::time::Duration::from_secs(1));
