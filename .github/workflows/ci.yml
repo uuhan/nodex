@@ -101,24 +101,31 @@ jobs:
           command: test
           args: -p nodex-api --no-default-features --features=v8
 
-  demo:
+  examples:
     name: Run Demo Project
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
 
-      - run: cargo build -p demo
+      - run: cargo build -p demo -p func -p promise
       - run: cp target/debug/libdemo.so demo.node
 
       - name: Install nodejs - v14
         uses: actions/setup-node@v2
         with:
           node-version: '14'
-      - run: node demo.js
+
+      - run: bash examples/demo.sh
+      - run: bash examples/func.sh
+      - run: bash examples/promise.sh
 
       - name: Install nodejs - v17
         uses: actions/setup-node@v2
         with:
           node-version: '17'
-      - run: node demo.js
+
+      - run: bash examples/demo.sh
+      - run: bash examples/func.sh
+      - run: bash examples/promise.sh
+
