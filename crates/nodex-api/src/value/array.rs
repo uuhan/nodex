@@ -31,8 +31,7 @@ impl JsArray {
     /// This API returns the length of an array.
     /// Array length is described in Section 22.1.4.1 of the ECMAScript Language Specification.
     pub fn len(&self) -> NapiResult<u32> {
-        let len = napi_call!(=napi_get_array_length, self.env(), self.raw());
-        Ok(len)
+        Ok(napi_call!(=napi_get_array_length, self.env(), self.raw()))
     }
 
     /// This array is empty.
@@ -47,6 +46,12 @@ impl JsArray {
             self.env(),
             napi_call!(=napi_get_element, self.env(), self.raw(), index),
         ))
+    }
+
+    /// Set element at `index`
+    #[inline]
+    pub fn set(&self, index: u32, value: impl NapiValueT) -> NapiResult<()> {
+        napi_call!(napi_set_element, self.env(), self.raw(), index, value.raw())
     }
 }
 

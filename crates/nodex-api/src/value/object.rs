@@ -33,8 +33,7 @@ impl JsObject {
             self.raw(),
             name.as_ptr(),
             value.raw(),
-        );
-        Ok(())
+        )
     }
 
     /// This API returns the names of the enumerable properties of object as an array of strings.
@@ -71,8 +70,7 @@ impl JsObject {
             self.raw(),
             key.raw(),
             value.raw(),
-        );
-        Ok(())
+        )
     }
 
     /// This API gets the requested property from the Object passed in.
@@ -134,8 +132,7 @@ impl JsObject {
 
     /// This API sets an element on the Object passed in.
     pub fn set_element(&mut self, index: u32, value: impl NapiValueT) -> NapiResult<()> {
-        napi_call!(napi_set_element, self.env(), self.raw(), index, value.raw(),);
-        Ok(())
+        napi_call!(napi_set_element, self.env(), self.raw(), index, value.raw())
     }
 
     /// This API gets the element at the requested index.
@@ -173,15 +170,13 @@ impl JsObject {
     #[cfg(feature = "v8")]
     #[doc = "Object.freeze()"]
     pub fn freeze(&mut self) -> NapiResult<()> {
-        napi_call!(napi_object_freeze, self.env(), self.raw());
-        Ok(())
+        napi_call!(napi_object_freeze, self.env(), self.raw())
     }
 
     #[cfg(feature = "v8")]
     #[doc = "Object.seal()"]
     pub fn seal(&mut self) -> NapiResult<()> {
-        napi_call!(napi_object_seal, self.env(), self.raw());
-        Ok(())
+        napi_call!(napi_object_seal, self.env(), self.raw())
     }
 }
 

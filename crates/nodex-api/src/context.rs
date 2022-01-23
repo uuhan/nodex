@@ -35,8 +35,7 @@ impl NapiAsyncContext {
 
     /// This API can be called even if there is a pending JavaScript exception.
     pub fn destroy(&mut self) -> NapiResult<()> {
-        napi_call!(napi_async_destroy, self.env(), self.raw());
-        Ok(())
+        napi_call!(napi_async_destroy, self.env(), self.raw())
     }
 
     /// This method allows a JavaScript function object to be called from a native add-on.

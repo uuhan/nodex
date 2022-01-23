@@ -96,8 +96,7 @@ impl<T> NapiAsyncWork<T> {
     pub fn queue(&mut self) -> NapiResult<()> {
         if !self.2 {
             self.2 = true;
-            napi_call!(napi_queue_async_work, self.env(), self.raw(),);
-            Ok(())
+            napi_call!(napi_queue_async_work, self.env(), self.raw())
         } else {
             Err(NapiStatus::GenericFailure)
         }
@@ -111,8 +110,7 @@ impl<T> NapiAsyncWork<T> {
     ///
     /// This API can be called even if there is a pending JavaScript exception.
     pub fn cancel(&self) -> NapiResult<()> {
-        napi_call!(napi_cancel_async_work, self.env(), self.raw(),);
-        Ok(())
+        napi_call!(napi_cancel_async_work, self.env(), self.raw())
     }
 
     /// This API frees a previously allocated work object.
@@ -121,7 +119,7 @@ impl<T> NapiAsyncWork<T> {
     /// NB: should not delete a queued task.
     pub fn delete(self) -> NapiResult<()> {
         if !self.2 {
-            napi_call!(napi_delete_async_work, self.env(), self.raw(),);
+            napi_call!(napi_delete_async_work, self.env(), self.raw());
         }
         Ok(())
     }

@@ -322,8 +322,7 @@ impl NapiEnv {
             object.raw(),
             properties.as_ref().len(),
             properties.as_ref().as_ptr() as *const _,
-        );
-        Ok(())
+        )
     }
 
     /// This API throws a JavaScript Error with the text provided.
@@ -331,8 +330,7 @@ impl NapiEnv {
     pub fn throw_error(&self, msg: impl AsRef<str>) -> NapiResult<()> {
         use std::ffi::CString;
         let msg = napi_s!(msg.as_ref())?;
-        napi_call!(napi_throw_error, *self, std::ptr::null(), msg.as_ptr());
-        Ok(())
+        napi_call!(napi_throw_error, *self, std::ptr::null(), msg.as_ptr())
     }
 
     /// This API throws a JavaScript Error with the text provided.
@@ -341,16 +339,14 @@ impl NapiEnv {
         use std::ffi::CString;
         let msg = napi_s!(msg.as_ref())?;
         let code = napi_s!(code.as_ref())?;
-        napi_call!(napi_throw_error, *self, code.as_ptr(), msg.as_ptr());
-        Ok(())
+        napi_call!(napi_throw_error, *self, code.as_ptr(), msg.as_ptr())
     }
 
     /// This API throws a JavaScript TypeError with the text provided.
     #[inline]
     pub fn throw_type_error(&self, msg: impl AsRef<str>) -> NapiResult<()> {
         let msg = napi_s!(msg.as_ref()).map_err(|_| NapiStatus::StringExpected)?;
-        napi_call!(napi_throw_type_error, *self, std::ptr::null(), msg.as_ptr());
-        Ok(())
+        napi_call!(napi_throw_type_error, *self, std::ptr::null(), msg.as_ptr())
     }
 
     /// This API throws a JavaScript TypeError with the text provided.
@@ -362,8 +358,7 @@ impl NapiEnv {
     ) -> NapiResult<()> {
         let msg = napi_s!(msg.as_ref()).map_err(|_| NapiStatus::StringExpected)?;
         let code = napi_s!(code.as_ref())?;
-        napi_call!(napi_throw_type_error, *self, code.as_ptr(), msg.as_ptr());
-        Ok(())
+        napi_call!(napi_throw_type_error, *self, code.as_ptr(), msg.as_ptr())
     }
 
     /// This API throws a JavaScript TypeError with the text provided.
@@ -380,8 +375,7 @@ impl NapiEnv {
             *self,
             std::ptr::null(),
             msg.as_ptr()
-        );
-        Ok(())
+        )
     }
 
     /// This API throws a JavaScript TypeError with the text provided.
@@ -394,8 +388,7 @@ impl NapiEnv {
         use std::ffi::CString;
         let msg = napi_s!(msg.as_ref())?;
         let code = napi_s!(code.as_ref())?;
-        napi_call!(napi_throw_range_error, *self, code.as_ptr(), msg.as_ptr());
-        Ok(())
+        napi_call!(napi_throw_range_error, *self, code.as_ptr(), msg.as_ptr())
     }
 
     #[inline]
@@ -452,8 +445,7 @@ impl NapiEnv {
     #[inline]
     #[cfg(feature = "v3")]
     pub fn fatal_exception(&self, err: JsError) -> NapiResult<()> {
-        napi_call!(napi_fatal_exception, *self, err.raw());
-        Ok(())
+        napi_call!(napi_fatal_exception, *self, err.raw())
     }
 
     /// Create a handle scope
@@ -501,7 +493,7 @@ impl NapiEnv {
 
         let args = Box::into_raw(hook) as _;
 
-        napi_call!(napi_add_env_cleanup_hook, *self, Some(cleanup_hook), args,);
+        napi_call!(napi_add_env_cleanup_hook, *self, Some(cleanup_hook), args);
 
         Ok(CleanupHookHandler {
             env: *self,
@@ -639,9 +631,7 @@ impl NapiEnv {
             data,
             Some(finalizer_trampoline::<T>),
             Box::into_raw(finalizer) as _,
-        );
-
-        Ok(())
+        )
     }
 
     #[cfg(feature = "v6")]
@@ -669,8 +659,7 @@ pub struct CleanupHookHandler {
 #[cfg(feature = "v3")]
 impl CleanupHookHandler {
     pub fn remove(self) -> NapiResult<()> {
-        napi_call!(napi_remove_env_cleanup_hook, self.env, self.hook, self.args,);
-        Ok(())
+        napi_call!(napi_remove_env_cleanup_hook, self.env, self.hook, self.args)
     }
 }
 
@@ -681,7 +670,6 @@ pub struct AsyncCleanupHookHandler(napi_async_cleanup_hook_handle);
 #[cfg(feature = "v8")]
 impl AsyncCleanupHookHandler {
     pub fn remove(self) -> NapiResult<()> {
-        napi_call!(napi_remove_async_cleanup_hook, self.0);
-        Ok(())
+        napi_call!(napi_remove_async_cleanup_hook, self.0)
     }
 }

@@ -48,6 +48,8 @@ macro_rules! napi_call {
             let status = $crate::api::$napi($($args),+);
             if status.err() {
                 return Err(status);
+            } else {
+                NapiResult::Ok(())
             }
         }
     }
