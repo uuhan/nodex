@@ -224,9 +224,7 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     let external = env.external("ext data".into(), |_, _: String| Ok(()))?;
     assert_eq!("ext data", external.get()?);
 
-    let buff = std::mem::ManuallyDrop::new([10u8; 10]);
-    let ext_buffer: JsBuffer<10> = env.create_buffer(buff.as_ref())?;
-
+    let ext_buffer: JsBuffer<10> = env.buffer_copy([10; 10])?;
     exports.set_named_property("buffer", ext_buffer)?;
 
     Ok(())

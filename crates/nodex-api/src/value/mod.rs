@@ -96,10 +96,10 @@ impl JsValue {
 
     /// view it as a dataview, may faile if it is not a dataview value
     pub fn as_dataview(&self) -> NapiResult<JsDataView> {
-        if self.is_buffer()? {
-            Ok(JsDataView::from_value(*self))
+        if self.is_dataview()? {
+            Ok(JsDataView::from_raw(self.env(), self.raw()))
         } else {
-            Err(NapiStatus::GenericFailure)
+            Err(NapiStatus::InvalidArg)
         }
     }
 
@@ -151,7 +151,7 @@ impl JsValue {
     }
 
     /// view it as a bigint, may fail if it is not a bigint value
-    pub fn as_bigint(&self) -> NapiResult<JsBigInt> {
+    pub fn as_bigint<T>(&self) -> NapiResult<JsBigInt<T>> {
         if self.is_bigint()? {
             Ok(JsBigInt::from_value(*self))
         } else {

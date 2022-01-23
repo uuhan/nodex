@@ -17,79 +17,158 @@ impl AsRef<napi_env> for NapiEnv {
 
 impl NapiEnv {
     /// create `NapiEnv` from raw napi_env
+    #[inline]
     pub fn from_raw(env: napi_env) -> NapiEnv {
         NapiEnv(env)
     }
 
     /// access raw napi_env from `NapiEnv`
+    #[inline]
     pub fn raw(&self) -> napi_env {
         self.0
     }
 
     /// This API returns the global object.
+    #[inline]
     pub fn global(&self) -> NapiResult<JsGlobal> {
         JsGlobal::new(*self)
     }
 
     /// get node version
     /// the returned buffer is statically allocated and does not need to be freed.
+    #[inline]
     pub fn node_version(&self) -> NapiResult<napi_node_version> {
         let value = napi_call!(=napi_get_node_version, *self);
         unsafe { Ok(std::ptr::read(value)) }
     }
 
     /// get napi version
+    #[inline]
     pub fn napi_version(&self) -> NapiResult<u32> {
         Ok(napi_call!(=napi_get_version, *self))
     }
 
     /// Return null object
+    #[inline]
     pub fn null(&self) -> NapiResult<JsNull> {
         JsNull::new(*self)
     }
 
     /// Return undefined object
+    #[inline]
     pub fn undefined(&self) -> NapiResult<JsUndefined> {
         JsUndefined::new(*self)
     }
 
+    /// This API is used to convert from the C int32_t type to the JavaScript number type.
+    /// The JavaScript number type is described in Section 6.1.6 of the ECMAScript Language Specification.
+    #[inline]
+    pub fn int32(&self, value: i32) -> NapiResult<JsNumber> {
+        JsNumber::int32(*self, value)
+    }
+
+    /// This API is used to convert from the C uint32_t type to the JavaScript number type.
+    /// The JavaScript number type is described in Section 6.1.6 of the ECMAScript Language Specification.
+    #[inline]
+    pub fn uint32(&self, value: u32) -> NapiResult<JsNumber> {
+        JsNumber::uint32(*self, value)
+    }
+
+    /// This API is used to convert from the C int64_t type to the JavaScript number type.
+    /// The JavaScript number type is described in Section 6.1.6 of the ECMAScript Language Specification. Note the complete range of int64_t cannot be represented with full precision in JavaScript. Integer values outside the range of Number.MIN_SAFE_INTEGER -(2**53 - 1) - Number.MAX_SAFE_INTEGER (2**53 - 1) will lose precision.
+    #[inline]
+    pub fn int64(&self, value: i64) -> NapiResult<JsNumber> {
+        JsNumber::int64(*self, value)
+    }
+
     /// This API is used to convert from the C double type to the JavaScript number type.
     /// The JavaScript number type is described in Section 6.1.6 of the ECMAScript Language Specification.
+    #[inline]
     pub fn double(&self, value: f64) -> NapiResult<JsNumber> {
         JsNumber::double(*self, value)
     }
 
     /// This API creates a JavaScript string value from a UTF8-encoded C string. The native string is copied.
     /// The JavaScript string type is described in Section 6.1.4 of the ECMAScript Language Specification.
+    #[inline]
     pub fn string(&self, s: impl AsRef<str>) -> NapiResult<JsString> {
         JsString::new(*self, s)
     }
 
+    /// Create an empty js array.
+    #[inline]
+    pub fn array(&self) -> NapiResult<JsArray> {
+        JsArray::empty(*self)
+    }
+
+    #[cfg(feature = "v6")]
+    /// Create a bigint_int64.
+    #[inline]
+    pub fn bigint_i64(&self, value: i64) -> NapiResult<JsBigInt<i64>> {
+        JsBigInt::<i64>::new_i64(*self, value)
+    }
+
+    #[cfg(feature = "v6")]
+    /// Create a bigint_unt64.
+    #[inline]
+    pub fn bigint_u64(&self, value: u64) -> NapiResult<JsBigInt<u64>> {
+        JsBigInt::<u64>::new_u64(*self, value)
+    }
+
+    /// Create a boolean.
+    #[inline]
+    pub fn boolean(&self, boolean: bool) -> NapiResult<JsBoolean> {
+        JsBoolean::new(*self, boolean)
+    }
+
+    /// Create a Buffer<N>
+    #[inline]
+    pub fn buffer<const N: usize>(&self) -> NapiResult<JsBuffer<N>> {
+        JsBuffer::<N>::create(*self)
+    }
+
+    /// Create a Buffer<N> from [u8]
+    #[inline]
+    pub fn buffer_copy<const N: usize>(&self, data: [u8; N]) -> NapiResult<JsBuffer<N>> {
+        JsBuffer::<N>::create_copy(*self, data)
+    }
+
+    /// Create an ArrayBuffer
+    #[inline]
+    pub fn arraybuffer(&self, buffer: impl AsRef<[u8]>) -> NapiResult<JsArrayBuffer> {
+        JsArrayBuffer::new(*self, buffer)
+    }
+
+    #[cfg(feature = "v5")]
+    /// Create a Date.
+    pub fn date(&self, time: f64) -> NapiResult<JsDate> {
+        JsDate::new(*self, time)
+    }
+
     /// This API creates a JavaScript symbol value from a UTF8-encoded C string.
     /// The JavaScript symbol type is described in Section 19.4 of the ECMAScript Language Specification.
+    #[inline]
     pub fn symbol(&self) -> NapiResult<JsSymbol> {
         JsSymbol::new(*self)
     }
 
     /// Symbol with description.
+    #[inline]
     pub fn symbol_description(&self, desc: JsString) -> NapiResult<JsSymbol> {
         JsSymbol::description(*self, desc)
     }
 
     /// This API allocates a default JavaScript Object. It is the equivalent of doing new Object() in JavaScript.
     /// The JavaScript Object type is described in Section 6.1.7 of the ECMAScript Language Specification.
+    #[inline]
     pub fn object(&self) -> NapiResult<JsObject> {
         JsObject::new(*self)
     }
 
     /// The async context
+    #[inline]
     pub fn context(&self, name: impl AsRef<str>) -> NapiResult<NapiAsyncContext> {
         NapiAsyncContext::new(*self, name)
-    }
-
-    /// Create a JsBuffer::<N>
-    pub fn create_buffer<const N: usize>(&self, data: impl AsRef<[u8]>) -> NapiResult<JsBuffer<N>> {
-        JsBuffer::create_copy(*self, data)
     }
 
     /// Create an external data.
@@ -102,7 +181,21 @@ impl NapiEnv {
         JsExternal::<T>::new(*self, value, finalizer)
     }
 
+    /// Create a js function with a rust closure.
+    #[inline]
+    pub fn func<T, R, const N: usize>(
+        &self,
+        func: impl FnMut(JsObject, [T; N]) -> NapiResult<R>,
+    ) -> NapiResult<Function<R>>
+    where
+        T: NapiValueT,
+        R: NapiValueT,
+    {
+        Function::<R>::new(*self, Option::<String>::None, func)
+    }
+
     /// Create a named js function with a rust closure.
+    #[inline]
     pub fn func_named<T, R, const N: usize>(
         &self,
         name: impl AsRef<str>,
@@ -115,19 +208,8 @@ impl NapiEnv {
         Function::<R>::new(*self, Some(name), func)
     }
 
-    // Create a js function with a rust closure.
-    pub fn func<T, R, const N: usize>(
-        &self,
-        func: impl FnMut(JsObject, [T; N]) -> NapiResult<R>,
-    ) -> NapiResult<Function<R>>
-    where
-        T: NapiValueT,
-        R: NapiValueT,
-    {
-        Function::<R>::new(*self, Option::<String>::None, func)
-    }
-
     /// Create a named js function with a rust function
+    #[inline]
     pub fn function_named(
         &self,
         name: impl AsRef<str>,
@@ -148,6 +230,7 @@ impl NapiEnv {
     }
 
     /// Create a js function with a rust function
+    #[inline]
     pub fn function(
         &self,
         func: extern "C" fn(env: NapiEnv, info: napi_callback_info) -> napi_value,
@@ -167,6 +250,7 @@ impl NapiEnv {
     }
 
     /// Create a js class with a rust closure
+    #[inline]
     pub fn class<T, R, const N: usize>(
         &self,
         name: impl AsRef<str>,
@@ -181,6 +265,7 @@ impl NapiEnv {
     }
 
     /// Create an async work with shared state
+    #[inline]
     pub fn async_work<T>(
         &self,
         name: impl AsRef<str>,
@@ -225,6 +310,7 @@ impl NapiEnv {
     /// array of such property descriptors, this API will set the properties on the object one at a
     /// time, as defined by DefineOwnProperty() (described in Section 9.1.6 of the ECMA-262
     /// specification).
+    #[inline]
     pub fn define_properties(
         &self,
         object: impl NapiValueT,
@@ -371,15 +457,18 @@ impl NapiEnv {
     }
 
     /// Create a handle scope
+    #[inline]
     pub fn handle_scope(&self) -> NapiResult<NapiHandleScope> {
         NapiHandleScope::open(*self)
     }
 
     /// Create a escapable handle scope
+    #[inline]
     pub fn escapable_handle_scope(&self) -> NapiResult<NapiEscapableHandleScope> {
         NapiEscapableHandleScope::open(*self)
     }
 
+    #[cfg(feature = "v3")]
     /// Registers fun as a function to be run with the arg parameter once the current
     /// Node.js environment exits.
     ///
@@ -394,7 +483,7 @@ impl NapiEnv {
     /// Removing this hook can be done by using napi_remove_env_cleanup_hook. Typically,
     /// that happens when the resource for which this hook was added is being torn down anyway.
     /// For asynchronous cleanup, napi_add_async_cleanup_hook is available.
-    #[cfg(feature = "v3")]
+    #[inline]
     pub fn add_cleanup_hook<Hook>(&mut self, hook: Hook) -> NapiResult<CleanupHookHandler>
     where
         Hook: FnOnce() -> NapiResult<()>,
@@ -434,6 +523,7 @@ impl NapiEnv {
     /// be passed to napi_remove_async_cleanup_hook, regardless of whether the hook has
     /// already been invoked. Typically, that happens when the resource for which this hook
     /// was added is being torn down anyway.
+    #[inline]
     pub fn add_async_cleanup_hook<Hook>(
         &mut self,
         hook: Hook,
@@ -477,6 +567,7 @@ impl NapiEnv {
     /// kept alive by JavaScript objects (i.e. a JavaScript object that points to its own memory
     /// allocated by a native module). Registering externally allocated memory will trigger global
     /// garbage collections more often than it would otherwise.
+    #[inline]
     pub fn adjust_external_memory(&self, changes: i64) -> NapiResult<i64> {
         Ok(napi_call!(=napi_adjust_external_memory, *self, changes))
     }
@@ -491,6 +582,7 @@ impl NapiEnv {
     /// will be added to the global object. Variable declarations made using let and const will
     /// be visible globally, but will not be added to the global object.
     /// * The value of this is global within the script.
+    #[inline]
     pub fn run_script<R: NapiValueT>(&self, script: impl AsRef<str>) -> NapiResult<R> {
         let result = napi_call!(
             =napi_run_script,
@@ -501,12 +593,14 @@ impl NapiEnv {
     }
 
     #[cfg(feature = "v2")]
+    #[inline]
     pub fn get_uv_event_loop(&self) -> NapiResult<uv_loop_s> {
         unsafe { Ok(*napi_call!(=napi_get_uv_event_loop, *self)) }
     }
 
     #[cfg(feature = "v6")]
     #[allow(clippy::type_complexity)]
+    #[inline]
     /// This API associates data with the currently running Agent. data can later be retrieved
     /// using napi_get_instance_data(). Any existing data associated with the currently running
     /// Agent which was set by means of a previous call to napi_set_instance_data() will be
@@ -554,6 +648,7 @@ impl NapiEnv {
     /// This API retrieves data that was previously associated with the currently running Agent via
     /// napi_set_instance_data(). If no data is set, the call will succeed and data will be set to
     /// NULL.
+    #[inline]
     pub fn get_instance_data<T>(&self) -> NapiResult<Option<&mut T>> {
         let data = napi_call!(=napi_get_instance_data, *self) as *mut T;
         if data.is_null() {
