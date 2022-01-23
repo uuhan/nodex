@@ -207,6 +207,7 @@ impl NapiValueT for JsValue {
     }
 }
 
+/// The trait for js value, which just store napi_value raw pointer.
 pub trait NapiValueT {
     /// construct value from raw pointer
     fn from_raw(env: NapiEnv, value: napi_value) -> Self;

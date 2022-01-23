@@ -39,13 +39,15 @@ impl<T> NapiAsyncWork<T> {
         name: impl AsRef<str>,
         state: T,
         execute: impl FnMut(&mut T),
-        complete: impl FnMut(NapiEnv, NapiStatus, &mut T) -> NapiResult<()>,
+        complete: impl FnMut(NapiEnv, NapiStatus, T) -> NapiResult<()>,
     ) -> NapiResult<NapiAsyncWork<T>> {
         extern "C" fn napi_async_execute_callback<T>(env: NapiEnv, data: DataPointer) {
             unsafe {
+                // NB: We just access the execute function here, so read complete function as
+                // `dyn FnMut<&mut T>`. It only runs once.
                 let (execute, _, state): &mut (
                     Box<dyn FnMut(&mut T)>,
-                    Box<dyn FnMut(NapiEnv, NapiStatus, &mut T) -> NapiResult<()>>,
+                    Box<dyn FnMut(NapiEnv, NapiStatus, T) -> NapiResult<()>>,
                     T,
                 ) = std::mem::transmute(&mut *(data as *mut _));
                 execute(state);
@@ -59,17 +61,17 @@ impl<T> NapiAsyncWork<T> {
             unsafe {
                 let mut pair: Box<(
                     Box<dyn FnMut(&mut T)>,
-                    Box<dyn FnMut(NapiEnv, NapiStatus, &mut T)>,
+                    Box<dyn FnMut(NapiEnv, NapiStatus, T)>,
                     T,
                 )> = Box::from_raw(data as _);
                 let mut complete = pair.1;
-                complete(env, status, &mut pair.2);
+                complete(env, status, pair.2);
             }
         }
 
         let pair: Box<(
             Box<dyn FnMut(&mut T)>,
-            Box<dyn FnMut(NapiEnv, NapiStatus, &mut T) -> NapiResult<()>>,
+            Box<dyn FnMut(NapiEnv, NapiStatus, T) -> NapiResult<()>>,
             T,
         )> = Box::new((Box::new(execute), Box::new(complete), state));
 

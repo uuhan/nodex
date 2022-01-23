@@ -9,7 +9,7 @@ pub struct JsPromise<L, R>(
     PhantomData<R>,
 );
 
-impl<L: NapiValueT, R: NapiValueT> JsPromise<L, R> {
+impl<L: NapiValueT + Copy + Clone, R: NapiValueT + Copy + Clone> JsPromise<L, R> {
     pub(crate) fn from_raw(value: JsValue, deferred: napi_deferred) -> JsPromise<L, R> {
         JsPromise(value, deferred, PhantomData, PhantomData)
     }
@@ -39,6 +39,28 @@ impl<L: NapiValueT, R: NapiValueT> JsPromise<L, R> {
         let deferred = unsafe { deferred.assume_init() };
 
         Ok(Self::from_raw(JsValue(env, promise), deferred))
+    }
+
+    /// Spawn a busy task in the libuv pool.
+    pub fn spawn<T>(
+        env: NapiEnv,
+        mut work: impl FnMut(&mut T),
+        mut complete: impl FnMut(Self, NapiStatus, T) -> NapiResult<()>,
+    ) -> NapiResult<JsPromise<L, R>>
+    where
+        T: Default,
+    {
+        let promise: JsPromise<L, R> = JsPromise::new(env)?;
+        env.async_work(
+            "napi-promise-task",
+            T::default(),
+            move |state| work(state),
+            // NB: execute in the main js thread.
+            move |_, status, state| complete(promise, status, state),
+        )?
+        .queue()?;
+
+        Ok(promise)
     }
 
     /// This API resolves a JavaScript promise by way of the deferred object with which it is

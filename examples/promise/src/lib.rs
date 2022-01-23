@@ -7,27 +7,26 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
         env.func(|this, [resolve]: ArgsT<JsBoolean, 1>| {
             let env = this.env();
             let resolve = resolve.get()?;
-            let promise: JsPromise<JsString, JsError> = JsPromise::new(env)?;
-
-            env.async_work(
-                "test-async-work",
-                (),
-                move |_| {
+            let promise: JsPromise<JsString, JsError> = JsPromise::spawn(
+                env,
+                move |result| {
                     for i in 1..=3 {
                         std::thread::sleep(std::time::Duration::from_secs(1));
                         println!("[{}] Doing...", i);
                     }
+
+                    *result = resolve;
                 },
-                move |env, _, _| {
-                    if resolve {
+                move |promise, _, result| {
+                    let env = promise.env();
+                    if result {
                         promise.resolve(env.string("the promise is resolved.")?)?;
                     } else {
                         promise.reject(env.error("the promise is rejected.")?)?;
                     }
                     Ok(())
                 },
-            )?
-            .queue()?;
+            )?;
 
             Ok(promise.value())
         })?,

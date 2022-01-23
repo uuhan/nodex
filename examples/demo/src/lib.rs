@@ -38,7 +38,7 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
                 move |idx| {
                     *idx += 1;
                 },
-                move |_, status, &mut idx| {
+                move |_, status, idx| {
                     if status == NapiStatus::Cancelled {
                         println!("[{}] task cancelled", status);
                     } else {
@@ -170,7 +170,8 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     exports.set_named_property(
         "thread",
         env.func(move |this, [a1]: [JsFunction; 1]| {
-            let tsfn = NapiTsfn::<_, 0>::new(
+            let env = this.env();
+            let tsfn = NapiTsfn::<_, 1>::new(
                 env,
                 "tsfn-context",
                 a1,
@@ -183,10 +184,10 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
             std::thread::spawn(move || {
                 std::thread::sleep(std::time::Duration::from_secs(1));
-                tsfn.blocking("hello, world - 1".into()).unwrap();
+                tsfn.non_blocking("hello, world - 1".into()).unwrap();
 
                 std::thread::sleep(std::time::Duration::from_secs(1));
-                tsfn.blocking("hello, world - 2".into()).unwrap();
+                tsfn.non_blocking("hello, world - 2".into()).unwrap();
 
                 tsfn.release().unwrap();
             });
