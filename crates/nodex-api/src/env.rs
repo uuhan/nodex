@@ -342,6 +342,11 @@ impl NapiEnv {
         Ok(napi_call!(=napi_is_exception_pending, *self))
     }
 
+    /// Create a js Error.
+    pub fn error(&self, msg: impl AsRef<str>) -> NapiResult<JsError> {
+        JsError::error(*self, msg, Option::<String>::None)
+    }
+
     /// Trigger an 'uncaughtException' in JavaScript. Useful if an async callback throws an
     /// exception with no way to recover.
     #[inline]

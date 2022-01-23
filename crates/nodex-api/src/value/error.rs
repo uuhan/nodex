@@ -13,15 +13,16 @@ impl JsError {
     #[inline]
     pub fn error(
         env: NapiEnv,
-        msg: impl NapiValueT,
-        code: Option<impl NapiValueT>,
+        msg: impl AsRef<str>,
+        code: Option<impl AsRef<str>>,
     ) -> NapiResult<JsError> {
         let code = if let Some(code) = code {
-            code.value().raw()
+            env.string(code.as_ref())?.raw()
         } else {
             std::ptr::null_mut()
         };
-        let err = napi_call!(=napi_create_error, env, code, msg.value().raw());
+        let msg = env.string(msg.as_ref())?;
+        let err = napi_call!(=napi_create_error, env, code, msg.raw());
         Ok(JsError(JsValue(env, err)))
     }
 
