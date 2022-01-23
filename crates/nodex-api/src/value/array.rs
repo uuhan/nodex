@@ -39,6 +39,15 @@ impl JsArray {
     pub fn is_empty(&self) -> NapiResult<bool> {
         Ok(self.len()? == 0)
     }
+
+    /// Get element at `index`
+    #[inline]
+    pub fn get(&self, index: u32) -> NapiResult<JsValue> {
+        Ok(JsValue::from_raw(
+            self.env(),
+            napi_call!(=napi_get_element, self.env(), self.raw(), index),
+        ))
+    }
 }
 
 napi_value_t!(JsArray);
