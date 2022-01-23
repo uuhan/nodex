@@ -6,3 +6,4 @@ cargo build -p demo
 [[ -e target/debug/deps/libdemo.so ]] && cp target/debug/deps/libdemo.so demo.node
 
 node --napi-modules demo.js
+

@@ -127,28 +127,32 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     )?
     .queue()?;
 
-    exports.set_named_property("delay", env.func(move |_, [cb]: [Function::<JsUndefined>; 1]| {
-        let tsfn = NapiTsfn::new(
-            env,
-            "delay-callback",
-            cb,
-            move |_| Ok(()),
-            move |cb, _: ()| {
-                cb.call::<JsUndefined, 0>(env.object()?, [])?;
-                Ok(())
-            },
-        )?;
-        env.async_work(
-            "delay-async-work",
-            move || { std::thread::sleep(std::time::Duration::from_secs(5)) },
-            move |_, _| {
-                tsfn.call((), NapiTsfnMode::Nonblocking)?;
-                tsfn.release(NapiTsfnReleaseMode::Release)?;
-                Ok(())
-            },
-        )?.queue()?;
-        env.undefined()
-    })?)?;
+    exports.set_named_property(
+        "delay",
+        env.func(move |_, [cb]: [Function<JsUndefined>; 1]| {
+            let tsfn = NapiTsfn::new(
+                env,
+                "delay-callback",
+                cb,
+                move |_| Ok(()),
+                move |cb, _: ()| {
+                    cb.call::<JsUndefined, 0>(env.object()?, [])?;
+                    Ok(())
+                },
+            )?;
+            env.async_work(
+                "delay-async-work",
+                move || std::thread::sleep(std::time::Duration::from_secs(5)),
+                move |_, _| {
+                    tsfn.blocking(())?;
+                    tsfn.release()?;
+                    Ok(())
+                },
+            )?
+            .queue()?;
+            env.undefined()
+        })?,
+    )?;
 
     env.add_cleanup_hook(|| {
         println!("clean hook fired");
@@ -163,7 +167,7 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     hook.remove()?;
 
     let context = NapiAsyncContext::new(env, "my-async-context")?;
-    let _callback = context.callback(
+    let _callback = context.make_callback(
         exports,
         env.func(move |this, []: [JsValue; 0]| Ok(this))?,
         [env.undefined()?],
@@ -187,14 +191,12 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
             std::thread::spawn(move || {
                 std::thread::sleep(std::time::Duration::from_secs(1));
-                tsfn.call("hello, world - 1".into(), NapiTsfnMode::Nonblocking)
-                    .unwrap();
+                tsfn.blocking("hello, world - 1".into()).unwrap();
 
                 std::thread::sleep(std::time::Duration::from_secs(1));
-                tsfn.call("hello, world - 2".into(), NapiTsfnMode::Nonblocking)
-                    .unwrap();
+                tsfn.blocking("hello, world - 2".into()).unwrap();
 
-                tsfn.release(NapiTsfnReleaseMode::Release).unwrap();
+                tsfn.release().unwrap();
             });
 
             this.undefined()

@@ -103,25 +103,26 @@ impl NapiEnv {
     }
 
     /// Create a named js function with a rust closure.
-    pub fn func_named<Func, T, R, const N: usize>(
+    pub fn func_named<T, const N: usize, R>(
         &self,
         name: impl AsRef<str>,
-        func: Func,
+        func: impl FnMut(JsObject, [T; N]) -> NapiResult<R>,
     ) -> NapiResult<Function<R>>
     where
         T: NapiValueT,
         R: NapiValueT,
-        Func: FnMut(JsObject, [T; N]) -> NapiResult<R>,
     {
         Function::<R>::new(*self, Some(name), func)
     }
 
     // Create a js function with a rust closure.
-    pub fn func<Func, T, R, const N: usize>(&self, func: Func) -> NapiResult<Function<R>>
+    pub fn func<T, const N: usize, R>(
+        &self,
+        func: impl FnMut(JsObject, [T; N]) -> NapiResult<R>,
+    ) -> NapiResult<Function<R>>
     where
         T: NapiValueT,
         R: NapiValueT,
-        Func: FnMut(JsObject, [T; N]) -> NapiResult<R>,
     {
         Function::<R>::new(*self, Option::<String>::None, func)
     }
@@ -166,17 +167,15 @@ impl NapiEnv {
     }
 
     /// Create a js class with a rust closure
-    pub fn class<F, P, T, R, const N: usize>(
+    pub fn class<T, const N: usize, R>(
         &self,
         name: impl AsRef<str>,
-        func: F,
-        properties: P,
+        func: impl FnMut(JsObject, [T; N]) -> NapiResult<R>,
+        properties: impl AsRef<[NapiPropertyDescriptor]>,
     ) -> NapiResult<JsClass>
     where
         T: NapiValueT,
         R: NapiValueT,
-        F: FnMut(JsObject, [T; N]) -> NapiResult<R>,
-        P: AsRef<[NapiPropertyDescriptor]>,
     {
         JsClass::new(*self, name, func, properties)
     }

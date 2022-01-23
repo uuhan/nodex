@@ -4,3 +4,4 @@ dist
 target
 demo.node
 crates/nodex-api/src/out.rs
+*.node

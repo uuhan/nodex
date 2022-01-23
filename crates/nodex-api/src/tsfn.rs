@@ -114,6 +114,16 @@ impl<Data> NapiThreadsafeFunction<Data> {
         Ok(())
     }
 
+    #[inline]
+    pub fn blocking(&self, data: Data) -> NapiResult<()> {
+        self.call(data, NapiThreadsafeFunctionCallMode::Blocking)
+    }
+
+    #[inline]
+    pub fn non_blocking(&self, data: Data) -> NapiResult<()> {
+        self.call(data, NapiThreadsafeFunctionCallMode::Nonblocking)
+    }
+
     /// A thread should call this API before passing func to any other thread-safe function APIs
     /// to indicate that it will be making use of func. This prevents func from being destroyed
     /// when all other threads have stopped making use of it.
@@ -129,8 +139,26 @@ impl<Data> NapiThreadsafeFunction<Data> {
     /// been destroyed.
     ///
     /// This API may be called from any thread which will stop making use of func.
-    pub fn release(self, mode: NapiThreadsafeFunctionReleaseMode) -> NapiResult<()> {
-        napi_call!(napi_release_threadsafe_function, self.raw(), mode);
+    pub fn release(self) -> NapiResult<()> {
+        napi_call!(
+            napi_release_threadsafe_function,
+            self.raw(),
+            NapiTsfnReleaseMode::Release
+        );
+        Ok(())
+    }
+
+    /// A thread should call this API when it stops making use of func. Passing func to any
+    /// thread-safe APIs after having called this API has undefined results, as func may have
+    /// been destroyed.
+    ///
+    /// This API may be called from any thread which will stop making use of func.
+    pub fn abort(self) -> NapiResult<()> {
+        napi_call!(
+            napi_release_threadsafe_function,
+            self.raw(),
+            NapiTsfnReleaseMode::Abort
+        );
         Ok(())
     }
 

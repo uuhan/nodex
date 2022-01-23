@@ -54,15 +54,14 @@ impl<A: NapiValueT> Function<A> {
     ///
     /// JavaScript Functions are described in Section 19.2 of the ECMAScript Language Specification.
     #[allow(clippy::type_complexity)]
-    pub fn new<F, T, R, const N: usize>(
+    pub fn new<T, const N: usize, R>(
         env: NapiEnv,
         name: Option<impl AsRef<str>>,
-        func: F,
+        func: impl FnMut(JsObject, [T; N]) -> NapiResult<R>,
     ) -> NapiResult<Function<R>>
     where
         T: NapiValueT,
         R: NapiValueT,
-        F: FnMut(JsObject, [T; N]) -> NapiResult<R>,
     {
         let (name, len) = if let Some(name) = name {
             (name.as_ref().as_ptr() as *const c_char, name.as_ref().len())
@@ -73,8 +72,6 @@ impl<A: NapiValueT> Function<A> {
         // NB: leak the func closure
         let func: Box<Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<R>>> = Box::new(Box::new(func));
 
-        // TODO: it just works but not very useful by current design
-        // use the trampoline function to call into the closure
         extern "C" fn trampoline<T: NapiValueT, R: NapiValueT, const N: usize>(
             env: NapiEnv,
             info: napi_callback_info,
