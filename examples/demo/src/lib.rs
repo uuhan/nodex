@@ -136,7 +136,7 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
                 (),
                 move |_| {
                     println!("delay async work executing...");
-                    std::thread::sleep(std::time::Duration::from_secs(5));
+                    std::thread::sleep(std::time::Duration::from_secs(1));
                 },
                 move |_, _, _| {
                     println!("delay async work complete");

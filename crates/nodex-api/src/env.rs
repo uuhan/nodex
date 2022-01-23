@@ -491,8 +491,12 @@ impl NapiEnv {
     /// will be added to the global object. Variable declarations made using let and const will
     /// be visible globally, but will not be added to the global object.
     /// * The value of this is global within the script.
-    pub fn run_script<R: NapiValueT>(&self, script: JsString) -> NapiResult<R> {
-        let result = napi_call!(=napi_run_script, *self, script.raw());
+    pub fn run_script<R: NapiValueT>(&self, script: impl AsRef<str>) -> NapiResult<R> {
+        let result = napi_call!(
+            =napi_run_script,
+            *self,
+            JsString::new(*self, script)?.raw(),
+        );
         Ok(R::from_raw(*self, result))
     }
 
