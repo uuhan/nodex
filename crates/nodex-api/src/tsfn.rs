@@ -2,12 +2,16 @@ use crate::prelude::*;
 use std::marker::PhantomData;
 
 #[derive(Copy, Clone, Debug)]
-pub struct NapiThreadsafeFunction<Data>(NapiEnv, napi_threadsafe_function, PhantomData<Data>);
+pub struct NapiThreadsafeFunction<Data, const N: usize>(
+    NapiEnv,
+    napi_threadsafe_function,
+    PhantomData<Data>,
+);
 
-unsafe impl<Data> Send for NapiThreadsafeFunction<Data> {}
-unsafe impl<Data> Sync for NapiThreadsafeFunction<Data> {}
+unsafe impl<Data, const N: usize> Send for NapiThreadsafeFunction<Data, N> {}
+unsafe impl<Data, const N: usize> Sync for NapiThreadsafeFunction<Data, N> {}
 
-impl<Data> NapiThreadsafeFunction<Data> {
+impl<Data, const N: usize> NapiThreadsafeFunction<Data, N> {
     pub(crate) fn from_raw(env: NapiEnv, tsfn: napi_threadsafe_function) -> Self {
         NapiThreadsafeFunction(env, tsfn, PhantomData)
     }
@@ -22,17 +26,18 @@ impl<Data> NapiThreadsafeFunction<Data> {
 
     #[allow(clippy::type_complexity)]
     /// Create a napi_threadsafe_function
-    pub fn new<R, Finalizer, Callback>(
+    ///
+    /// R: the returned value of function.
+    /// N: the maximum size of the queue, 0 for no limit.
+    pub fn new<R>(
         env: NapiEnv,
         name: impl AsRef<str>,
         func: Function<R>,
-        finalizer: Finalizer,
-        callback: Callback,
-    ) -> NapiResult<NapiThreadsafeFunction<Data>>
+        finalizer: impl FnOnce(NapiEnv) -> NapiResult<()>,
+        callback: impl FnMut(Function<R>, Data) -> NapiResult<()>,
+    ) -> NapiResult<NapiThreadsafeFunction<Data, N>>
     where
         R: NapiValueT,
-        Finalizer: FnOnce(NapiEnv) -> NapiResult<()>,
-        Callback: FnMut(Function<R>, Data) -> NapiResult<()>,
     {
         unsafe extern "C" fn finalizer_trampoline(
             env: NapiEnv,
@@ -81,7 +86,7 @@ impl<Data> NapiThreadsafeFunction<Data> {
             std::ptr::null_mut(),
             env.string(name.as_ref())?.raw(),
             0,
-            1,
+            N,
             Box::into_raw(finalizer) as _,
             Some(finalizer_trampoline),
             context as _,
@@ -186,4 +191,4 @@ impl<Data> NapiThreadsafeFunction<Data> {
     }
 }
 
-pub type NapiTsfn<Data> = NapiThreadsafeFunction<Data>;
+pub type NapiTsfn<Data, const N: usize> = NapiThreadsafeFunction<Data, N>;
