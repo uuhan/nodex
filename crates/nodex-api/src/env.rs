@@ -103,7 +103,7 @@ impl NapiEnv {
     }
 
     /// Create a named js function with a rust closure.
-    pub fn func_named<T, const N: usize, R>(
+    pub fn func_named<T, R, const N: usize>(
         &self,
         name: impl AsRef<str>,
         func: impl FnMut(JsObject, [T; N]) -> NapiResult<R>,
@@ -116,7 +116,7 @@ impl NapiEnv {
     }
 
     // Create a js function with a rust closure.
-    pub fn func<T, const N: usize, R>(
+    pub fn func<T, R, const N: usize>(
         &self,
         func: impl FnMut(JsObject, [T; N]) -> NapiResult<R>,
     ) -> NapiResult<Function<R>>
@@ -167,7 +167,7 @@ impl NapiEnv {
     }
 
     /// Create a js class with a rust closure
-    pub fn class<T, const N: usize, R>(
+    pub fn class<T, R, const N: usize>(
         &self,
         name: impl AsRef<str>,
         func: impl FnMut(JsObject, [T; N]) -> NapiResult<R>,

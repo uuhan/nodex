@@ -54,7 +54,7 @@ impl<A: NapiValueT> Function<A> {
     ///
     /// JavaScript Functions are described in Section 19.2 of the ECMAScript Language Specification.
     #[allow(clippy::type_complexity)]
-    pub fn new<T, const N: usize, R>(
+    pub fn new<T, R, const N: usize>(
         env: NapiEnv,
         name: Option<impl AsRef<str>>,
         func: impl FnMut(JsObject, [T; N]) -> NapiResult<R>,
