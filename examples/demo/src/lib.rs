@@ -127,6 +127,29 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     )?
     .queue()?;
 
+    exports.set_named_property("delay", env.func(move |_, [cb]: [Function::<JsUndefined>; 1]| {
+        let tsfn = NapiTsfn::new(
+            env,
+            "delay-callback",
+            cb,
+            move |_| Ok(()),
+            move |cb, _: ()| {
+                cb.call::<JsUndefined, 0>(env.object()?, [])?;
+                Ok(())
+            },
+        )?;
+        env.async_work(
+            "delay-async-work",
+            move || { std::thread::sleep(std::time::Duration::from_secs(5)) },
+            move |_, _| {
+                tsfn.call((), NapiTsfnMode::Nonblocking)?;
+                tsfn.release(NapiTsfnReleaseMode::Release)?;
+                Ok(())
+            },
+        )?.queue()?;
+        env.undefined()
+    })?)?;
+
     env.add_cleanup_hook(|| {
         println!("clean hook fired");
         Ok(())
