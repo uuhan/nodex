@@ -58,11 +58,7 @@ impl JsObject {
     }
 
     /// Set value by string-like key.
-    pub fn set<T: NapiValueT>(
-        &mut self,
-        key: impl AsRef<str>,
-        value: impl NapiValueT,
-    ) -> NapiResult<()> {
+    pub fn set<T: NapiValueT>(&mut self, key: impl AsRef<str>, value: T) -> NapiResult<()> {
         let name = self.env().string(key.as_ref())?;
         let value = self.set_property(name, value)?;
         Ok(())
