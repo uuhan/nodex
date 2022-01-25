@@ -12,4 +12,4 @@ features = ["v8"]
 
 [dependencies.nodex]
 path = "../../crates/nodex"
-features = ["v8"]
+features = ["v8", "no-linkage"]
