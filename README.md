@@ -46,6 +46,28 @@ crate-type = ["cdylib"]
 
 [dependencies.nodex]
 version = "0.1.1"
+features = ["v8"]
+```
+
+If you do not need the default link options, e.g. you are cross-compiling to x86_64-unknown-linux-gnu in macos platform.
+
+```toml
+features = ["no-linkage"]
+```
+
+This feature will disable the following link options:
+
+```rust
+#[cfg(not(feature = "no-linkage"))]
+{
+    // NB: macos link options
+    #[cfg(target_os = "macos")]
+    {
+        println!("cargo:rustc-cdylib-link-arg=-Wl");
+        println!("cargo:rustc-cdylib-link-arg=-undefined");
+        println!("cargo:rustc-cdylib-link-arg=dynamic_lookup");
+    }
+}
 ```
 
 ## Napi Level

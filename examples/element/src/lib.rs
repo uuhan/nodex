@@ -3,16 +3,16 @@ use nodex::prelude::*;
 nodex::napi_module!(init);
 
 fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
-    exports.set_named_property("string", env.string("napi string")?)?;
-    exports.set_named_property("symbol", env.symbol()?)?;
-    exports.set_named_property("array", env.array()?)?;
-    exports.set_named_property("arraybuffer", env.arraybuffer([1, 2, 3, 4, 5])?)?;
-    exports.set_named_property("bigint_int64", env.bigint_i64(i64::MAX)?)?;
-    exports.set_named_property("bigint_unt64", env.bigint_u64(u64::MAX)?)?;
-    exports.set_named_property("boolean_true", env.boolean(true)?)?;
-    exports.set_named_property("boolean_false", env.boolean(false)?)?;
-    exports.set_named_property("buffer_10", env.buffer::<10>()?)?;
-    exports.set_named_property("buffer_copy_10", env.buffer_copy([0; 10])?)?;
+    exports.set("string", env.string("napi string")?)?;
+    exports.set("symbol", env.symbol()?)?;
+    exports.set("array", env.array()?)?;
+    exports.set("arraybuffer", env.arraybuffer([1, 2, 3, 4, 5])?)?;
+    exports.set("bigint_int64", env.bigint_i64(i64::MAX)?)?;
+    exports.set("bigint_unt64", env.bigint_u64(u64::MAX)?)?;
+    exports.set("boolean_true", env.boolean(true)?)?;
+    exports.set("boolean_false", env.boolean(false)?)?;
+    exports.set("buffer_10", env.buffer::<10>()?)?;
+    exports.set("buffer_copy_10", env.buffer_copy([0; 10])?)?;
 
     let arraybuffer = env.arraybuffer([0; 10])?;
     exports.set_named_property("arraybuffer_10", arraybuffer)?;

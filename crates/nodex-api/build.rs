@@ -24,12 +24,15 @@ pub fn main() {
             .expect("could not write bindings!");
     }
 
-    // NB: macos link options
-    #[cfg(target_os = "macos")]
+    #[cfg(not(feature = "no-linkage"))]
     {
-        println!("cargo:rustc-cdylib-link-arg=-Wl");
-        println!("cargo:rustc-cdylib-link-arg=-undefined");
-        println!("cargo:rustc-cdylib-link-arg=dynamic_lookup");
+        // NB: macos link options
+        #[cfg(target_os = "macos")]
+        {
+            println!("cargo:rustc-cdylib-link-arg=-Wl");
+            println!("cargo:rustc-cdylib-link-arg=-undefined");
+            println!("cargo:rustc-cdylib-link-arg=dynamic_lookup");
+        }
     }
 }
 
