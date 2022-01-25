@@ -7,13 +7,18 @@ macro_rules! napi_module {
             env: $crate::api::napi_env,
             exports: $crate::api::napi_value,
         ) -> $crate::api::napi_value {
-            let exports = $crate::value::JsObject::napi_module_exports(env, exports);
             let env = $crate::env::NapiEnv::from_raw(env);
+            let exports = $crate::value::JsObject::from_raw(env, exports);
 
             // TODO: deal with exception
-            match std::panic::catch_unwind(|| $init(env, exports)) {
-                Ok(r) => {}
-                Err(e) => {}
+            match std::panic::catch_unwind(move || $init(env, exports)) {
+                Ok(Ok(_)) => {}
+                Ok(Err(e)) => {
+                    env.throw_error(format!("napi: {:?}", e)).unwrap();
+                }
+                Err(e) => {
+                    env.throw_error(format!("panic: {:?}", e)).unwrap();
+                }
             }
 
             exports.raw()
