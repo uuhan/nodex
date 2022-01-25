@@ -57,6 +57,17 @@ impl JsObject {
         Ok(JsArray::from_raw(self.env(), names))
     }
 
+    /// Set value by string-like key.
+    pub fn set<T: NapiValueT>(
+        &mut self,
+        key: impl AsRef<str>,
+        value: impl NapiValueT,
+    ) -> NapiResult<()> {
+        let name = self.env().string(key.as_ref())?;
+        let value = self.set_property(name, value)?;
+        Ok(())
+    }
+
     /// This API set a property on the Object passed in.
     pub fn set_property(&mut self, key: impl NapiValueT, value: impl NapiValueT) -> NapiResult<()> {
         napi_call!(
@@ -72,6 +83,13 @@ impl JsObject {
     pub fn get_property(&self, key: impl NapiValueT) -> NapiResult<JsValue> {
         let value = napi_call!(=napi_get_property, self.env(), self.raw(), key.raw());
         Ok(JsValue::from_raw(self.env(), value))
+    }
+
+    /// Get value by string-like key.
+    pub fn get<T: NapiValueT>(&self, key: impl AsRef<str>) -> NapiResult<T> {
+        let name = self.env().string(key.as_ref())?;
+        let value = self.get_property(name)?;
+        Ok(T::from_raw(self.env(), value.raw()))
     }
 
     /// This API checks if the Object passed in has the named property.
