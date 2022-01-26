@@ -12,6 +12,10 @@ members = [
   "examples/tsfn",
   "examples/script",
   "examples/element",
+  "examples/plugin",
+
+  # plugins
+  "plugins/nodex-plugin-helloworld",
 ]
 
 [patch.crates-io]

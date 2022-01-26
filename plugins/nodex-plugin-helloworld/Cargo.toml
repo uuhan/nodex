@@ -1,0 +1,14 @@
+[package]
+name = "nodex-plugin-helloworld"
+version = "0.1.0"
+edition = "2021"
+readme = "./README.md"
+repository = "https://github.com/uuhan/nodex"
+homepage = "https://github.com/uuhan/nodex"
+license = "MIT"
+authors = ["uuhan <xuminhui189@gmail.com>"]
+description = "A small crate to show how to write a nodex plugin."
+
+[dependencies.nodex]
+path = "../../crates/nodex"
+version = "0.1"
