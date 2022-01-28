@@ -25,9 +25,17 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
                 }
                 tsfn.blocking("NapiThreadsafeFunction Calls Back.").unwrap();
                 tsfn.release().unwrap();
-            })
-            .join()
-            .unwrap();
+            });
+
+            tsfn.acquire()?;
+            std::thread::spawn(move || {
+                for i in 1..=3 {
+                    println!("[{}] Doing...", i);
+                    std::thread::sleep(std::time::Duration::from_secs(1));
+                }
+                tsfn.blocking("NapiThreadsafeFunction Calls Back.").unwrap();
+                tsfn.release().unwrap();
+            });
 
             this.env().undefined()
         })?,
