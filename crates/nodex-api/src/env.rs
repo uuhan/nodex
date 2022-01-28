@@ -454,10 +454,24 @@ impl NapiEnv {
         NapiHandleScope::open(*self)
     }
 
+    /// Run in a scope.
+    #[inline]
+    pub fn scope<T>(&self, task: impl Fn(NapiHandleScope) -> T) -> NapiResult<T> {
+        Ok(task(self.handle_scope()?))
+    }
+
     /// Create a escapable handle scope
     #[inline]
     pub fn escapable_handle_scope(&self) -> NapiResult<NapiEscapableHandleScope> {
         NapiEscapableHandleScope::open(*self)
+    }
+
+    /// Run in an escapable scope.
+    pub fn escapable_scope<T>(
+        &self,
+        task: impl Fn(NapiEscapableHandleScope) -> T,
+    ) -> NapiResult<T> {
+        Ok(task(self.escapable_handle_scope()?))
     }
 
     #[cfg(feature = "v3")]
