@@ -1,4 +1,5 @@
 use nodex::prelude::*;
+use std::sync::{Arc, Mutex};
 nodex::napi_module!(init);
 
 fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
@@ -14,11 +15,15 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
         .with_method(move |this, []: [JsValue; 0]| this.env().double(200.))
         .build()?])?;
 
+    let value = Arc::new(Mutex::new(0.));
+    let value2 = value.clone();
+
     obj.define_properties(&[DescriptorAccessorBuilder::new()
         .with_utf8name("myaccessor")
-        .with_getter(|this| this.env().double(100.))
-        .with_setter(|_this: JsObject, [n]: [JsNumber; 1]| {
-            println!("setter: {}", n.get_value_int32()?);
+        .with_getter(move |this| this.env().double(*value.lock().unwrap()))
+        .with_setter(move |_this: JsObject, [n]: [JsNumber; 1]| {
+            let mut value = value2.lock().unwrap();
+            *value = n.get_value_double()?;
             Ok(())
         })
         .build()?])?;

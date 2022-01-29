@@ -93,12 +93,13 @@ impl<T> NapiAsyncWork<T> {
     /// or the result will be undefined.
     ///
     /// NB: The `NapiAsyncWork` can not be queued more than once.
-    pub fn queue(&mut self) -> NapiResult<()> {
-        if !self.2 {
-            self.2 = true;
-            napi_call!(napi_queue_async_work, self.env(), self.raw())
+    pub fn queue(&mut self) -> NapiResult<Option<()>> {
+        if self.2 {
+            Ok(None)
         } else {
-            Err(NapiStatus::GenericFailure)
+            napi_call!(napi_queue_async_work, self.env(), self.raw());
+            self.2 = true;
+            Ok(Some(()))
         }
     }
 
