@@ -64,7 +64,7 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
             this.set_named_property("a1", a1)?;
             Ok(this)
         },
-        [DescriptorBuilder::new()
+        [DescriptorValueBuilder::new()
             .with_utf8name("prop1")
             .with_value(env.double(10.)?)
             .build()?],
@@ -86,11 +86,11 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     exports.set_named_property("a", env.string("b")?)?;
     exports.define_properties(&[
-        DescriptorBuilder::new()
+        DescriptorValueBuilder::new()
             .with_utf8name("utils")
             .with_value(obj)
             .build()?,
-        DescriptorBuilder::new()
+        DescriptorValueBuilder::new()
             .with_utf8name("key1")
             .with_value(env.double(100.)?)
             .build()?,

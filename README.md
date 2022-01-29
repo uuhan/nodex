@@ -4,7 +4,7 @@ Yet another crate to create native nodejs addons :)
 
 This crate aims to make creating native nodejs addons very easy and comfortable.
 
-[click here: uuhan/nodex@dev](https://github.com/uuhan/nodex) to see the most recently developments.
+[click here: uuhan/nodex@dev](https://github.com/uuhan/nodex) to see the most recent developments.
 
 ## Features
 
@@ -205,12 +205,24 @@ match env.add_async_cleanup_hook(|hook| {
 
 ```rust
 let mut obj: JsObject = env.object()?;
-obj.define_properties(&[
-    DescriptorBuilder::new()
-        .with_name(env.string("utils")?)
-        .with_value(env.double(100.)?)
-        .build()?,
-])?;
+obj.define_properties(&[DescriptorValueBuilder::new()
+    .with_utf8name("myvalue")
+    .with_value(env.string("myvalue")?)
+    .build()?])?;
+
+obj.define_properties(&[DescriptorMethodBuilder::new()
+    .with_utf8name("mymethod")
+    .with_method(move |this, []: [JsValue; 0]| this.env().double(200.))
+    .build()?])?;
+
+obj.define_properties(&[DescriptorAccessorBuilder::new()
+    .with_utf8name("myaccessor")
+    .with_getter(|this| this.env().double(100.))
+    .with_setter(|_this: JsObject, [n]: [JsNumber; 1]| {
+        println!("setter: {}", n.get_value_int32()?);
+        Ok(())
+    })
+    .build()?])?;
 ```
 
 ### Create An Async Work

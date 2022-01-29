@@ -142,7 +142,7 @@ pub mod prelude {
     pub use args::*;
     pub use callback::CallbackInfo;
     pub use context::NapiAsyncContext;
-    pub use descriptor::{DescriptorBuilder, NapiPropertyDescriptor};
+    pub use descriptor::*;
     pub use reference::NapiRef;
     pub use scope::*;
     #[cfg(feature = "v4")]
