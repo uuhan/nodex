@@ -13,6 +13,7 @@ members = [
   "examples/script",
   "examples/element",
   "examples/plugin",
+  "examples/descriptor",
 
   # plugins
   "plugins/nodex-plugin-helloworld",
