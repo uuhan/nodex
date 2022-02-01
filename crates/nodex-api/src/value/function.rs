@@ -104,11 +104,7 @@ impl<F: NapiValueT> Function<F> {
             let args = unsafe { argv.map(|arg| T::from_raw(env, arg)) };
             let this = JsObject::from_raw(env, this);
 
-            if let Ok(result) = func(this, args) {
-                result.raw()
-            } else {
-                env.undefined().unwrap().raw()
-            }
+            napi_r!(env, =func(this, args))
         }
 
         let fn_pointer = Box::into_raw(func) as DataPointer;

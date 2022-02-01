@@ -225,11 +225,7 @@ impl<T: NapiValueT, R: NapiValueT, const N: usize> DescriptorMethodBuilder<T, R,
             let args = unsafe { argv.map(|arg| T::from_raw(env, arg)) };
             let this = JsObject::from_raw(env, this);
 
-            if let Ok(result) = func(this, args) {
-                result.raw()
-            } else {
-                env.undefined().unwrap().raw()
-            }
+            napi_r!(env, =func(this, args))
         }
 
         let method = Some(method_trampoline::<T, R, N> as _);
@@ -367,11 +363,7 @@ impl<T: NapiValueT, R: NapiValueT> DescriptorAccessorBuilder<T, R> {
 
             let this = JsObject::from_raw(env, this);
 
-            if let Ok(result) = func.0.as_mut().unwrap()(this) {
-                result.raw()
-            } else {
-                env.undefined().unwrap().raw()
-            }
+            napi_r!(env, =func.0.as_mut().unwrap()(this))
         }
 
         let mut data = (None, None);
@@ -413,11 +405,7 @@ impl<T: NapiValueT, R: NapiValueT> DescriptorAccessorBuilder<T, R> {
             let args = unsafe { argv.map(|arg| T::from_raw(env, arg)) };
             let this = JsObject::from_raw(env, this);
 
-            if let Err(e) = func.1.as_mut().unwrap()(this, args) {
-                log::error!("setter: {}", e);
-            }
-
-            env.undefined().unwrap().raw()
+            napi_r!(env, func.1.as_mut().unwrap()(this, args))
         }
 
         let setter = if let Some(setter) = self.setter {

@@ -106,3 +106,20 @@ macro_rules! napi_s {
         std::ffi::CString::new($s).map_err(|_| $crate::NapiStatus::StringExpected)
     };
 }
+
+#[macro_export]
+macro_rules! napi_r {
+    ($env:ident, =$s:expr) => {
+        match $s {
+            Ok(result) => result.raw(),
+            Err(err) => $env.error(format!("{}", err)).unwrap().raw(),
+        }
+    };
+
+    ($env:ident, $s:expr) => {
+        match $s {
+            Ok(result) => $env.undefined().unwrap().raw(),
+            Err(err) => $env.error(format!("{}", err)).unwrap().raw(),
+        }
+    };
+}
