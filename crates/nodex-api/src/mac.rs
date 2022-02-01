@@ -112,14 +112,20 @@ macro_rules! napi_r {
     ($env:ident, =$s:expr) => {
         match $s {
             Ok(result) => result.raw(),
-            Err(err) => $env.error(format!("{}", err)).unwrap().raw(),
+            Err(err) => {
+                $env.throw_error(format!("{}", err)).unwrap();
+                $env.undefined().unwrap().raw()
+            }
         }
     };
 
     ($env:ident, $s:expr) => {
         match $s {
             Ok(result) => $env.undefined().unwrap().raw(),
-            Err(err) => $env.error(format!("{}", err)).unwrap().raw(),
+            Err(err) => {
+                $env.throw_error(format!("{}", err)).unwrap();
+                $env.undefined().unwrap().raw()
+            }
         }
     };
 }
