@@ -111,9 +111,9 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
         label,
         (),
         move |_| {},
-        move |_, status, _| {
+        move |env, status, _| {
             assert!(status.ok());
-            println!("async work complete");
+            let _: JsUndefined = env.run_script("console.log('async work complete')")?;
             Ok(())
         },
     )?
