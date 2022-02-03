@@ -1,3 +1,4 @@
+use serde::Serialize;
 use std::mem::MaybeUninit;
 
 use crate::{
@@ -163,6 +164,14 @@ impl NapiEnv {
     #[inline]
     pub fn object(&self) -> NapiResult<JsObject> {
         JsObject::new(*self)
+    }
+
+    /// Create a js object from a rust struct.
+    pub fn object_from<T>(&self, value: T) -> NapiResult<JsObject>
+    where
+        T: serde::Serialize,
+    {
+        todo!()
     }
 
     /// The async context

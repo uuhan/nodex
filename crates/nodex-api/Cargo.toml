@@ -16,6 +16,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 bitflags = "1.3.2"
 log = "^0.4"
+serde = "1.0.136"
 thiserror = "1.0.30"
 
 # [dependencies.nodex-macros]

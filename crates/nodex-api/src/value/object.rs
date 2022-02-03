@@ -1,4 +1,5 @@
 use crate::{api, prelude::*};
+use serde::de::DeserializeOwned;
 use std::{ffi::CString, mem::MaybeUninit, os::raw::c_char};
 
 #[derive(Copy, Clone, Debug)]
@@ -174,6 +175,14 @@ impl JsObject {
             self.raw(),
             index,
         ))
+    }
+
+    /// Convert js object to rust struct.
+    pub fn to<T>(&self) -> NapiResult<T>
+    where
+        T: DeserializeOwned,
+    {
+        todo!()
     }
 
     #[cfg(feature = "v8")]
