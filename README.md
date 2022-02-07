@@ -366,6 +366,8 @@ cat >> .git/hooks/pre-push << EOF
 cargo fmt || exit
 cargo clippy -- -D warnings || exit
 EOF
+
+chmod +x .git/hooks/pre-push
 ```
 
 ## License

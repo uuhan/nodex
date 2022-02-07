@@ -25,3 +25,6 @@ v7 = ["nodex-api/v7"]
 v8 = ["nodex-api/v8"]
 # some extra link args, maybe useful if you dont need that args.
 no-linkage = ["nodex-api/no-linkage"]
+
+[package.metadata.docs.rs]
+features = ["v8"]
