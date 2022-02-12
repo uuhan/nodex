@@ -76,7 +76,7 @@ impl JsValue {
         }
     }
 
-    /// view it as an array_buffer, may faile if it is not an array_buffer value
+    /// view it as an array_buffer, may fail if it is not an array_buffer value
     pub fn as_arraybuffer(&self) -> NapiResult<JsArrayBuffer> {
         if self.is_arraybuffer()? {
             Ok(JsArrayBuffer::from_value(*self))
@@ -85,7 +85,7 @@ impl JsValue {
         }
     }
 
-    /// view it as a buffer, may faile if it is not a buffer value
+    /// view it as a buffer, may fail if it is not a buffer value
     pub fn as_buffer<const N: usize>(&self) -> NapiResult<JsBuffer<N>> {
         if self.is_buffer()? {
             Ok(JsBuffer::from_value(*self))
@@ -94,7 +94,7 @@ impl JsValue {
         }
     }
 
-    /// view it as a dataview, may faile if it is not a dataview value
+    /// view it as a dataview, may fail if it is not a dataview value
     pub fn as_dataview(&self) -> NapiResult<JsDataView> {
         if self.is_dataview()? {
             Ok(JsDataView::from_raw(self.env(), self.raw()))
