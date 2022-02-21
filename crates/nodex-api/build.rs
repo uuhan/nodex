@@ -1,6 +1,8 @@
 #![allow(unreachable_code)]
 
 pub fn main() {
+    let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap();
+
     #[cfg(feature = "gen-api")]
     {
         use std::env;
@@ -24,15 +26,11 @@ pub fn main() {
             .expect("could not write bindings!");
     }
 
-    #[cfg(not(feature = "no-linkage"))]
-    {
+    if target_os == "macos" {
         // NB: macos link options
-        #[cfg(target_os = "macos")]
-        {
-            println!("cargo:rustc-cdylib-link-arg=-Wl");
-            println!("cargo:rustc-cdylib-link-arg=-undefined");
-            println!("cargo:rustc-cdylib-link-arg=dynamic_lookup");
-        }
+        println!("cargo:rustc-cdylib-link-arg=-Wl");
+        println!("cargo:rustc-cdylib-link-arg=-undefined");
+        println!("cargo:rustc-cdylib-link-arg=dynamic_lookup");
     }
 }
 
