@@ -6,6 +6,14 @@ This crate aims to make creating native nodejs addons very easy and comfortable.
 
 [click here: uuhan/nodex@dev](https://github.com/uuhan/nodex) to see the most recent developments.
 
+## Platform Support
+
+- [x] linux
+
+- [x] macos
+
+- [x] windows (>=0.1.6)
+
 ## Features
 
 - [x] ergonomical api design.
@@ -30,7 +38,7 @@ This crate aims to make creating native nodejs addons very easy and comfortable.
 crate-type = ["cdylib"]
 
 [dependencies.nodex-api]
-version = "0.1.5"
+version = "0.1.6"
 features = ["v8"]
 ```
 
@@ -45,7 +53,7 @@ We have v1,v2,v3,...v8 versions.
 crate-type = ["cdylib"]
 
 [dependencies.nodex]
-version = "0.1.5"
+version = "0.1.6"
 features = ["v8"]
 ```
 
