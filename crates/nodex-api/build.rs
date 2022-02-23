@@ -1,4 +1,6 @@
 #![allow(unreachable_code)]
+use fs_extra::dir::copy;
+use fs_extra::dir::CopyOptions;
 
 pub fn main() {
     let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap();
@@ -24,6 +26,17 @@ pub fn main() {
         bindings
             .write_to_file(out.join("out.rs"))
             .expect("could not write bindings!");
+    }
+
+    if target_os == "windows" {
+        let out = std::env::var("OUT_DIR").unwrap();
+        let out_dir = std::path::PathBuf::from(&out);
+        let mut options = CopyOptions::new();
+        options.skip_exist = true;
+        copy("./lib", &out_dir, &options).unwrap();
+
+        println!("cargo:rustc-link-search={}/lib", out_dir.to_str().unwrap());
+        println!("cargo:rustc-link-lib=node-v16.0.0-x64");
     }
 
     if target_os == "macos" {

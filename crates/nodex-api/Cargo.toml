@@ -24,6 +24,7 @@ thiserror = "1.0.30"
 [build-dependencies]
 bindgen = { version = "0.59.2", optional = true }
 cc = { version = "1.0.72", optional = true }
+fs_extra = "1.1.0"
 
 [features]
 default = ["v1"]
