@@ -54,13 +54,13 @@ impl<F: NapiValueT> Function<F> {
     ///
     /// JavaScript Functions are described in Section 19.2 of the ECMAScript Language Specification.
     #[allow(clippy::type_complexity)]
-    pub fn new<T, R, const N: usize>(
+    pub fn new<T, R>(
         env: NapiEnv,
         name: Option<impl AsRef<str>>,
-        func: impl FnMut(JsObject, [T; N]) -> NapiResult<R>,
+        func: impl FnMut(JsObject, T) -> NapiResult<R>,
     ) -> NapiResult<Function<R>>
     where
-        T: NapiValueT,
+        T: FromJsArgs,
         R: NapiValueT,
     {
         let (name, len) = if let Some(name) = name {
@@ -70,19 +70,31 @@ impl<F: NapiValueT> Function<F> {
         };
 
         // NB: leak the func closure
-        let func: Box<Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<R>>> = Box::new(Box::new(func));
+        let func: Box<Box<dyn FnMut(JsObject, T) -> NapiResult<R>>> = Box::new(Box::new(func));
 
-        extern "C" fn trampoline<T: NapiValueT, R: NapiValueT, const N: usize>(
+        extern "C" fn trampoline<T: FromJsArgs, R: NapiValueT>(
             env: NapiEnv,
             info: napi_callback_info,
         ) -> napi_value {
-            let mut argc = N;
-            let mut argv = [std::ptr::null_mut(); N];
             let mut data = MaybeUninit::uninit();
             let mut this = MaybeUninit::uninit();
 
             let (argc, argv, this, mut func) = unsafe {
-                let status = api::napi_get_cb_info(
+                // NB: use this to get the number of arguments
+                // let mut argc = 0;
+                // let mut argv = [std::ptr::null_mut(); 0];
+                // api::napi_get_cb_info(
+                //     env,
+                //     info,
+                //     &mut argc,
+                //     argv.as_mut_ptr(),
+                //     std::ptr::null_mut(),
+                //     std::ptr::null_mut(),
+                // );
+
+                let mut argc = T::len();
+                let mut argv = vec![std::ptr::null_mut(); T::len()];
+                api::napi_get_cb_info(
                     env,
                     info,
                     &mut argc,
@@ -95,16 +107,24 @@ impl<F: NapiValueT> Function<F> {
                 // closure memory here.
                 //
                 // With napi >= 5, we can add a finalizer to this function.
-                let func: &mut Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<R>> =
+                let func: &mut Box<dyn FnMut(JsObject, T) -> NapiResult<R>> =
                     std::mem::transmute(data);
 
                 (argc, argv, this.assume_init(), func)
             };
 
-            let args = unsafe { argv.map(|arg| T::from_raw(env, arg)) };
+            let args = argv
+                .into_iter()
+                .map(|arg| JsValue::from_raw(env, arg))
+                .collect();
             let this = JsObject::from_raw(env, this);
 
-            napi_r!(env, =func(this, args))
+            if let Ok(args) = T::from_js_args(JsArgs(args)) {
+                napi_r!(env, =func(this, args))
+            } else {
+                env.throw_error("wrong argument type!").unwrap();
+                env.undefined().unwrap().raw()
+            }
         }
 
         let fn_pointer = Box::into_raw(func) as DataPointer;
@@ -113,7 +133,7 @@ impl<F: NapiValueT> Function<F> {
             env,
             name,
             len,
-            Some(trampoline::<T, R, N>),
+            Some(trampoline::<T, R>),
             // pass closure to trampoline function
             fn_pointer,
         );
@@ -121,7 +141,7 @@ impl<F: NapiValueT> Function<F> {
         let mut func = Function::<R>(JsValue::from_raw(env, value), PhantomData);
         func.gc(move |_| unsafe {
             // NB: the leaked data is collected here.
-            let _: Box<Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<R>>> =
+            let _: Box<Box<dyn FnMut(JsObject, T) -> NapiResult<R>>> =
                 Box::from_raw(fn_pointer as _);
             Ok(())
         })?;
@@ -133,18 +153,26 @@ impl<F: NapiValueT> Function<F> {
     /// the primary mechanism of calling back from the add-on's native code into JavaScript. For
     /// the special case of calling into JavaScript after an async operation, see
     /// napi_make_callback.
-    pub fn call<T, const N: usize>(&self, this: JsObject, argv: [T; N]) -> NapiResult<F>
+    pub fn call<T>(&self, this: JsObject, args: T) -> NapiResult<F>
     where
-        T: NapiValueT,
+        T: ToJsArgs,
     {
+        let args = args
+            .to_js_args(this.env())?
+            .0
+            .into_iter()
+            .map(|value| value.raw())
+            .collect::<Vec<_>>();
+
         let value = napi_call!(
             =napi_call_function,
             self.env(),
             this.raw(),
             self.raw(),
-            argv.len(),
-            argv.map(|arg| arg.raw()).as_ptr(),
+            T::len(),
+            args.as_ptr(),
         );
+
         Ok(F::from_raw(self.env(), value))
     }
 
@@ -177,3 +205,9 @@ impl<F> NapiValueT for Function<F> {
 }
 
 pub type JsFunction = Function<JsValue>;
+
+impl<F> NapiValueCheck for Function<F> {
+    fn check(&self) -> NapiResult<bool> {
+        Ok(self.kind()? == NapiValuetype::Function)
+    }
+}

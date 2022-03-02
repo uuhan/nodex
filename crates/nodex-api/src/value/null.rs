@@ -17,3 +17,9 @@ impl JsNull {
 }
 
 napi_value_t!(JsNull);
+
+impl NapiValueCheck for JsNull {
+    fn check(&self) -> NapiResult<bool> {
+        Ok(self.kind()? == NapiValuetype::Null)
+    }
+}

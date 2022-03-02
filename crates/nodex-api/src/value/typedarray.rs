@@ -11,3 +11,9 @@ impl JsTypedArray {
 }
 
 napi_value_t!(JsTypedArray);
+
+impl NapiValueCheck for JsTypedArray {
+    fn check(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_typedarray, self.env(), self.raw()))
+    }
+}

@@ -6,9 +6,13 @@ console.log(demo.utils.func((value) => {
   return "I am from js world."
 }))
 
-let obj = new demo.utils.myclass(1)
-console.log(demo.utils.instance)
-console.log(demo.key1)
+try {
+  let obj = new demo.utils.myclass()
+  console.log(demo.utils.instance)
+  console.log(demo.key1)
+} catch (e) {
+  console.error("new myclass: ", e)
+}
 
 let lable = Symbol()
 console.log(demo.names({

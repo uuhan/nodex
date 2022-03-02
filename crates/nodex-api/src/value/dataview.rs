@@ -45,3 +45,9 @@ impl JsDataView {
 }
 
 napi_value_t!(JsDataView);
+
+impl NapiValueCheck for JsDataView {
+    fn check(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_dataview, self.env(), self.raw()))
+    }
+}

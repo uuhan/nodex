@@ -70,3 +70,9 @@ impl From<JsString> for String {
         js.get_utf8().unwrap()
     }
 }
+
+impl NapiValueCheck for JsString {
+    fn check(&self) -> NapiResult<bool> {
+        Ok(self.kind()? == NapiValuetype::String)
+    }
+}

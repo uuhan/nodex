@@ -81,3 +81,9 @@ impl<T> NapiValueT for JsExternal<T> {
         self.0
     }
 }
+
+impl<T> NapiValueCheck for JsExternal<T> {
+    fn check(&self) -> NapiResult<bool> {
+        Ok(self.kind()? == NapiValuetype::External)
+    }
+}

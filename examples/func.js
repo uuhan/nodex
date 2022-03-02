@@ -1,7 +1,5 @@
 const func = require("./func.node")
 
-let ret = func.func({a: "value"}, function (n, m) {
-  console.log(arguments.length, 'this:', this, n, m)
-}, 100, 200)
+let ret = func.func("hello", 100)
 
 console.log(ret)

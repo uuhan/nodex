@@ -31,33 +31,34 @@ impl JsClass {
     /// constructor (which is returned in the result parameter) and freed whenever the class is
     /// garbage-collected by passing both the JavaScript function and the data to napi_add_finalizer.
     #[allow(clippy::type_complexity)]
-    pub fn new<F, P, T, R, const N: usize>(
+    pub fn new<F, P, T, R>(
         env: NapiEnv,
         name: impl AsRef<str>,
         func: F,
         properties: P,
     ) -> NapiResult<JsClass>
     where
-        T: NapiValueT,
+        T: FromJsArgs,
         R: NapiValueT,
-        F: FnMut(JsObject, [T; N]) -> NapiResult<R>,
+        F: FnMut(JsObject, T) -> NapiResult<R>,
         P: AsRef<[NapiPropertyDescriptor]>,
     {
         // NB: leak the func closure
-        let func: Box<Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<R>>> = Box::new(Box::new(func));
+        let func: Box<Box<dyn FnMut(JsObject, T) -> NapiResult<R>>> = Box::new(Box::new(func));
 
         // TODO: it just works but not very useful by current design
         // use the trampoline function to call into the closure
-        extern "C" fn trampoline<T: NapiValueT, R: NapiValueT, const N: usize>(
+        extern "C" fn trampoline<T: FromJsArgs, R: NapiValueT>(
             env: NapiEnv,
             info: napi_callback_info,
         ) -> napi_value {
-            let mut argc = N;
-            let mut argv = [std::ptr::null_mut(); N];
             let mut data = MaybeUninit::uninit();
             let mut this = MaybeUninit::uninit();
 
             let (argc, argv, this, mut func) = unsafe {
+                let mut argc = T::len();
+                let mut argv = vec![std::ptr::null_mut(); T::len()];
+
                 let status = api::napi_get_cb_info(
                     env,
                     info,
@@ -71,16 +72,24 @@ impl JsClass {
                 // closure memory here.
                 //
                 // With napi >= 5, we can add a finalizer to this function.
-                let func: &mut Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<R>> =
+                let func: &mut Box<dyn FnMut(JsObject, T) -> NapiResult<R>> =
                     std::mem::transmute(data);
 
                 (argc, argv, this.assume_init(), func)
             };
 
-            let args = unsafe { argv.map(|arg| T::from_raw(env, arg)) };
+            let args = argv
+                .into_iter()
+                .map(|arg| JsValue::from_raw(env, arg))
+                .collect();
             let this = JsObject::from_raw(env, this);
 
-            napi_r!(env, =func(this, args))
+            if let Ok(args) = T::from_js_args(JsArgs(args)) {
+                napi_r!(env, =func(this, args))
+            } else {
+                env.throw_error("wrong argument type!");
+                env.undefined().unwrap().raw()
+            }
         }
 
         let fn_pointer = Box::into_raw(func) as DataPointer;
@@ -89,7 +98,7 @@ impl JsClass {
             env,
             name.as_ref().as_ptr() as CharPointer,
             name.as_ref().len(),
-            Some(trampoline::<T, R, N>),
+            Some(trampoline::<T, R>),
             fn_pointer,
             properties.as_ref().len(),
             properties.as_ref().as_ptr() as *const _,
@@ -99,7 +108,7 @@ impl JsClass {
 
         class.gc(move |_| unsafe {
             // NB: the leaked data is collected here.
-            let _: Box<Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<R>>> =
+            let _: Box<Box<dyn FnMut(JsObject, T) -> NapiResult<R>>> =
                 Box::from_raw(fn_pointer as _);
             Ok(())
         })?;
@@ -109,19 +118,32 @@ impl JsClass {
 
     /// This method is used to instantiate a new JavaScript value using a given napi_value
     /// that represents the constructor for the object.
-    pub fn new_instance<T>(&self, args: &[T]) -> NapiResult<JsObject>
+    pub fn new_instance<T>(&self, args: T) -> NapiResult<JsObject>
     where
-        T: NapiValueT,
+        T: ToJsArgs,
     {
+        let args = args
+            .to_js_args(self.env())?
+            .0
+            .into_iter()
+            .map(|value| value.raw())
+            .collect::<Vec<_>>();
+
         let instance = napi_call!(
             =napi_new_instance,
             self.env(),
             self.raw(),
-            args.as_ref().len(),
-            args.as_ref().as_ptr() as _,
+            T::len(),
+            args.as_ptr(),
         );
         Ok(JsObject::from_raw(self.env(), instance))
     }
 }
 
 napi_value_t!(JsClass);
+
+impl NapiValueCheck for JsClass {
+    fn check(&self) -> NapiResult<bool> {
+        Ok(self.kind()? == NapiValuetype::Function)
+    }
+}

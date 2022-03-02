@@ -121,3 +121,9 @@ impl<const N: usize> std::ops::Index<usize> for JsBuffer<N> {
         &self.get().unwrap()[idx]
     }
 }
+
+impl<const N: usize> NapiValueCheck for JsBuffer<N> {
+    fn check(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_buffer, self.env(), self.raw()))
+    }
+}

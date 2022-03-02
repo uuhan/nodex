@@ -106,7 +106,11 @@ fn init(env: NapiEnv, exports: JsObject) -> NapiResult<()> {
 make sure the node api version is large or equal than your compiled addon's.
 
 ```rust
-nodex::napi_guard!(env.napi_version()?);
+use nodex::prelude::*;
+fn env(env: NapiEnv) -> NapiResult<()> {
+    nodex::napi_guard!(env.napi_version()?);
+    Ok(())
+}
 ```
 
 ### Nodejs Version & Napi Version
@@ -114,44 +118,61 @@ nodex::napi_guard!(env.napi_version()?);
 get the runtime version:
 
 ```rust
-let node_version = env.node_version()?;
-let napi_version = env.napi_version()?;
+use nodex::prelude::*;
+fn env(env: NapiEnv) -> NapiResult<()> {
+    let node_version = env.node_version()?;
+    let napi_version = env.napi_version()?;
+    Ok(())
+}
 ```
 
 ### Define Js Variable
 
 ```rust
-// String & Symbol
-let label: JsSymbol = env.symbol()?;
-let name: JsString = env.string("")?;
+use nodex::prelude::*;
+fn env(env: NapiEnv) -> NapiResult<()> {
+    // String & Symbol
+    let label: JsSymbol = env.symbol()?;
+    let name: JsString = env.string("")?;
 
-// Object
-let mut obj: JsObject = env.object()?;
-obj.set_property(name, env.null()?)?;
+    // Object
+    let mut obj: JsObject = env.object()?;
+    obj.set_property(name, env.null()?)?;
 
-// Function
-let func: JsFunction = env.func(move |this, [a1, a2, a3]: [JsValue; 3]| {
-    let env = this.env();
-    a1.as_function()?.call::<JsValue, 0>(this, [])?;
-    a1.as_function()?.call(this, [env.string("I am from rust world.")?])
-})?;
+    // Function
+    let func: JsFunction = env.func(move |this, (a1, a2, a3): (JsValue, JsValue, JsValue)| {
+        let env = this.env();
+        a1.as_function()?.call(this, ())?;
+        a1.as_function()?.call(this, env.string("I am from rust world.")?)
+    })?;
 
-let func: JsFunction = env.func(move |this, [a1]: [JsFunction; 1]| {
-    let env = this.env();
-    a1.call(this, [env.string("I am from rust world.")?])
-})?;
+    let func: JsFunction = env.func(move |this, a1: JsFunction| {
+        let env = this.env();
+        a1.call(this, env.string("I am from rust world.")?)
+    })?;
 
-// Error
-let error: JsError = JsError::error("error", None)?;
+    let class: JsClass = env.class("myclass", |mut this, a1: JsNumber| {
+        this.set_named_property("a1", a1)?;
+        Ok(this)
+    }, &[])?;
 
+    // Error
+    let error: JsError = JsError::error(env, "error", Some("code"))?;
+
+    Ok(())
+}
 ```
 
 ### Napi handle scope
 
 ```rust
-// napi handle scope
-let _scope: NapiHandleScope = env.handle_scope()?;
-let _escapable_scope: NapiEscapableHandleScope = env.escapable_handle_scope()?;
+use nodex::prelude::*;
+fn env(env: NapiEnv) -> NapiResult<()> {
+    // napi handle scope
+    let _scope: NapiHandleScope = env.handle_scope()?;
+    let _escapable_scope: NapiEscapableHandleScope = env.escapable_handle_scope()?;
+    Ok(())
+}
 ```
 
 ### Napi cleanup hook
@@ -159,78 +180,97 @@ let _escapable_scope: NapiEscapableHandleScope = env.escapable_handle_scope()?;
 #### sync
 
 ```rust
-env.add_cleanup_hook(|| {
-    println!("clean hook fired");
-    Ok(())
-})?;
+use nodex::prelude::*;
+fn env(env: NapiEnv) -> NapiResult<()> {
+    env.add_cleanup_hook(|| {
+        println!("clean hook fired");
+        Ok(())
+    })?;
 
-let hook_to_remove = env.add_cleanup_hook(|| {
-    println!("clean hook fired");
-    Ok(())
-})?;
+    let hook_to_remove = env.add_cleanup_hook(|| {
+        println!("clean hook fired");
+        Ok(())
+    })?;
 
-hook_to_remove.remove()?;
+    hook_to_remove.remove()?;
+    Ok(())
+}
 ```
 
 #### aync
 
 ```rust
-match env.add_async_cleanup_hook(|hook| {
-    // DO SOME CLEANUP
-    // NB: should call remove after done
-    hook.remove()
-})? {
-    Some(hook) => {
-        // NB: also the hook can be removed before it is fired.
-        hook.remove()?;
+use nodex::prelude::*;
+fn env(env: NapiEnv) -> NapiResult<()> {
+    match env.add_async_cleanup_hook(|hook| {
+        // DO SOME CLEANUP
+        // NB: should call remove after done
+        hook.remove()
+    })? {
+        Some(hook) => {
+            // NB: also the hook can be removed before it is fired.
+            hook.remove()?;
+        }
+        None => {}
     }
-    None => {}
+
+    Ok(())
 }
 ```
 
 ### Set Property Descriptor
 
 ```rust
-let mut obj: JsObject = env.object()?;
-obj.define_properties(&[DescriptorValueBuilder::new()
-    .with_utf8name("myvalue")
-    .with_value(env.string("myvalue")?)
-    .build()?])?;
+use nodex::prelude::*;
+fn env(env: NapiEnv) -> NapiResult<()> {
+    let mut obj: JsObject = env.object()?;
+    obj.define_properties(&[DescriptorValueBuilder::new()
+        .with_utf8name("myvalue")
+        .with_value(env.string("myvalue")?)
+        .build()?])?;
 
-obj.define_properties(&[DescriptorMethodBuilder::new()
-    .with_utf8name("mymethod")
-    .with_method(move |this, []: [JsValue; 0]| this.env().double(200.))
-    .build()?])?;
+    obj.define_properties(&[DescriptorMethodBuilder::new()
+        .with_utf8name("mymethod")
+        .with_method(move |this, ()| this.env().double(200.))
+        .build()?])?;
 
-obj.define_properties(&[DescriptorAccessorBuilder::new()
-    .with_utf8name("myaccessor")
-    .with_getter(|this| this.env().double(100.))
-    .with_setter(|_this: JsObject, [n]: [JsNumber; 1]| {
-        println!("setter: {}", n.get_value_int32()?);
-        Ok(())
-    })
-    .build()?])?;
+    obj.define_properties(&[DescriptorAccessorBuilder::new()
+        .with_utf8name("myaccessor")
+        .with_getter(|this| this.env().double(100.))
+        .with_setter(|_this: JsObject, n: JsNumber| {
+            println!("setter: {}", n.get_value_int32()?);
+            Ok(())
+        })
+        .build()?])?;
+
+    Ok(())
+}
 ```
 
 ### Create An Async Work
 
 ```rust
-// without shared state
-env.async_work(
-    "my-test-async-task",
-    (),
-    move |_| {
-        // you can do the hard work in the thread-pool context.
-        // NB: js work is not allowed here.
-        println!("execute async task");
-    },
-    move |_, status, _| {
-        // you can do some js work in this context
-        println!("[{}] complete async task", status);
-        Ok(())
-    },
-)?
-.queue()?;
+use nodex::prelude::*;
+fn env(env: NapiEnv) -> NapiResult<()> {
+    // without shared state
+    env.async_work(
+        "my-test-async-task",
+        (),
+        move |_| {
+            // you can do the hard work in the thread-pool context.
+            // NB: js work is not allowed here.
+            println!("execute async task");
+        },
+        move |_, status, _| {
+            // you can do some js work in this context
+            println!("[{}] complete async task", status);
+            Ok(())
+        },
+    )?
+    .queue()?;
+
+    Ok(())
+}
 ```
 
 ### gabage-collected hook
@@ -238,22 +278,31 @@ env.async_work(
 for napi less than 5, implement by napi_wrap, otherwise by napi_add_finalizer.
 
 ```rust
-let mut obj = env.object()?;
-obj.gc(move |_| {
-    println!("obj garbage-collected");
+use nodex::prelude::*;
+fn env(env: NapiEnv) -> NapiResult<()> {
+    let mut obj = env.object()?;
+    obj.gc(move |_| {
+        println!("obj garbage-collected");
+        Ok(())
+    });
+
     Ok(())
-});
+}
 ```
 
 ### Wrap native instance
 
 ```rust
-let mut obj = env.object()?;
-obj.wrap([1usize; 2], move |_, wrapped| {
+use nodex::prelude::*;
+fn env(env: NapiEnv) -> NapiResult<()> {
+    let mut obj = env.object()?;
+    obj.wrap([1usize; 2], move |_, wrapped| {
+        Ok(())
+    })?;
+    obj.unwrap::<[usize; 2]>()?; // access the wrapped instance
+    obj.remove_wrap::<[usize; 2]>()?; // the finalizer will not be called
     Ok(())
-})?;
-obj.unwrap::<[usize; 2]>()?; // access the wrapped instance
-obj.remove_wrap::<[usize; 2]>()?; // the finalizer will not be called
+}
 ```
 
 ### Thread safe function
@@ -261,32 +310,38 @@ obj.remove_wrap::<[usize; 2]>()?; // the finalizer will not be called
 require: napi >= 4
 
 ```rust
-let tsfn = NapiThreadsafeFunction::<_, 0>::new(
-    env,
-    "tsfn-task",
-    env.func(|this, [a1]: [JsString; 1]| {
-        println!("callback result: {}", a1.get()?);
-        this.env().undefined()
-    })?,
-    // finalizer
-    move |_| Ok(()),
-    // js-callback
-    move |f, data: String| {
-        f.call::<JsString, 1>(env.object()?, [env.string(&data)?])?;
-        Ok(())
-    },
-)?;
+use nodex::prelude::*;
+fn env(env: NapiEnv) -> NapiResult<()> {
+    let tsfn = NapiThreadsafeFunction::<_, 0>::new(
+        env,
+        "tsfn-task",
+        env.func(|this, a1: JsString| {
+            println!("callback result: {}", a1.get()?);
+            this.env().undefined()
+        })?,
+        // finalizer
+        move |_| Ok(()),
+        // js-callback
+        move |f, data: String| {
+            f.call(env.object()?, env.string(&data)?)?;
+            Ok(())
+        },
+    )?;
 
-std::thread::spawn(move || {
-    tsfn.non_blocking("hello, world - 1".into()).unwrap();
-    tsfn.non_blocking("hello, world - 2".into()).unwrap();
-    tsfn.release().unwrap();
-});
+    std::thread::spawn(move || {
+        tsfn.non_blocking("hello, world - 1".into()).unwrap();
+        tsfn.non_blocking("hello, world - 2".into()).unwrap();
+        tsfn.release().unwrap();
+    });
+    Ok(())
+}
 ```
 
 ### Promise for some heavy work
 
 ```rust
+use nodex::prelude::*;
+fn test(env: NapiEnv) -> NapiResult<()> {
 let promise: JsPromise<JsString, JsError> = env.promise(
     move |result| {
         for i in 1..=3 {
@@ -294,7 +349,7 @@ let promise: JsPromise<JsString, JsError> = env.promise(
             println!("[{}] Doing...", i);
         }
 
-        *result = resolve;
+        *result = true;
     },
     move |promise, _, result| {
         let env = promise.env();
@@ -306,23 +361,29 @@ let promise: JsPromise<JsString, JsError> = env.promise(
         Ok(())
     },
 )?;
+Ok(())
+}
 // the `promise.value()` can return to js world as a Promise
 ```
 
 ### Run script
 
 ```rust
-let func: Function<JsUndefined> = env.run_script(
-    r#"
-        function hello() {
-            console.log(this);
-        }
+use nodex::prelude::*;
+fn script(env: NapiEnv) -> NapiResult<()> {
+    let func: Function<JsUndefined> = env.run_script(
+        r#"
+            function hello() {
+                console.log(this);
+            }
 
-        hello
-    "#,
-)?;
+            hello
+        "#,
+    )?;
 
-func.call::<JsValue, 0>(env.global()?.cast(), [])?;
+    func.call(env.global()?.cast(), ())?;
+    Ok(())
+}
 ```
 
 ### More

@@ -56,3 +56,11 @@ impl JsArray {
 }
 
 napi_value_t!(JsArray);
+
+impl NapiValueCheck for JsArray {
+    /// This API represents invoking the IsArray operation on the object as defined in Section
+    /// 7.2.2 of the ECMAScript Language Specification.
+    fn check(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_array, self.env(), self.raw()))
+    }
+}

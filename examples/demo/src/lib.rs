@@ -2,7 +2,7 @@ use nodex::prelude::*;
 
 nodex::napi_module!(init);
 
-fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
+fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     nodex::napi_guard!(env.napi_version()?);
 
     let mut obj = env.object()?;
@@ -27,10 +27,10 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     obj.set_property(
         name,
-        env.func(move |this, [a1]: [JsFunction; 1]| {
+        env.func(move |this, a1: JsFunction| {
             let env = this.env();
             let _scope = env.handle_scope()?;
-            a1.call::<JsValue, 0>(this, [])?;
+            a1.call(this, ())?;
 
             env.async_work(
                 "my-test-async-task",
@@ -52,7 +52,7 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
             times += 1;
             println!("[{}] called", times);
 
-            a1.call(this, [env.string("I am from rust world.")?])
+            a1.call(this, env.string("I am from rust world.")?)
         })?,
     )?;
     obj.set_property(symbol, env.double(100.)?)?;
@@ -60,7 +60,7 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     let class = env.class(
         "myclass",
-        |mut this, [a1]: [JsNumber; 1]| {
+        |mut this, a1: JsNumber| {
             this.set_named_property("a1", a1)?;
             Ok(this)
         },
@@ -72,7 +72,7 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     obj.set_named_property("myclass", class)?;
 
-    obj.set_named_property("instance", class.new_instance::<JsValue>(&[])?)?;
+    obj.set_named_property("instance", class.new_instance(env.double(100.)?)?)?;
 
     let version = env.node_version()?;
     println!(
@@ -98,7 +98,7 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     exports.set_named_property(
         "names",
-        env.func(move |_, [a1]: [JsObject; 1]| {
+        env.func(move |_, a1: JsObject| {
             let names = a1.get_property_names()?;
             println!("len: {}", names.len()?);
             Ok(names)
@@ -121,13 +121,13 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     exports.set_named_property(
         "delay",
-        env.func(move |_, [cb]: [Function<JsUndefined>; 1]| {
-            let tsfn: NapiTsfn<(), 0> = env.tsfn(
+        env.func(move |_, cb: Function<JsUndefined>| {
+            let tsfn: NapiTsfn<()> = env.tsfn(
                 "delay-callback",
                 cb,
                 move |_| Ok(()),
                 move |cb, _| {
-                    cb.call::<JsUndefined, 0>(env.object()?, [])?;
+                    cb.call(env.object()?, ())?;
                     Ok(())
                 },
             )?;
@@ -163,25 +163,21 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     hook.remove()?;
 
     let context = NapiAsyncContext::new(env, "my-async-context")?;
-    let _callback = context.make_callback(
-        exports,
-        env.func(move |this, []: [JsValue; 0]| Ok(this))?,
-        [env.undefined()?],
-    )?;
+    let _callback = context.make_callback(exports, env.func(move |this, ()| Ok(this))?, ())?;
 
     if let Some(_hook) = env.add_async_cleanup_hook(|hook| hook.remove())? {}
 
     exports.set_named_property(
         "thread",
-        env.func(move |this, [a1]: [JsFunction; 1]| {
+        env.func(move |this, a1: JsFunction| {
             let env = this.env();
-            let tsfn = NapiTsfn::<_, 0>::new(
+            let tsfn = NapiTsfn::<_>::new(
                 env,
                 "tsfn-context",
                 a1,
                 move |_| Ok(()),
                 move |f, data: String| {
-                    f.call::<JsString, 1>(env.object()?, [env.string(&data)?])?;
+                    f.call(env.object()?, env.string(&data)?)?;
                     Ok(())
                 },
             )?;
@@ -215,7 +211,7 @@ fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     exports.set_named_property(
         "buffer_index",
-        env.func(|this, [a1]: [JsValue; 1]| {
+        env.func(|this, a1: JsValue| {
             let a1 = a1.as_buffer::<5>()?;
             this.env().double(a1[0] as f64)
         })?,

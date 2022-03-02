@@ -27,3 +27,9 @@ impl JsBoolean {
 }
 
 napi_value_t!(JsBoolean);
+
+impl NapiValueCheck for JsBoolean {
+    fn check(&self) -> NapiResult<bool> {
+        Ok(self.kind()? == NapiValuetype::Boolean)
+    }
+}

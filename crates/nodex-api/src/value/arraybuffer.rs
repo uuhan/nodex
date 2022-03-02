@@ -115,3 +115,9 @@ impl JsArrayBuffer {
 }
 
 napi_value_t!(JsArrayBuffer);
+
+impl NapiValueCheck for JsArrayBuffer {
+    fn check(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_arraybuffer, self.env(), self.raw()))
+    }
+}

@@ -38,7 +38,7 @@ impl<T> NapiAsyncWork<T> {
         env: NapiEnv,
         name: impl AsRef<str>,
         state: T,
-        execute: impl FnMut(&mut T),
+        execute: impl FnMut(&mut T) + Send,
         complete: impl FnMut(NapiEnv, NapiStatus, T) -> NapiResult<()>,
     ) -> NapiResult<NapiAsyncWork<T>> {
         extern "C" fn napi_async_execute_callback<T>(env: NapiEnv, data: DataPointer) {

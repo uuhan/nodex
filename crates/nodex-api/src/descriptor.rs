@@ -35,10 +35,10 @@ pub struct DescriptorValueBuilder {
 /// The DescriptorBuild for method.
 /// NB: there seems no way to reclaim the napi_property_descriptor.data, so it is leaked.
 #[allow(clippy::type_complexity)]
-pub struct DescriptorMethodBuilder<T: NapiValueT, R: NapiValueT, const N: usize> {
+pub struct DescriptorMethodBuilder<T: FromJsArgs, R: NapiValueT> {
     pub utf8name: Option<String>,
     pub name: napi_value,
-    pub method: Option<Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<R> + 'static>>,
+    pub method: Option<Box<dyn FnMut(JsObject, T) -> NapiResult<R> + 'static>>,
     pub attributes: NapiPropertyAttributes,
 }
 
@@ -49,7 +49,7 @@ pub struct DescriptorAccessorBuilder<T: NapiValueT, R: NapiValueT> {
     pub utf8name: Option<String>,
     pub name: napi_value,
     pub getter: Option<Box<dyn FnMut(JsObject) -> NapiResult<R> + 'static>>,
-    pub setter: Option<Box<dyn FnMut(JsObject, [T; 1]) -> NapiResult<()> + 'static>>,
+    pub setter: Option<Box<dyn FnMut(JsObject, T) -> NapiResult<()> + 'static>>,
     pub attributes: NapiPropertyAttributes,
 }
 
@@ -74,7 +74,10 @@ impl DescriptorValueBuilder {
     /// the property. One of utf8name or name must be provided for the property.
     pub fn with_name(mut self, name: impl NapiValueT) -> Self {
         let name = name.value();
-        if let (Ok(name_string), Ok(name_symbol)) = (name.is_string(), name.is_symbol()) {
+        if let (Ok(name_string), Ok(name_symbol)) = (
+            name.cast::<JsString>().check(),
+            name.cast::<JsSymbol>().check(),
+        ) {
             if name_string || name_symbol {
                 self.name = name.raw();
             }
@@ -133,7 +136,7 @@ impl DescriptorValueBuilder {
     }
 }
 
-impl<T: NapiValueT, R: NapiValueT, const N: usize> DescriptorMethodBuilder<T, R, N> {
+impl<T: FromJsArgs, R: NapiValueT> DescriptorMethodBuilder<T, R> {
     pub fn new() -> Self {
         Self {
             utf8name: None,
@@ -154,7 +157,10 @@ impl<T: NapiValueT, R: NapiValueT, const N: usize> DescriptorMethodBuilder<T, R,
     /// the property. One of utf8name or name must be provided for the property.
     pub fn with_name(mut self, name: impl NapiValueT) -> Self {
         let name = name.value();
-        if let (Ok(name_string), Ok(name_symbol)) = (name.is_string(), name.is_symbol()) {
+        if let (Ok(name_string), Ok(name_symbol)) = (
+            name.cast::<JsString>().check(),
+            name.cast::<JsSymbol>().check(),
+        ) {
             if name_string || name_symbol {
                 self.name = name.raw();
             }
@@ -167,7 +173,7 @@ impl<T: NapiValueT, R: NapiValueT, const N: usize> DescriptorMethodBuilder<T, R,
     /// (since these members won't be used). napi_callback provides more details.
     pub fn with_method(
         mut self,
-        method: impl FnMut(JsObject, [T; N]) -> NapiResult<R> + 'static,
+        method: impl FnMut(JsObject, T) -> NapiResult<R> + 'static,
     ) -> Self {
         self.method = Some(Box::new(method));
         self
@@ -197,16 +203,17 @@ impl<T: NapiValueT, R: NapiValueT, const N: usize> DescriptorMethodBuilder<T, R,
             return Err(NapiStatus::InvalidArg);
         }
 
-        extern "C" fn method_trampoline<T: NapiValueT, R: NapiValueT, const N: usize>(
+        extern "C" fn method_trampoline<T: FromJsArgs, R: NapiValueT>(
             env: NapiEnv,
             info: napi_callback_info,
         ) -> napi_value {
-            let mut argc = N;
-            let mut argv = [std::ptr::null_mut(); N];
             let mut data = MaybeUninit::uninit();
             let mut this = MaybeUninit::uninit();
 
             let (argc, argv, this, mut func) = unsafe {
+                let mut argc = T::len();
+                let mut argv = vec![std::ptr::null_mut(); T::len()];
+
                 let status = api::napi_get_cb_info(
                     env,
                     info,
@@ -216,19 +223,27 @@ impl<T: NapiValueT, R: NapiValueT, const N: usize> DescriptorMethodBuilder<T, R,
                     data.as_mut_ptr(),
                 );
 
-                let func: &mut Box<dyn FnMut(JsObject, [T; N]) -> NapiResult<R>> =
+                let func: &mut Box<dyn FnMut(JsObject, T) -> NapiResult<R>> =
                     std::mem::transmute(data);
 
                 (argc, argv, this.assume_init(), func)
             };
 
-            let args = unsafe { argv.map(|arg| T::from_raw(env, arg)) };
+            let args = argv
+                .into_iter()
+                .map(|arg| JsValue::from_raw(env, arg))
+                .collect();
             let this = JsObject::from_raw(env, this);
 
-            napi_r!(env, =func(this, args))
+            if let Ok(args) = T::from_js_args(JsArgs(args)) {
+                napi_r!(env, =func(this, args))
+            } else {
+                env.throw_error("wrong argument type!").unwrap();
+                env.undefined().unwrap().raw()
+            }
         }
 
-        let method = Some(method_trampoline::<T, R, N> as _);
+        let method = Some(method_trampoline::<T, R> as _);
         let data = if let Some(method) = self.method.take() {
             Box::into_raw(Box::new(method)) as _
         } else {
@@ -276,7 +291,10 @@ impl<T: NapiValueT, R: NapiValueT> DescriptorAccessorBuilder<T, R> {
     /// the property. One of utf8name or name must be provided for the property.
     pub fn with_name(mut self, name: impl NapiValueT) -> Self {
         let name = name.value();
-        if let (Ok(name_string), Ok(name_symbol)) = (name.is_string(), name.is_symbol()) {
+        if let (Ok(name_string), Ok(name_symbol)) = (
+            name.cast::<JsString>().check(),
+            name.cast::<JsSymbol>().check(),
+        ) {
             if name_string || name_symbol {
                 self.name = name.raw();
             }
@@ -300,7 +318,7 @@ impl<T: NapiValueT, R: NapiValueT> DescriptorAccessorBuilder<T, R> {
     /// on the property is performed using a Node-API call). napi_callback provides more details.
     pub fn with_setter(
         mut self,
-        setter: impl FnMut(JsObject, [T; 1]) -> NapiResult<()> + 'static,
+        setter: impl FnMut(JsObject, T) -> NapiResult<()> + 'static,
     ) -> Self {
         self.setter = Some(Box::new(setter));
         self
@@ -355,7 +373,7 @@ impl<T: NapiValueT, R: NapiValueT> DescriptorAccessorBuilder<T, R> {
                 // With napi >= 5, we can add a finalizer to this function.
                 let func: &mut (
                     Option<Box<dyn FnMut(JsObject) -> NapiResult<R>>>,
-                    Option<Box<dyn FnMut(JsObject, [T; 1]) -> NapiResult<()>>>,
+                    Option<Box<dyn FnMut(JsObject, T) -> NapiResult<()>>>,
                 ) = std::mem::transmute(data);
 
                 (argc, argv, this.assume_init(), func)
@@ -396,16 +414,16 @@ impl<T: NapiValueT, R: NapiValueT> DescriptorAccessorBuilder<T, R> {
 
                 let func: &mut (
                     Option<Box<dyn FnMut(JsObject) -> NapiResult<R>>>,
-                    Option<Box<dyn FnMut(JsObject, [T; 1]) -> NapiResult<()>>>,
+                    Option<Box<dyn FnMut(JsObject, T) -> NapiResult<()>>>,
                 ) = std::mem::transmute(data);
 
                 (argc, argv, this.assume_init(), func)
             };
 
-            let args = unsafe { argv.map(|arg| T::from_raw(env, arg)) };
+            let value = T::from_raw(env, argv[0]);
             let this = JsObject::from_raw(env, this);
 
-            napi_r!(env, func.1.as_mut().unwrap()(this, args))
+            napi_r!(env, func.1.as_mut().unwrap()(this, value))
         }
 
         let setter = if let Some(setter) = self.setter {
@@ -439,7 +457,7 @@ impl Default for DescriptorValueBuilder {
     }
 }
 
-impl<T: NapiValueT, R: NapiValueT, const N: usize> Default for DescriptorMethodBuilder<T, R, N> {
+impl<T: FromJsArgs, R: NapiValueT> Default for DescriptorMethodBuilder<T, R> {
     fn default() -> Self {
         Self::new()
     }

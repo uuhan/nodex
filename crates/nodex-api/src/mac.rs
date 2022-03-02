@@ -129,3 +129,22 @@ macro_rules! napi_r {
         }
     };
 }
+
+#[macro_export]
+macro_rules! napi_as {
+    ($self:ident, $T:ty, $err:expr) => {{
+        let casted = $self.cast::<$T>();
+        if $self.check()? {
+            Ok(casted)
+        } else {
+            Err($err)
+        }
+    }};
+}
+
+#[macro_export]
+macro_rules! napi_is {
+    ($self:ident, $T:ty) => {
+        $self.cast::<$T>().check()
+    };
+}

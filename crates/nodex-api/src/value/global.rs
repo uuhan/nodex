@@ -16,3 +16,10 @@ impl JsGlobal {
 }
 
 napi_value_t!(JsGlobal);
+
+impl NapiValueCheck for JsGlobal {
+    fn check(&self) -> NapiResult<bool> {
+        // FIXME: global check
+        Ok(self.kind()? == NapiValuetype::Object)
+    }
+}

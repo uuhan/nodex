@@ -190,3 +190,9 @@ impl JsObject {
 }
 
 napi_value_t!(JsObject);
+
+impl NapiValueCheck for JsObject {
+    fn check(&self) -> NapiResult<bool> {
+        Ok(self.kind()? == NapiValuetype::Object)
+    }
+}

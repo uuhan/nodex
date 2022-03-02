@@ -28,3 +28,15 @@ impl JsDate {
 }
 
 napi_value_t!(JsDate);
+
+impl NapiValueCheck for JsDate {
+    #[cfg(feature = "v5")]
+    fn check(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_date, self.env(), self.raw()))
+    }
+
+    #[cfg(not(feature = "v5"))]
+    fn check(&self) -> NapiResult<bool> {
+        Err(NapiStatus::GenericFailure)
+    }
+}

@@ -33,3 +33,9 @@ impl<T> NapiValueT for JsBigInt<T> {
         self.0
     }
 }
+
+impl<T> NapiValueCheck for JsBigInt<T> {
+    fn check(&self) -> NapiResult<bool> {
+        Ok(self.kind()? == NapiValuetype::Bigint)
+    }
+}

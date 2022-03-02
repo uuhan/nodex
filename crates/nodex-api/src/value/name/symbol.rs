@@ -24,3 +24,9 @@ impl JsSymbol {
 }
 
 napi_value_t!(JsSymbol);
+
+impl NapiValueCheck for JsSymbol {
+    fn check(&self) -> NapiResult<bool> {
+        Ok(self.kind()? == NapiValuetype::Symbol)
+    }
+}

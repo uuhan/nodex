@@ -4,7 +4,7 @@ nodex::napi_module!(init);
 fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     exports.set_named_property(
         "create",
-        env.func(|this, [resolve]: ArgsT<JsBoolean, 1>| {
+        env.func(|this, resolve: JsBoolean| {
             let env = this.env();
             let resolve = resolve.get()?;
             let promise: JsPromise<JsString, JsError> = env.promise(

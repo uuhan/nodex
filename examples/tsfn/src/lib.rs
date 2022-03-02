@@ -5,15 +5,15 @@ nodex::napi_module!(init);
 fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     exports.set_named_property(
         "create",
-        env.func(|this, [callback]: ArgsT<Function<JsString>, 1>| {
+        env.func(|this, callback: Function<JsString>| {
             let env = this.env();
-            let tsfn: NapiTsfn<&str, 0> = env.tsfn(
+            let tsfn: NapiTsfn<&str> = env.tsfn(
                 "thread-safe-function",
                 callback,
                 move |_| Ok(()),
                 move |callback, data| {
                     let env = callback.env();
-                    callback.call(env.object()?, [env.string(data)?])?;
+                    callback.call(env.object()?, env.string(data)?)?;
                     Ok(())
                 },
             )?;

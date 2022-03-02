@@ -183,12 +183,12 @@ impl NapiEnv {
 
     /// Create a js function with a rust closure.
     #[inline]
-    pub fn func<T, R, const N: usize>(
+    pub fn func<T: FromJsArgs, R>(
         &self,
-        func: impl FnMut(JsObject, [T; N]) -> NapiResult<R>,
+        func: impl FnMut(JsObject, T) -> NapiResult<R>,
     ) -> NapiResult<Function<R>>
     where
-        T: NapiValueT,
+        T: FromJsArgs,
         R: NapiValueT,
     {
         Function::<R>::new(*self, Option::<String>::None, func)
@@ -196,13 +196,13 @@ impl NapiEnv {
 
     /// Create a named js function with a rust closure.
     #[inline]
-    pub fn func_named<T, R, const N: usize>(
+    pub fn func_named<T: FromJsArgs, R>(
         &self,
         name: impl AsRef<str>,
-        func: impl FnMut(JsObject, [T; N]) -> NapiResult<R>,
+        func: impl FnMut(JsObject, T) -> NapiResult<R>,
     ) -> NapiResult<Function<R>>
     where
-        T: NapiValueT,
+        T: FromJsArgs,
         R: NapiValueT,
     {
         Function::<R>::new(*self, Some(name), func)
@@ -251,14 +251,14 @@ impl NapiEnv {
 
     /// Create a js class with a rust closure
     #[inline]
-    pub fn class<T, R, const N: usize>(
+    pub fn class<T, R>(
         &self,
         name: impl AsRef<str>,
-        func: impl FnMut(JsObject, [T; N]) -> NapiResult<R>,
+        func: impl FnMut(JsObject, T) -> NapiResult<R>,
         properties: impl AsRef<[NapiPropertyDescriptor]>,
     ) -> NapiResult<JsClass>
     where
-        T: NapiValueT,
+        T: FromJsArgs,
         R: NapiValueT,
     {
         JsClass::new(*self, name, func, properties)
@@ -270,7 +270,7 @@ impl NapiEnv {
         &self,
         name: impl AsRef<str>,
         state: T,
-        execute: impl FnMut(&mut T),
+        execute: impl FnMut(&mut T) + Send,
         complete: impl FnMut(NapiEnv, NapiStatus, T) -> NapiResult<()>,
     ) -> NapiResult<NapiAsyncWork<T>> {
         NapiAsyncWork::new(*self, name, state, execute, complete)
@@ -280,7 +280,7 @@ impl NapiEnv {
     #[inline]
     pub fn promise<T, L: NapiValueT + Copy + Clone, R: NapiValueT + Copy + Clone>(
         &self,
-        mut work: impl FnMut(&mut T),
+        mut work: impl FnMut(&mut T) + Send,
         mut complete: impl FnMut(JsPromise<L, R>, NapiStatus, T) -> NapiResult<()>,
     ) -> NapiResult<JsPromise<L, R>>
     where
@@ -490,7 +490,7 @@ impl NapiEnv {
     /// that happens when the resource for which this hook was added is being torn down anyway.
     /// For asynchronous cleanup, napi_add_async_cleanup_hook is available.
     #[inline]
-    pub fn add_cleanup_hook<Hook>(&mut self, hook: Hook) -> NapiResult<CleanupHookHandler>
+    pub fn add_cleanup_hook<Hook>(&self, hook: Hook) -> NapiResult<CleanupHookHandler>
     where
         Hook: FnOnce() -> NapiResult<()>,
     {
@@ -531,7 +531,7 @@ impl NapiEnv {
     /// was added is being torn down anyway.
     #[inline]
     pub fn add_async_cleanup_hook<Hook>(
-        &mut self,
+        &self,
         hook: Hook,
     ) -> NapiResult<Option<AsyncCleanupHookHandler>>
     where

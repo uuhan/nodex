@@ -59,3 +59,9 @@ impl JsError {
 }
 
 napi_value_t!(JsError);
+
+impl NapiValueCheck for JsError {
+    fn check(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_error, self.env(), self.raw()))
+    }
+}

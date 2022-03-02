@@ -87,3 +87,9 @@ impl JsNumber {
 }
 
 napi_value_t!(JsNumber);
+
+impl NapiValueCheck for JsNumber {
+    fn check(&self) -> NapiResult<bool> {
+        Ok(self.kind()? == NapiValuetype::Number)
+    }
+}

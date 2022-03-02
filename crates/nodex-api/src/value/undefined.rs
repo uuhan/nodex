@@ -17,3 +17,9 @@ impl JsUndefined {
 }
 
 napi_value_t!(JsUndefined);
+
+impl NapiValueCheck for JsUndefined {
+    fn check(&self) -> NapiResult<bool> {
+        Ok(self.kind()? == NapiValuetype::Undefined)
+    }
+}

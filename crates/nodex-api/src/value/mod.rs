@@ -16,184 +16,131 @@ impl JsValue {
         self.1
     }
 
-    /// check if it is an object
     pub fn is_object(&self) -> NapiResult<bool> {
-        Ok(self.kind()? == NapiValuetype::Object)
+        napi_is!(self, JsObject)
     }
 
     /// view it as an object, may fail if it is not an object value
     pub fn as_object(&self) -> NapiResult<JsObject> {
-        if self.is_object()? {
-            Ok(JsObject::from_value(*self))
-        } else {
-            Err(NapiStatus::ObjectExpected)
-        }
+        napi_as!(self, JsObject, NapiStatus::ObjectExpected)
     }
 
-    /// check if it is a string
     pub fn is_string(&self) -> NapiResult<bool> {
-        Ok(self.kind()? == NapiValuetype::String)
+        napi_is!(self, JsString)
     }
 
     /// view it as a string, may fail if it is not a string value
     pub fn as_string(&self) -> NapiResult<JsString> {
-        if self.is_string()? {
-            Ok(JsString::from_value(*self))
-        } else {
-            Err(NapiStatus::StringExpected)
-        }
+        napi_as!(self, JsString, NapiStatus::StringExpected)
     }
 
-    /// check if it is a symbol
     pub fn is_symbol(&self) -> NapiResult<bool> {
-        Ok(self.kind()? == NapiValuetype::Symbol)
+        napi_is!(self, JsSymbol)
     }
 
     /// view it as a symbol, may fail if it is not a symbol value
     pub fn as_symbol(&self) -> NapiResult<JsSymbol> {
-        if self.is_symbol()? {
-            Ok(JsSymbol::from_value(*self))
-        } else {
-            Err(NapiStatus::GenericFailure)
-        }
+        napi_as!(self, JsSymbol, NapiStatus::InvalidArg)
+    }
+
+    pub fn is_array(&self) -> NapiResult<bool> {
+        napi_is!(self, JsArray)
     }
 
     /// view it as an array, may fail if it is not an array value
     pub fn as_array(&self) -> NapiResult<JsArray> {
-        if self.is_array()? {
-            Ok(JsArray::from_value(*self))
-        } else {
-            Err(NapiStatus::ArrayExpected)
-        }
+        napi_as!(self, JsArray, NapiStatus::ArrayExpected)
     }
 
+    pub fn is_typedarray(&self) -> NapiResult<bool> {
+        napi_is!(self, JsTypedArray)
+    }
     /// view it as a typed_array, may fail if it is not a typed_array value
     pub fn as_typedarray(&self) -> NapiResult<JsTypedArray> {
-        if self.is_typedarray()? {
-            Ok(JsTypedArray::from_value(*self))
-        } else {
-            Err(NapiStatus::GenericFailure)
-        }
+        napi_as!(self, JsTypedArray, NapiStatus::InvalidArg)
+    }
+
+    pub fn is_arraybuffer(&self) -> NapiResult<bool> {
+        napi_is!(self, JsArrayBuffer)
     }
 
     /// view it as an array_buffer, may fail if it is not an array_buffer value
     pub fn as_arraybuffer(&self) -> NapiResult<JsArrayBuffer> {
-        if self.is_arraybuffer()? {
-            Ok(JsArrayBuffer::from_value(*self))
-        } else {
-            Err(NapiStatus::ArraybufferExpected)
-        }
+        napi_as!(self, JsArrayBuffer, NapiStatus::ArraybufferExpected)
+    }
+
+    pub fn is_buffer<const N: usize>(&self) -> NapiResult<bool> {
+        napi_is!(self, JsBuffer<N>)
     }
 
     /// view it as a buffer, may fail if it is not a buffer value
     pub fn as_buffer<const N: usize>(&self) -> NapiResult<JsBuffer<N>> {
-        if self.is_buffer()? {
-            Ok(JsBuffer::from_value(*self))
-        } else {
-            Err(NapiStatus::GenericFailure)
-        }
+        napi_as!(self, JsBuffer<N>, NapiStatus::InvalidArg)
+    }
+
+    pub fn is_dataview(&self) -> NapiResult<bool> {
+        napi_is!(self, JsDataView)
     }
 
     /// view it as a dataview, may fail if it is not a dataview value
     pub fn as_dataview(&self) -> NapiResult<JsDataView> {
-        if self.is_dataview()? {
-            Ok(JsDataView::from_raw(self.env(), self.raw()))
-        } else {
-            Err(NapiStatus::InvalidArg)
-        }
+        napi_as!(self, JsDataView, NapiStatus::InvalidArg)
     }
 
-    /// check if it is an external
-    pub fn is_external(&self) -> NapiResult<bool> {
-        Ok(self.kind()? == NapiValuetype::External)
+    pub fn is_external<T>(&self) -> NapiResult<bool> {
+        napi_is!(self, JsExternal<T>)
     }
 
     /// view it as an external, may fail if it is not an external value
     pub fn as_external<T>(&self) -> NapiResult<JsExternal<T>> {
-        if self.is_external()? {
-            Ok(JsExternal::from_value(*self))
-        } else {
-            Err(NapiStatus::GenericFailure)
-        }
+        napi_as!(self, JsExternal<T>, NapiStatus::InvalidArg)
     }
 
-    /// check if it is a function
     pub fn is_function(&self) -> NapiResult<bool> {
-        Ok(self.kind()? == NapiValuetype::Function)
+        napi_is!(self, JsFunction)
     }
 
     /// view it as a number, may fail if it is not a number value
     pub fn as_function(&self) -> NapiResult<JsFunction> {
-        if self.is_function()? {
-            Ok(JsFunction::from_value(*self))
-        } else {
-            Err(NapiStatus::FunctionExpected)
-        }
+        napi_as!(self, JsFunction, NapiStatus::FunctionExpected)
     }
 
-    /// check if it is a number
     pub fn is_number(&self) -> NapiResult<bool> {
-        Ok(self.kind()? == NapiValuetype::Number)
+        napi_is!(self, JsNumber)
     }
 
     /// view it as a number, may fail if it is not a number value
     pub fn as_number(&self) -> NapiResult<JsNumber> {
-        if self.is_number()? {
-            Ok(JsNumber::from_value(*self))
-        } else {
-            Err(NapiStatus::NumberExpected)
-        }
+        napi_as!(self, JsNumber, NapiStatus::NumberExpected)
     }
 
-    /// check if it is a bigint
-    pub fn is_bigint(&self) -> NapiResult<bool> {
-        Ok(self.kind()? == NapiValuetype::Bigint)
+    pub fn is_bigint<T>(&self) -> NapiResult<bool> {
+        napi_is!(self, JsBigInt<T>)
     }
 
     /// view it as a bigint, may fail if it is not a bigint value
     pub fn as_bigint<T>(&self) -> NapiResult<JsBigInt<T>> {
-        if self.is_bigint()? {
-            Ok(JsBigInt::from_value(*self))
-        } else {
-            Err(NapiStatus::BigintExpected)
-        }
+        napi_as!(self, JsBigInt<T>, NapiStatus::BigintExpected)
     }
 
-    /// check if it is a boolean
     pub fn is_boolean(&self) -> NapiResult<bool> {
-        Ok(self.kind()? == NapiValuetype::Boolean)
+        napi_is!(self, JsBoolean)
     }
 
     /// view it as a boolean, may fail if it is not a boolean value
     pub fn as_boolean(&self) -> NapiResult<JsBoolean> {
-        if self.is_boolean()? {
-            Ok(JsBoolean::from_value(*self))
-        } else {
-            Err(NapiStatus::BooleanExpected)
-        }
+        napi_as!(self, JsBoolean, NapiStatus::BooleanExpected)
+    }
+
+    #[cfg(feature = "v5")]
+    pub fn is_date(&self) -> NapiResult<bool> {
+        napi_is!(self, JsDate)
     }
 
     #[cfg(feature = "v5")]
     /// view it as a date, may fail if it is not a date value
     pub fn as_date(&self) -> NapiResult<JsDate> {
-        if self.is_date()? {
-            Ok(JsDate::from_value(*self))
-        } else {
-            Err(NapiStatus::DateExpected)
-        }
-    }
-
-    pub fn is_null(&self) -> NapiResult<bool> {
-        Ok(self.kind()? == NapiValuetype::Null)
-    }
-
-    pub fn is_undefined(&self) -> NapiResult<bool> {
-        Ok(self.kind()? == NapiValuetype::Undefined)
-    }
-
-    /// This API checks if the Object passed in is a promise.
-    pub fn is_promise(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_promise, self.env(), self.raw()))
+        napi_as!(self, JsDate, NapiStatus::DateExpected)
     }
 }
 
@@ -207,8 +154,18 @@ impl NapiValueT for JsValue {
     }
 }
 
+impl NapiValueCheck for JsValue {
+    fn check(&self) -> NapiResult<bool> {
+        Ok(true)
+    }
+}
+
+pub trait NapiValueCheck {
+    fn check(&self) -> NapiResult<bool>;
+}
+
 /// The trait for js value, which just store napi_value raw pointer.
-pub trait NapiValueT {
+pub trait NapiValueT: NapiValueCheck + Sized {
     /// construct value from raw pointer
     fn from_raw(env: NapiEnv, value: napi_value) -> Self;
 
@@ -219,6 +176,28 @@ pub trait NapiValueT {
     #[inline]
     fn cast<T: NapiValueT>(&self) -> T {
         T::from_raw(self.env(), self.raw())
+    }
+
+    /// Upcast to specified value
+    #[inline]
+    fn cast_checked(&self) -> NapiResult<Self> {
+        if self.check()? {
+            Ok(Self::from_raw(self.env(), self.raw()))
+        } else {
+            Err(NapiStatus::InvalidArg)
+        }
+    }
+
+    /// Returns napi_ok if the API succeeded.
+    /// - `napi_invalid_arg` if the type of value is not a known ECMAScript type and value is not an External value.
+    /// This API represents behavior similar to invoking the typeof Operator on the object as defined in
+    /// Section 12.5.5 of the ECMAScript Language Specification. However, there are some differences:
+    /// It has support for detecting an External value.
+    /// It detects null as a separate type, while ECMAScript typeof would detect object.
+    /// If value has a type that is invalid, an error is returned.
+    #[inline]
+    fn kind(&self) -> NapiResult<NapiValuetype> {
+        Ok(napi_call!(=napi_typeof, self.env(), self.raw()))
     }
 
     /// This API implements the abstract operation ToBoolean() as defined in Section 7.1.2 of the
@@ -269,59 +248,10 @@ pub trait NapiValueT {
         Ok(napi_call!(=napi_instanceof, self.env(), self.raw(), constructor.raw()))
     }
 
-    /// This API represents invoking the IsArray operation on the object as defined in Section
-    /// 7.2.2 of the ECMAScript Language Specification.
-    fn is_array(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_array, self.env(), self.raw()))
-    }
-
-    /// This API checks if the Object passed in is an array buffer.
-    fn is_arraybuffer(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_arraybuffer, self.env(), self.raw()))
-    }
-
-    /// This API checks if the Object passed in is a buffer.
-    fn is_buffer(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_buffer, self.env(), self.raw()))
-    }
-
-    #[cfg(feature = "v5")]
-    /// This API checks if the Object passed in is a date.
-    fn is_date(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_date, self.env(), self.raw()))
-    }
-
-    /// This API checks if the Object passed in is a error.
-    fn is_error(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_error, self.env(), self.raw()))
-    }
-
-    /// This API checks if the Object passed in is a typed array.
-    fn is_typedarray(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_typedarray, self.env(), self.raw()))
-    }
-
-    /// This API checks if the Object passed in is a DataView.
-    fn is_dataview(&self) -> NapiResult<bool> {
-        Ok(napi_call!(=napi_is_dataview, self.env(), self.raw()))
-    }
-
     /// This API represents the invocation of the Strict Equality algorithm as defined in
     /// Section 7.2.14 of the ECMAScript Language Specification.
     fn equals(&self, rhs: impl NapiValueT) -> NapiResult<bool> {
         Ok(napi_call!(=napi_strict_equals, self.env(), self.raw(), rhs.raw()))
-    }
-
-    /// Returns napi_ok if the API succeeded.
-    /// - `napi_invalid_arg` if the type of value is not a known ECMAScript type and value is not an External value.
-    /// This API represents behavior similar to invoking the typeof Operator on the object as defined in
-    /// Section 12.5.5 of the ECMAScript Language Specification. However, there are some differences:
-    /// It has support for detecting an External value.
-    /// It detects null as a separate type, while ECMAScript typeof would detect object.
-    /// If value has a type that is invalid, an error is returned.
-    #[inline]
-    fn kind(&self) -> NapiResult<NapiValuetype> {
-        Ok(napi_call!(=napi_typeof, self.env(), self.raw()))
     }
 
     /// the `NapiEnv` of current value

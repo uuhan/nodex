@@ -12,7 +12,7 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     obj.define_properties(&[DescriptorMethodBuilder::new()
         .with_utf8name("mymethod")
-        .with_method(move |this, []: [JsValue; 0]| this.env().double(200.))
+        .with_method(move |this, ()| this.env().double(200.))
         .build()?])?;
 
     let value = Arc::new(Mutex::new(0.));
@@ -21,7 +21,7 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     obj.define_properties(&[DescriptorAccessorBuilder::new()
         .with_utf8name("myaccessor")
         .with_getter(move |this| this.env().double(*value.lock().unwrap()))
-        .with_setter(move |_this: JsObject, [n]: [JsNumber; 1]| {
+        .with_setter(move |_this: JsObject, n: JsNumber| {
             let mut value = value2.lock().unwrap();
             *value = n.get_value_double()?;
             Ok(())

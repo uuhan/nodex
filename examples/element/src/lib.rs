@@ -23,7 +23,7 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     exports.set_named_property("external", env.external(100, move |_, _| Ok(()))?)?;
     exports.set_named_property(
         "function",
-        env.func(move |this, []: Args<0>| this.env().undefined())?,
+        env.func(move |this, ()| this.env().undefined())?,
     )?;
     exports.set_named_property("global", env.global()?)?;
     exports.set_named_property("null", env.null()?)?;

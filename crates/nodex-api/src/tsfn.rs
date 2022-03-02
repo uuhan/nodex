@@ -185,4 +185,4 @@ impl<Data, const N: usize> NapiThreadsafeFunction<Data, N> {
     }
 }
 
-pub type NapiTsfn<Data, const N: usize> = NapiThreadsafeFunction<Data, N>;
+pub type NapiTsfn<Data> = NapiThreadsafeFunction<Data, 0>;

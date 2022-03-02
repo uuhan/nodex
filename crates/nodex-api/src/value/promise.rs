@@ -1,7 +1,7 @@
 use crate::{api, prelude::*};
 use std::{marker::PhantomData, mem::MaybeUninit, os::raw::c_char};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Debug)]
 pub struct JsPromise<L, R>(
     pub(crate) JsValue,
     pub(crate) napi_deferred,
@@ -9,7 +9,13 @@ pub struct JsPromise<L, R>(
     PhantomData<R>,
 );
 
-impl<L: NapiValueT + Copy + Clone, R: NapiValueT + Copy + Clone> JsPromise<L, R> {
+impl<L, R> Clone for JsPromise<L, R> {
+    fn clone(&self) -> Self {
+        JsPromise(self.0, self.1, PhantomData, PhantomData)
+    }
+}
+
+impl<L: NapiValueT, R: NapiValueT> JsPromise<L, R> {
     pub(crate) fn from_raw(value: JsValue, deferred: napi_deferred) -> JsPromise<L, R> {
         JsPromise(value, deferred, PhantomData, PhantomData)
     }
@@ -44,7 +50,7 @@ impl<L: NapiValueT + Copy + Clone, R: NapiValueT + Copy + Clone> JsPromise<L, R>
     /// Spawn a busy task in the libuv pool.
     pub fn spawn<T>(
         env: NapiEnv,
-        mut work: impl FnMut(&mut T),
+        mut work: impl FnMut(&mut T) + Send,
         mut complete: impl FnMut(Self, NapiStatus, T) -> NapiResult<()>,
     ) -> NapiResult<JsPromise<L, R>>
     where
@@ -56,7 +62,7 @@ impl<L: NapiValueT + Copy + Clone, R: NapiValueT + Copy + Clone> JsPromise<L, R>
             T::default(),
             move |state| work(state),
             // NB: execute in the main js thread.
-            move |_, status, state| complete(promise, status, state),
+            |_, status, state| complete(promise.clone(), status, state),
         )?
         .queue()?;
 
@@ -83,5 +89,11 @@ impl<L: NapiValueT + Copy + Clone, R: NapiValueT + Copy + Clone> JsPromise<L, R>
     /// The deferred object is freed upon successful completion.
     pub fn reject(&self, rejection: R) -> NapiResult<()> {
         napi_call!(napi_reject_deferred, self.env(), self.1, rejection.raw())
+    }
+}
+
+impl<L: NapiValueT, R: NapiValueT> NapiValueCheck for JsPromise<L, R> {
+    fn check(&self) -> NapiResult<bool> {
+        Ok(napi_call!(=napi_is_promise, self.env(), self.raw()))
     }
 }
