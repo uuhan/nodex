@@ -8,7 +8,7 @@ homepage = "https://github.com/uuhan/nodex"
 license = "MIT"
 authors = ["uuhan <xuminhui189@gmail.com>"]
 description = "rust binding to node_api.h"
-include = ["src/**/*", "api/include/*", "Cargo.toml", "build.rs"]
+include = ["src/**/*", "api/include/*", "Cargo.toml", "build.rs", "lib/*"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
