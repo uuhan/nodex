@@ -12,7 +12,7 @@ fn init(env: NapiEnv, _: JsObject) -> NapiResult<()> {
         "#,
     )?;
 
-    func.call(env.global()?.cast(), ())?;
+    func.call(env.global()?.object(), ())?;
 
     Ok(())
 }

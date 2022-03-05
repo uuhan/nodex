@@ -114,12 +114,12 @@ impl JsValue {
         napi_as!(self, JsNumber, NapiStatus::NumberExpected)
     }
 
-    pub fn is_bigint<T>(&self) -> NapiResult<bool> {
+    pub fn is_bigint<T: Copy>(&self) -> NapiResult<bool> {
         napi_is!(self, JsBigInt<T>)
     }
 
     /// view it as a bigint, may fail if it is not a bigint value
-    pub fn as_bigint<T>(&self) -> NapiResult<JsBigInt<T>> {
+    pub fn as_bigint<T: Copy>(&self) -> NapiResult<JsBigInt<T>> {
         napi_as!(self, JsBigInt<T>, NapiStatus::BigintExpected)
     }
 
@@ -173,16 +173,20 @@ pub trait NapiValueT: NapiValueCheck + Sized {
     fn value(&self) -> JsValue;
 
     /// napi_value type cast
+    ///
+    /// ## Safety
+    ///
+    /// It just put the handle in new type, does not check the real type.
     #[inline]
-    fn cast<T: NapiValueT>(&self) -> T {
+    unsafe fn cast<T: NapiValueT>(&self) -> T {
         T::from_raw(self.env(), self.raw())
     }
 
     /// Upcast to specified value
     #[inline]
-    fn cast_checked(&self) -> NapiResult<Self> {
-        if self.check()? {
-            Ok(Self::from_raw(self.env(), self.raw()))
+    fn cast_checked<T: NapiValueT>(&self) -> NapiResult<T> {
+        if unsafe { self.cast::<T>() }.check()? {
+            Ok(T::from_raw(self.env(), self.raw()))
         } else {
             Err(NapiStatus::InvalidArg)
         }

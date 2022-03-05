@@ -2,7 +2,7 @@ use crate::{api, prelude::*};
 use std::{marker::PhantomData, mem::MaybeUninit, os::raw::c_char};
 
 #[derive(Copy, Clone, Debug)]
-pub struct Function<F>(pub(crate) JsValue, PhantomData<F>);
+pub struct Function<F: NapiValueT>(pub(crate) JsValue, PhantomData<F>);
 
 impl<F: NapiValueT> Function<F> {
     pub(crate) fn from_value(value: JsValue) -> Function<F> {
@@ -194,7 +194,7 @@ impl<F: NapiValueT> Function<F> {
     }
 }
 
-impl<F> NapiValueT for Function<F> {
+impl<F: NapiValueT> NapiValueT for Function<F> {
     fn from_raw(env: NapiEnv, raw: napi_value) -> Function<F> {
         Function::<F>(JsValue(env, raw), PhantomData)
     }
@@ -206,7 +206,7 @@ impl<F> NapiValueT for Function<F> {
 
 pub type JsFunction = Function<JsValue>;
 
-impl<F> NapiValueCheck for Function<F> {
+impl<F: NapiValueT> NapiValueCheck for Function<F> {
     fn check(&self) -> NapiResult<bool> {
         Ok(self.kind()? == NapiValuetype::Function)
     }

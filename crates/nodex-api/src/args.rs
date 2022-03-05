@@ -40,7 +40,7 @@ impl<T: NapiValueT> FromJsArgs for T {
     fn from_js_args(args: JsArgs) -> NapiResult<T> {
         // It's safe here
         let arg = unsafe { args.0.get_unchecked(0) };
-        let casted = arg.cast::<T>();
+        let casted = unsafe { arg.cast::<T>() };
         match casted.check() {
             Ok(true) => Ok(casted),
             Ok(false) => Err(NapiStatus::InvalidArg),
@@ -79,7 +79,8 @@ macro_rules! from_js_args_tuple {
                 Ok(($({
                     // It's safe here
                     let arg = unsafe { args.0.get_unchecked($idx) };
-                    let casted = arg.cast::<$name>();
+                    let casted = unsafe { arg.cast::<$name>() };
+
                     match casted.check() {
                         Ok(true) => {
                             casted

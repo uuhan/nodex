@@ -72,7 +72,7 @@ impl JsArrayBuffer {
     /// over the lifetime of the ArrayBuffer. It's also safe to use the returned data buffer
     /// within the same callback as long as there are no calls to other APIs that might trigger
     /// a GC.
-    pub fn get_arraybuffer_info(&self) -> NapiResult<&[u8]> {
+    pub fn buffer(&self) -> NapiResult<&[u8]> {
         let mut result = MaybeUninit::uninit();
         let mut len = MaybeUninit::uninit();
 
@@ -89,6 +89,11 @@ impl JsArrayBuffer {
             let slice = std::slice::from_raw_parts(result as _, len);
             Ok(slice)
         }
+    }
+
+    #[deprecated = "use JsArrayBuffer::buffer() instead"]
+    pub fn get_arraybuffer_info(&self) -> NapiResult<&[u8]> {
+        self.buffer()
     }
 
     #[cfg(feature = "v7")]

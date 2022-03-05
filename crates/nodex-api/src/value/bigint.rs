@@ -2,9 +2,9 @@ use crate::{api, prelude::*};
 use std::marker::PhantomData;
 
 #[derive(Copy, Clone, Debug)]
-pub struct JsBigInt<T>(pub(crate) JsValue, PhantomData<T>);
+pub struct JsBigInt<T: Copy>(pub(crate) JsValue, PhantomData<T>);
 
-impl<T> JsBigInt<T> {
+impl<T: Copy> JsBigInt<T> {
     pub(crate) fn from_value(value: JsValue) -> JsBigInt<T> {
         JsBigInt(value, PhantomData)
     }
@@ -24,7 +24,7 @@ impl<T> JsBigInt<T> {
     }
 }
 
-impl<T> NapiValueT for JsBigInt<T> {
+impl<T: Copy> NapiValueT for JsBigInt<T> {
     fn from_raw(env: NapiEnv, raw: napi_value) -> JsBigInt<T> {
         JsBigInt(JsValue(env, raw), PhantomData)
     }
@@ -34,7 +34,7 @@ impl<T> NapiValueT for JsBigInt<T> {
     }
 }
 
-impl<T> NapiValueCheck for JsBigInt<T> {
+impl<T: Copy> NapiValueCheck for JsBigInt<T> {
     fn check(&self) -> NapiResult<bool> {
         Ok(self.kind()? == NapiValuetype::Bigint)
     }

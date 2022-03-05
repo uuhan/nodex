@@ -13,6 +13,11 @@ impl JsGlobal {
         let value = napi_call!(=napi_get_global, env);
         Ok(JsGlobal(JsValue::from_raw(env, value)))
     }
+
+    /// Global is always a `JsObject`
+    pub fn object(&self) -> JsObject {
+        unsafe { self.cast() }
+    }
 }
 
 napi_value_t!(JsGlobal);

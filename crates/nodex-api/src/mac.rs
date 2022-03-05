@@ -133,7 +133,7 @@ macro_rules! napi_r {
 #[macro_export]
 macro_rules! napi_as {
     ($self:ident, $T:ty, $err:expr) => {{
-        let casted = $self.cast::<$T>();
+        let casted = unsafe { $self.cast::<$T>() };
         if $self.check()? {
             Ok(casted)
         } else {
@@ -145,6 +145,6 @@ macro_rules! napi_as {
 #[macro_export]
 macro_rules! napi_is {
     ($self:ident, $T:ty) => {
-        $self.cast::<$T>().check()
+        unsafe { $self.cast::<$T>() }.check()
     };
 }

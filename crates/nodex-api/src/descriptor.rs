@@ -75,8 +75,8 @@ impl DescriptorValueBuilder {
     pub fn with_name(mut self, name: impl NapiValueT) -> Self {
         let name = name.value();
         if let (Ok(name_string), Ok(name_symbol)) = (
-            name.cast::<JsString>().check(),
-            name.cast::<JsSymbol>().check(),
+            unsafe { name.cast::<JsString>() }.check(),
+            unsafe { name.cast::<JsSymbol>() }.check(),
         ) {
             if name_string || name_symbol {
                 self.name = name.raw();
@@ -158,8 +158,8 @@ impl<T: FromJsArgs, R: NapiValueT> DescriptorMethodBuilder<T, R> {
     pub fn with_name(mut self, name: impl NapiValueT) -> Self {
         let name = name.value();
         if let (Ok(name_string), Ok(name_symbol)) = (
-            name.cast::<JsString>().check(),
-            name.cast::<JsSymbol>().check(),
+            unsafe { name.cast::<JsString>() }.check(),
+            unsafe { name.cast::<JsSymbol>() }.check(),
         ) {
             if name_string || name_symbol {
                 self.name = name.raw();
@@ -292,8 +292,8 @@ impl<T: NapiValueT, R: NapiValueT> DescriptorAccessorBuilder<T, R> {
     pub fn with_name(mut self, name: impl NapiValueT) -> Self {
         let name = name.value();
         if let (Ok(name_string), Ok(name_symbol)) = (
-            name.cast::<JsString>().check(),
-            name.cast::<JsSymbol>().check(),
+            unsafe { name.cast::<JsString>() }.check(),
+            unsafe { name.cast::<JsSymbol>() }.check(),
         ) {
             if name_string || name_symbol {
                 self.name = name.raw();
