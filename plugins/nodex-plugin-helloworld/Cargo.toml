@@ -1,6 +1,6 @@
 [package]
 name = "nodex-plugin-helloworld"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 readme = "./README.md"
 repository = "https://github.com/uuhan/nodex"
@@ -11,4 +11,4 @@ description = "A small crate to show how to write a nodex plugin."
 
 [dependencies.nodex]
 path = "../../crates/nodex"
-version = "0.1"
+version = "0.2"

@@ -1,7 +1,7 @@
 [package]
 name = "nodex"
-version = "0.1.6"
-readme = "../../README.md"
+version = "0.2.0"
+readme = "./README.md"
 edition = "2021"
 repository = "https://github.com/uuhan/nodex"
 homepage = "https://github.com/uuhan/nodex"
@@ -11,7 +11,7 @@ description = "nodex for ease of creating nodejs native addon."
 
 [dependencies.nodex-api]
 path = "../nodex-api"
-version = "0.1.6"
+version = "0.2.0"
 
 [features]
 default = ["v1"]
