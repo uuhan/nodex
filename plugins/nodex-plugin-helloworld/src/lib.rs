@@ -1,5 +1,4 @@
 #[doc = include_str!("../README.md")]
-
 use nodex::prelude::*;
 
 pub fn init(env: NapiEnv, mut object: JsObject) -> NapiResult<()> {
