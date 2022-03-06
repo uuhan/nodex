@@ -38,7 +38,7 @@ This crate aims to make creating native nodejs addons very easy and comfortable.
 crate-type = ["cdylib"]
 
 [dependencies.nodex-api]
-version = "0.2.1"
+version = "0.2.2"
 features = ["v8"]
 ```
 
@@ -53,7 +53,7 @@ We have v1,v2,v3,...v8 versions.
 crate-type = ["cdylib"]
 
 [dependencies.nodex]
-version = "0.2.1"
+version = "0.2.2"
 features = ["v8"]
 ```
 
@@ -381,7 +381,7 @@ fn script(env: NapiEnv) -> NapiResult<()> {
         "#,
     )?;
 
-    func.call(env.global()?.cast(), ())?;
+    func.call(env.global()?.object(), ())?;
     Ok(())
 }
 ```
