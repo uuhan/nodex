@@ -114,12 +114,12 @@ impl JsValue {
         napi_as!(self, JsNumber, NapiStatus::NumberExpected)
     }
 
-    pub fn is_bigint<T>(&self) -> NapiResult<bool> {
+    pub fn is_bigint<T: Copy>(&self) -> NapiResult<bool> {
         napi_is!(self, JsBigInt<T>)
     }
 
     /// view it as a bigint, may fail if it is not a bigint value
-    pub fn as_bigint<T>(&self) -> NapiResult<JsBigInt<T>> {
+    pub fn as_bigint<T: Copy>(&self) -> NapiResult<JsBigInt<T>> {
         napi_as!(self, JsBigInt<T>, NapiStatus::BigintExpected)
     }
 

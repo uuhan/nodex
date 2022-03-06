@@ -1,21 +1,15 @@
 use crate::{api, prelude::*};
 use std::{marker::PhantomData, mem::MaybeUninit, os::raw::c_char};
 
-#[derive(Debug)]
-pub struct JsPromise<L, R>(
+#[derive(Debug, Copy, Clone)]
+pub struct JsPromise<L: NapiValueT, R: NapiValueT>(
     pub(crate) JsValue,
     pub(crate) napi_deferred,
     PhantomData<L>,
     PhantomData<R>,
 );
 
-impl<L, R> Clone for JsPromise<L, R> {
-    fn clone(&self) -> Self {
-        JsPromise(self.0, self.1, PhantomData, PhantomData)
-    }
-}
-
-impl<L: NapiValueT, R: NapiValueT> JsPromise<L, R> {
+impl<L: NapiValueT + Copy, R: NapiValueT + Copy> JsPromise<L, R> {
     pub(crate) fn from_raw(value: JsValue, deferred: napi_deferred) -> JsPromise<L, R> {
         JsPromise(value, deferred, PhantomData, PhantomData)
     }
@@ -62,7 +56,7 @@ impl<L: NapiValueT, R: NapiValueT> JsPromise<L, R> {
             T::default(),
             move |state| work(state),
             // NB: execute in the main js thread.
-            |_, status, state| complete(promise.clone(), status, state),
+            move |_, status, state| complete(promise, status, state),
         )?
         .queue()?;
 
@@ -92,7 +86,7 @@ impl<L: NapiValueT, R: NapiValueT> JsPromise<L, R> {
     }
 }
 
-impl<L: NapiValueT, R: NapiValueT> NapiValueCheck for JsPromise<L, R> {
+impl<L: NapiValueT + Copy, R: NapiValueT + Copy> NapiValueCheck for JsPromise<L, R> {
     fn check(&self) -> NapiResult<bool> {
         Ok(napi_call!(=napi_is_promise, self.env(), self.raw()))
     }

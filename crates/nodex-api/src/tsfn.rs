@@ -29,7 +29,7 @@ impl<Data, const N: usize> NapiThreadsafeFunction<Data, N> {
     ///
     /// R: the returned value of function.
     /// N: the maximum size of the queue, 0 for no limit.
-    pub fn new<R>(
+    pub fn new<R: NapiValueT>(
         env: NapiEnv,
         name: impl AsRef<str>,
         func: Function<R>,
@@ -52,7 +52,7 @@ impl<Data, const N: usize> NapiThreadsafeFunction<Data, N> {
             }
         }
 
-        unsafe extern "C" fn call_js_trampoline<R, Data>(
+        unsafe extern "C" fn call_js_trampoline<R: NapiValueT, Data>(
             env: NapiEnv,
             cb: napi_value,
             context: DataPointer,

@@ -1,9 +1,9 @@
 #!/bin/bash
-bash examples/demo.sh
-bash examples/descriptor.sh
-bash examples/element.sh
-bash examples/func.sh
-bash examples/plugin.sh
-bash examples/promise.sh
-bash examples/script.sh
-bash examples/tsfn.sh
+bash examples/demo.sh || exit
+bash examples/descriptor.sh || exit
+bash examples/element.sh || exit
+bash examples/func.sh || exit
+bash examples/plugin.sh || exit
+bash examples/promise.sh || exit
+bash examples/script.sh || exit
+bash examples/tsfn.sh || exit
