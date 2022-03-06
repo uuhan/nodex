@@ -5,11 +5,11 @@ Just add nodex as the dependency:
 ```toml
 [package]
 name = "nodex-plugin-helloworld"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 
 [dependencies]
-nodex = "^0.1"
+nodex = "^0.2"
 ```
 
 Then export your own function with the signature:
@@ -22,12 +22,12 @@ use nodex::prelude::*;
 pub fn init(env: NapiEnv, mut object: JsObject) -> NapiResult<()> {
     object.set_named_property(
         "hello_world",
-        env.func(|this, []: Args<0>| {
+        env.func(|this, ()| {
             let env = this.env();
             let res: JsValue = env.run_script(
                 r#"
-            console.log("hello, nodex!");
-        "#,
+                    console.log("hello, nodex!");
+                "#
             )?;
             Ok(res)
         })?,

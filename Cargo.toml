@@ -17,6 +17,7 @@ members = [
 
   # plugins
   "plugins/nodex-plugin-helloworld",
+  "plugins/sled-nodex",
 ]
 
 [patch.crates-io]
