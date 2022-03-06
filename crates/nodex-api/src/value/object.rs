@@ -82,10 +82,14 @@ impl JsObject {
     }
 
     /// Get value by string-like key.
+    pub unsafe fn get_unchecked<T: NapiValueT>(&self, key: impl AsRef<str>) -> NapiResult<T> {
+        let name = self.env().string(key.as_ref())?;
+        Ok(self.get_property(name)?.cast::<T>())
+    }
+
     pub fn get<T: NapiValueT>(&self, key: impl AsRef<str>) -> NapiResult<T> {
         let name = self.env().string(key.as_ref())?;
-        let value = self.get_property(name)?;
-        Ok(T::from_raw(self.env(), value.raw()))
+        self.get_property(name)?.cast_checked::<T>()
     }
 
     /// This API checks if the Object passed in has the named property.
