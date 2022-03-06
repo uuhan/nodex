@@ -82,11 +82,17 @@ impl JsObject {
     }
 
     /// Get value by string-like key.
+    ///
+    /// # Safety
+    ///
+    /// This function *just* put napi handle in struct `T` without any check. It is your duty to
+    /// make sure the origin value is really type of `T`.
     pub unsafe fn get_unchecked<T: NapiValueT>(&self, key: impl AsRef<str>) -> NapiResult<T> {
         let name = self.env().string(key.as_ref())?;
         Ok(self.get_property(name)?.cast::<T>())
     }
 
+    /// Get value by string-like key.
     pub fn get<T: NapiValueT>(&self, key: impl AsRef<str>) -> NapiResult<T> {
         let name = self.env().string(key.as_ref())?;
         self.get_property(name)?.cast_checked::<T>()
