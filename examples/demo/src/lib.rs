@@ -223,5 +223,14 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     let ext_buffer: JsBuffer<10> = env.buffer_copy([10; 10])?;
     exports.set_named_property("buffer", ext_buffer)?;
 
+    exports.set(
+        "throw_error",
+        env.func(move |this, ()| {
+            let env = this.env();
+            env.throw(env.double(100.)?)?;
+            env.undefined()
+        })?,
+    )?;
+
     Ok(())
 }

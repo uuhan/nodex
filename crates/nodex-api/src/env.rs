@@ -325,6 +325,12 @@ impl NapiEnv {
         )
     }
 
+    /// This API throws the JavaScript value provided.
+    #[inline]
+    pub fn throw<T: NapiValueT>(&self, to_throw: T) -> NapiResult<()> {
+        napi_call!(napi_throw, *self, to_throw.raw())
+    }
+
     /// This API throws a JavaScript Error with the text provided.
     #[inline]
     pub fn throw_error(&self, msg: impl AsRef<str>) -> NapiResult<()> {

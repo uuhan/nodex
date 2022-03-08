@@ -30,3 +30,9 @@ console.log(demo.buffer)
 demo.delay(() => {
   console.log("delayed")
 })
+
+try {
+  demo.throw_error()
+} catch (e) {
+  console.error('throw_error:', e)
+}
