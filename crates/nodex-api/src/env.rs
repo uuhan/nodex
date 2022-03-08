@@ -185,7 +185,7 @@ impl NapiEnv {
     #[inline]
     pub fn func<T: FromJsArgs, R>(
         &self,
-        func: impl FnMut(JsObject, T) -> NapiResult<R>,
+        func: impl FnMut(JsObject, T) -> NapiResult<R> + 'static,
     ) -> NapiResult<Function<R>>
     where
         T: FromJsArgs,
@@ -199,7 +199,7 @@ impl NapiEnv {
     pub fn func_named<T: FromJsArgs, R>(
         &self,
         name: impl AsRef<str>,
-        func: impl FnMut(JsObject, T) -> NapiResult<R>,
+        func: impl FnMut(JsObject, T) -> NapiResult<R> + 'static,
     ) -> NapiResult<Function<R>>
     where
         T: FromJsArgs,
@@ -254,7 +254,7 @@ impl NapiEnv {
     pub fn class<T, R>(
         &self,
         name: impl AsRef<str>,
-        func: impl FnMut(JsObject, T) -> NapiResult<R>,
+        func: impl FnMut(JsObject, T) -> NapiResult<R> + 'static,
         properties: impl AsRef<[NapiPropertyDescriptor]>,
     ) -> NapiResult<JsClass>
     where
@@ -270,18 +270,18 @@ impl NapiEnv {
         &self,
         name: impl AsRef<str>,
         state: T,
-        execute: impl FnMut(&mut T) + Send,
-        complete: impl FnMut(NapiEnv, NapiStatus, T) -> NapiResult<()>,
+        execute: impl FnMut(&mut T) + Send + 'static,
+        complete: impl FnMut(NapiEnv, NapiStatus, T) -> NapiResult<()> + 'static,
     ) -> NapiResult<NapiAsyncWork<T>> {
         NapiAsyncWork::new(*self, name, state, execute, complete)
     }
 
     /// Create a promise with a work & complete closure.
     #[inline]
-    pub fn promise<T, L: NapiValueT + Copy + Clone, R: NapiValueT + Copy + Clone>(
+    pub fn promise<T, L: NapiValueT + Copy + 'static, R: NapiValueT + Copy + 'static>(
         &self,
-        mut work: impl FnMut(&mut T) + Send,
-        mut complete: impl FnMut(JsPromise<L, R>, NapiStatus, T) -> NapiResult<()>,
+        mut work: impl FnMut(&mut T) + Send + 'static,
+        mut complete: impl FnMut(JsPromise<L, R>, NapiStatus, T) -> NapiResult<()> + 'static,
     ) -> NapiResult<JsPromise<L, R>>
     where
         T: Default,
@@ -296,8 +296,8 @@ impl NapiEnv {
         &self,
         name: impl AsRef<str>,
         func: Function<R>,
-        finalizer: impl FnOnce(NapiEnv) -> NapiResult<()>,
-        callback: impl FnMut(Function<R>, Data) -> NapiResult<()>,
+        finalizer: impl FnOnce(NapiEnv) -> NapiResult<()> + 'static,
+        callback: impl FnMut(Function<R>, Data) -> NapiResult<()> + 'static,
     ) -> NapiResult<NapiThreadsafeFunction<Data, N>>
     where
         R: NapiValueT,

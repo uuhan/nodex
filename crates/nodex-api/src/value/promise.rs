@@ -41,28 +41,6 @@ impl<L: NapiValueT + Copy, R: NapiValueT + Copy> JsPromise<L, R> {
         Ok(Self::from_raw(JsValue(env, promise), deferred))
     }
 
-    /// Spawn a busy task in the libuv pool.
-    pub fn spawn<T>(
-        env: NapiEnv,
-        mut work: impl FnMut(&mut T) + Send,
-        mut complete: impl FnMut(Self, NapiStatus, T) -> NapiResult<()>,
-    ) -> NapiResult<JsPromise<L, R>>
-    where
-        T: Default,
-    {
-        let promise: JsPromise<L, R> = JsPromise::new(env)?;
-        env.async_work(
-            "napi-promise-task",
-            T::default(),
-            move |state| work(state),
-            // NB: execute in the main js thread.
-            move |_, status, state| complete(promise, status, state),
-        )?
-        .queue()?;
-
-        Ok(promise)
-    }
-
     /// This API resolves a JavaScript promise by way of the deferred object with which it is
     /// associated. Thus, it can only be used to resolve JavaScript promises for which the
     /// corresponding deferred object is available. This effectively means that the promise must
@@ -83,6 +61,30 @@ impl<L: NapiValueT + Copy, R: NapiValueT + Copy> JsPromise<L, R> {
     /// The deferred object is freed upon successful completion.
     pub fn reject(&self, rejection: R) -> NapiResult<()> {
         napi_call!(napi_reject_deferred, self.env(), self.1, rejection.raw())
+    }
+}
+
+impl<L: NapiValueT + Copy + 'static, R: NapiValueT + Copy + 'static> JsPromise<L, R> {
+    /// Spawn a busy task in the libuv pool.
+    pub fn spawn<T>(
+        env: NapiEnv,
+        mut work: impl FnMut(&mut T) + Send + 'static,
+        mut complete: impl FnMut(Self, NapiStatus, T) -> NapiResult<()> + 'static,
+    ) -> NapiResult<JsPromise<L, R>>
+    where
+        T: Default,
+    {
+        let promise: JsPromise<L, R> = JsPromise::new(env)?;
+        env.async_work(
+            "napi-promise-task",
+            T::default(),
+            move |state| work(state),
+            // NB: execute in the main js thread.
+            move |_, status, state| complete(promise, status, state),
+        )?
+        .queue()?;
+
+        Ok(promise)
     }
 }
 
