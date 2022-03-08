@@ -38,7 +38,7 @@ This crate aims to make creating native nodejs addons very easy and comfortable.
 crate-type = ["cdylib"]
 
 [dependencies.nodex-api]
-version = "0.2.2"
+version = "0.2.3"
 features = ["v8"]
 ```
 
@@ -53,7 +53,7 @@ We have v1,v2,v3,...v8 versions.
 crate-type = ["cdylib"]
 
 [dependencies.nodex]
-version = "0.2.2"
+version = "0.2.3"
 features = ["v8"]
 ```
 
