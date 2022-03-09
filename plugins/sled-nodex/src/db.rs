@@ -22,7 +22,7 @@ pub fn class(env: NapiEnv) -> NapiResult<JsClass> {
                     let db = if let Some(inner) = this.unwrap::<SledInner>()? {
                         inner.clone()
                     } else {
-                        env.throw_error("database missing")?;
+                        env.throw_error("database context missing")?;
                         return env.undefined().map(|u| u.value());
                     };
 
@@ -41,12 +41,32 @@ pub fn class(env: NapiEnv) -> NapiResult<JsClass> {
                     let db = if let Some(inner) = this.unwrap::<SledInner>()? {
                         inner.clone()
                     } else {
-                        env.throw_error("database missing")?;
+                        env.throw_error("database context missing")?;
                         return env.undefined().map(|u| u.value());
                     };
 
                     let key = key.buffer()?;
                     if let Some(value) = db.get(key).unwrap() {
+                        env.arraybuffer(value).map(|buffer| buffer.value())
+                    } else {
+                        env.null().map(|u| u.value())
+                    }
+                })?,
+            )?;
+
+            this.set(
+                "remove",
+                env.func(move |this, key: JsArrayBuffer| {
+                    let env = this.env();
+                    let db = if let Some(inner) = this.unwrap::<SledInner>()? {
+                        inner.clone()
+                    } else {
+                        env.throw_error("database context missing")?;
+                        return env.undefined().map(|u| u.value());
+                    };
+
+                    let key = key.buffer()?;
+                    if let Some(value) = db.remove(key).unwrap() {
                         env.arraybuffer(value).map(|buffer| buffer.value())
                     } else {
                         env.null().map(|u| u.value())
