@@ -395,10 +395,11 @@ pub trait NapiValueT: NapiValueCheck + Sized {
     ///
     /// Calling napi_wrap() a second time on an object will return an error. To associate another
     /// native instance with the object, use napi_remove_wrap() first.
-    fn wrap<T, Finalizer>(&mut self, data: T, finalizer: Finalizer) -> NapiResult<NapiRef>
-    where
-        Finalizer: FnOnce(NapiEnv, T) -> NapiResult<()>,
-    {
+    fn wrap<T>(
+        &mut self,
+        data: T,
+        finalizer: impl FnOnce(NapiEnv, T) -> NapiResult<()>,
+    ) -> NapiResult<NapiRef> {
         // NB: Because we add a closure to the napi finalizer, it's better
         // to **CAPTURE** the leaked data from rust side, so here we just
         // ignore the passed in native data pointer.

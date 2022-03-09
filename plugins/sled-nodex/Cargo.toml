@@ -10,4 +10,5 @@ crate-type = ["cdylib"]
 path = "../../crates/nodex"
 
 [dependencies]
+either = "1.6.1"
 sled = "0.34.7"

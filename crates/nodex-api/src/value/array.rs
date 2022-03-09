@@ -50,7 +50,7 @@ impl JsArray {
 
     /// Set element at `index`
     #[inline]
-    pub fn set(&self, index: u32, value: impl NapiValueT) -> NapiResult<()> {
+    pub fn set(&mut self, index: u32, value: impl NapiValueT) -> NapiResult<()> {
         napi_call!(napi_set_element, self.env(), self.raw(), index, value.raw())
     }
 }
