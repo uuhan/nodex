@@ -39,7 +39,12 @@ jobs:
 
   test:
     name: Test suite
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
@@ -103,7 +108,14 @@ jobs:
 
   examples:
     name: Run Demo Project
-    runs-on: ubuntu-latest
+    env:
+      RUST_BACKTRACE: 1
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
@@ -113,12 +125,14 @@ jobs:
         with:
           node-version: '14'
 
-      - run: bash -x demo.sh
+      - name: Run demo.sh
+        run: bash -x demo.sh
 
       - name: Install nodejs - v17
         uses: actions/setup-node@v2
         with:
           node-version: '17'
 
-      - run: bash -x demo.sh
+      - name:
+        run: bash -x demo.sh
 
