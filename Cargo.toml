@@ -17,8 +17,8 @@ members = [
   "examples/descriptor",
 
   # plugins
-  "plugins/nodex-plugin-helloworld",
   "plugins/sled-nodex",
+  "plugins/nodex-plugin-helloworld",
 ]
 
 [patch.crates-io]
