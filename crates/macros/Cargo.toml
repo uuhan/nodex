@@ -1,6 +1,6 @@
 [package]
 name = "nodex-macros"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 repository = "https://github.com/uuhan/nodex"
 homepage = "https://github.com/uuhan/nodex"
@@ -14,6 +14,6 @@ proc-macro = true
 [dependencies]
 proc-macro2 = "1"
 quote = "1"
-syn = { version = "1", features = ["full"] }
-darling = "0.13"
+syn = { version = "2", features = ["full"] }
+darling = "0.20"
 heck = "0.4"

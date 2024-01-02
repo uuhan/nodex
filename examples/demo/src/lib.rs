@@ -85,7 +85,7 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     );
 
     exports.set_named_property("a", env.string("b")?)?;
-    exports.define_properties(&[
+    exports.define_properties([
         DescriptorValueBuilder::new()
             .with_utf8name("utils")
             .with_value(obj)
@@ -177,7 +177,7 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
                 a1,
                 move |_| Ok(()),
                 move |f, data: String| {
-                    f.call(env.object()?, env.string(&data)?)?;
+                    f.call(env.object()?, env.string(data)?)?;
                     Ok(())
                 },
             )?;

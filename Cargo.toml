@@ -1,4 +1,5 @@
 [workspace]
+resolver = "2"
 members = [
   "crates/nodex",
   "crates/nodex-api",
@@ -16,8 +17,8 @@ members = [
   "examples/descriptor",
 
   # plugins
-  "plugins/nodex-plugin-helloworld",
   "plugins/sled-nodex",
+  "plugins/nodex-plugin-helloworld",
 ]
 
 [patch.crates-io]

@@ -7,6 +7,7 @@ macro_rules! napi_module {
             env: $crate::api::napi_env,
             exports: $crate::api::napi_value,
         ) -> $crate::api::napi_value {
+            use $crate::value::NapiValueT;
             let env = $crate::env::NapiEnv::from_raw(env);
             let exports = $crate::value::JsObject::from_raw(env, exports);
 
