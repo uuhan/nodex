@@ -120,19 +120,18 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v2
 
-      - name: Install nodejs - v14
+      - name: Install nodejs - v18
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: "18"
 
       - name: Run demo.sh
         run: bash -x demo.sh
 
-      - name: Install nodejs - v17
+      - name: Install nodejs - v22
         uses: actions/setup-node@v2
         with:
-          node-version: '17'
+          node-version: "22"
 
-      - name:
+      - name: Run demo.sh
         run: bash -x demo.sh
-
