@@ -2,14 +2,14 @@ use crate::prelude::*;
 use std::marker::PhantomData;
 
 #[derive(Copy, Clone, Debug)]
-pub struct NapiThreadsafeFunction<Data, const N: usize>(
+pub struct NapiThreadsafeFunction<Data: 'static, const N: usize>(
     NapiEnv,
     napi_threadsafe_function,
     PhantomData<Data>,
 );
 
-unsafe impl<Data, const N: usize> Send for NapiThreadsafeFunction<Data, N> {}
-unsafe impl<Data, const N: usize> Sync for NapiThreadsafeFunction<Data, N> {}
+unsafe impl<Data: Send, const N: usize> Send for NapiThreadsafeFunction<Data, N> {}
+unsafe impl<Data: Sync, const N: usize> Sync for NapiThreadsafeFunction<Data, N> {}
 
 impl<Data, const N: usize> NapiThreadsafeFunction<Data, N> {
     pub(crate) fn from_raw(env: NapiEnv, tsfn: napi_threadsafe_function) -> Self {
