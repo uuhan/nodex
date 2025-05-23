@@ -53,7 +53,7 @@ impl<T> JsExternal<T> {
     /// - the native data cannot be retrieved later using napi_unwrap(),
     /// - nor can it be removed later using napi_remove_wrap(), and
     /// - the object created by the API can be used with napi_wrap().
-    /// JavaScript ArrayBuffers are described in Section 24.1 of the ECMAScript Language Specification.
+    ///   JavaScript ArrayBuffers are described in Section 24.1 of the ECMAScript Language Specification.
     pub fn arraybuffer<'a>(
         env: NapiEnv,
         value: impl AsRef<[T]>,
@@ -66,7 +66,7 @@ impl<T> JsExternal<T> {
     /// - the native data cannot be retrieved later using napi_unwrap(),
     /// - nor can it be removed later using napi_remove_wrap(), and
     /// - the object created by the API can be used with napi_wrap().
-    /// For Node.js >=4 Buffers are Uint8Arrays.
+    ///   For Node.js >=4 Buffers are Uint8Arrays.
     pub fn buffer<'a>(env: NapiEnv, value: impl AsRef<[T]>) -> NapiResult<JsExternal<&'a [T]>> {
         todo!()
     }

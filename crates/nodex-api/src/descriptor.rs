@@ -353,7 +353,7 @@ impl<T: NapiValueT, R: NapiValueT> DescriptorAccessorBuilder<T, R> {
             info: napi_callback_info,
         ) -> napi_value {
             let mut argc = 0;
-            let mut argv = [std::ptr::null_mut(); 0];
+            let mut argv: [_; 0] = [];
             let mut data = MaybeUninit::uninit();
             let mut this = MaybeUninit::uninit();
 

@@ -78,6 +78,7 @@ macro_rules! from_js_args_tuple {
             fn from_js_args(args: JsArgs) -> NapiResult<Self> {
                 Ok(($({
                     // It's safe here
+                    #[allow(clippy::macro_metavars_in_unsafe)]
                     let arg = unsafe { args.0.get_unchecked($idx) };
                     let casted = unsafe { arg.cast::<$name>() };
 

@@ -183,7 +183,7 @@ impl NapiEnv {
 
     /// Create a js function with a rust closure.
     #[inline]
-    pub fn func<T: FromJsArgs, R>(
+    pub fn func<T, R>(
         &self,
         func: impl FnMut(JsObject, T) -> NapiResult<R> + 'static,
     ) -> NapiResult<Function<R>>
@@ -196,7 +196,7 @@ impl NapiEnv {
 
     /// Create a named js function with a rust closure.
     #[inline]
-    pub fn func_named<T: FromJsArgs, R>(
+    pub fn func_named<T, R>(
         &self,
         name: impl AsRef<str>,
         func: impl FnMut(JsObject, T) -> NapiResult<R> + 'static,
@@ -588,11 +588,11 @@ impl NapiEnv {
     /// following caveats:
     ///
     /// * Unlike eval, this function does not allow the script to access the current lexical
-    /// scope, and therefore also does not allow to access the module scope, meaning that
-    /// pseudo-globals such as require will not be available.
+    ///   scope, and therefore also does not allow to access the module scope, meaning that
+    ///   pseudo-globals such as require will not be available.
     /// * The script can access the global scope. Function and var declarations in the script
-    /// will be added to the global object. Variable declarations made using let and const will
-    /// be visible globally, but will not be added to the global object.
+    ///   will be added to the global object. Variable declarations made using let and const will
+    ///   be visible globally, but will not be added to the global object.
     /// * The value of this is global within the script.
     #[inline]
     pub fn run_script<R: NapiValueT>(&self, script: impl AsRef<str>) -> NapiResult<R> {

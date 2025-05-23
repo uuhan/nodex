@@ -29,7 +29,7 @@ impl<Data, const N: usize> NapiThreadsafeFunction<Data, N> {
     ///
     /// R: the returned value of function.
     /// N: the maximum size of the queue, 0 for no limit.
-    pub fn new<R: NapiValueT>(
+    pub fn new<R>(
         env: NapiEnv,
         name: impl AsRef<str>,
         func: Function<R>,

@@ -194,11 +194,11 @@ pub trait NapiValueT: NapiValueCheck + Sized {
 
     /// Returns napi_ok if the API succeeded.
     /// - `napi_invalid_arg` if the type of value is not a known ECMAScript type and value is not an External value.
-    /// This API represents behavior similar to invoking the typeof Operator on the object as defined in
-    /// Section 12.5.5 of the ECMAScript Language Specification. However, there are some differences:
-    /// It has support for detecting an External value.
-    /// It detects null as a separate type, while ECMAScript typeof would detect object.
-    /// If value has a type that is invalid, an error is returned.
+    ///   This API represents behavior similar to invoking the typeof Operator on the object as defined in
+    ///   Section 12.5.5 of the ECMAScript Language Specification. However, there are some differences:
+    ///   It has support for detecting an External value.
+    ///   It detects null as a separate type, while ECMAScript typeof would detect object.
+    ///   If value has a type that is invalid, an error is returned.
     #[inline]
     fn kind(&self) -> NapiResult<NapiValuetype> {
         Ok(napi_call!(=napi_typeof, self.env(), self.raw()))
@@ -328,7 +328,7 @@ pub trait NapiValueT: NapiValueCheck + Sized {
     /// * the native data cannot be retrieved later using napi_unwrap(),
     /// * nor can it be removed later using napi_remove_wrap(), and
     /// * the API can be called multiple times with different data items in order to attach
-    /// each of them to the JavaScript object, and
+    ///   each of them to the JavaScript object, and
     /// * the object manipulated by the API can be used with napi_wrap().
     ///
     /// Caution: The optional returned reference (if obtained) should be deleted via
