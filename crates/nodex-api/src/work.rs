@@ -61,11 +61,13 @@ impl<T> NapiAsyncWork<T> {
             unsafe {
                 let mut pair: Box<(
                     Box<dyn FnMut(&mut T)>,
-                    Box<dyn FnMut(NapiEnv, NapiStatus, T)>,
+                    Box<dyn FnMut(NapiEnv, NapiStatus, T) -> NapiResult<()>>,
                     T,
                 )> = Box::from_raw(data as _);
                 let mut complete = pair.1;
-                complete(env, status, pair.2);
+                if let Err(err) = complete(env, status, pair.2) {
+                    log::error!("NapiAsyncWork::complete: {}", err);
+                }
             }
         }
 

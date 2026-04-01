@@ -659,7 +659,18 @@ impl NapiEnv {
     /// napi_set_instance_data(). If no data is set, the call will succeed and data will be set to
     /// NULL.
     #[inline]
-    pub fn get_instance_data<T>(&self) -> NapiResult<Option<&mut T>> {
+    pub fn get_instance_data<T>(&self) -> NapiResult<Option<&T>> {
+        let data = napi_call!(=napi_get_instance_data, *self) as *mut T;
+        if data.is_null() {
+            Ok(None)
+        } else {
+            unsafe { Ok(Some(&*(data as *const T))) }
+        }
+    }
+
+    #[cfg(feature = "v6")]
+    #[inline]
+    pub fn get_instance_data_mut<T>(&mut self) -> NapiResult<Option<&mut T>> {
         let data = napi_call!(=napi_get_instance_data, *self) as *mut T;
         if data.is_null() {
             Ok(None)

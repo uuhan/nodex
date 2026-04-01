@@ -45,7 +45,12 @@ macro_rules! napi_call {
         unsafe {
             let mut result = std::mem::MaybeUninit::uninit();
             let status = $crate::api::$napi($($args),+, result.as_mut_ptr());
-            (status, result.assume_init())
+            let value = if status.ok() {
+                Some(result.assume_init())
+            } else {
+                None
+            };
+            (status, value)
         }
     };
 

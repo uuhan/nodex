@@ -1,6 +1,6 @@
 use crate::{api, prelude::*};
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct NapiRef(NapiEnv, napi_ref);
 
 impl NapiRef {

@@ -2,7 +2,7 @@ use nodex::prelude::*;
 
 nodex::napi_module!(init);
 
-fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
+fn init(mut env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
     nodex::napi_guard!(env.napi_version()?);
 
     let mut obj = env.object()?;
@@ -203,7 +203,7 @@ fn init(env: NapiEnv, mut exports: JsObject) -> NapiResult<()> {
 
     let value = env.get_instance_data::<usize>()?;
     println!("get instance data: {:?}", value);
-    if let Ok(Some(data)) = env.get_instance_data::<usize>() {
+    if let Ok(Some(data)) = env.get_instance_data_mut::<usize>() {
         *data = 200;
     }
     let value = env.get_instance_data::<usize>()?;

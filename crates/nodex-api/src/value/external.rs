@@ -43,7 +43,12 @@ impl<T> JsExternal<T> {
     }
 
     /// Access the underlaying data.
-    pub fn get(&self) -> NapiResult<&mut T> {
+    pub fn get(&self) -> NapiResult<&T> {
+        let ext = napi_call!(=napi_get_value_external, self.env(), self.raw());
+        unsafe { Ok(&*(ext as *const T)) }
+    }
+
+    pub fn get_mut(&mut self) -> NapiResult<&mut T> {
         let ext = napi_call!(=napi_get_value_external, self.env(), self.raw());
         unsafe { Ok(&mut *(ext as *mut T)) }
     }
