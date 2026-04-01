@@ -441,10 +441,26 @@ pub trait NapiValueT: NapiValueCheck + Sized {
     ///
     /// NB: if a there is no wrap or the wrap is just removed by NapiValue::remove_wrap, return
     /// None.
-    fn unwrap<T>(&self) -> NapiResult<Option<&mut T>> {
+    fn unwrap<T>(&self) -> NapiResult<Option<&T>> {
         let (status, value) = napi_call!(?napi_unwrap, self.env(), self.raw());
         match status {
-            NapiStatus::Ok => unsafe { Ok(Some(&mut *(value as *mut T))) },
+            NapiStatus::Ok => match value {
+                Some(value) => unsafe { Ok(Some(&*(value as *const T))) },
+                None => Ok(None),
+            },
+            NapiStatus::InvalidArg => Ok(None),
+            err => Err(err),
+        }
+    }
+
+    /// Mutable variant of unwrap.
+    fn unwrap_mut<T>(&mut self) -> NapiResult<Option<&mut T>> {
+        let (status, value) = napi_call!(?napi_unwrap, self.env(), self.raw());
+        match status {
+            NapiStatus::Ok => match value {
+                Some(value) => unsafe { Ok(Some(&mut *(value as *mut T))) },
+                None => Ok(None),
+            },
             NapiStatus::InvalidArg => Ok(None),
             err => Err(err),
         }
