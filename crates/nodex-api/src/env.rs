@@ -670,6 +670,7 @@ impl NapiEnv {
 
     #[cfg(feature = "v6")]
     #[inline]
+    /// Mutable access variant of instance data; use when data must be updated in place.
     pub fn get_instance_data_mut<T>(&mut self) -> NapiResult<Option<&mut T>> {
         let data = napi_call!(=napi_get_instance_data, *self) as *mut T;
         if data.is_null() {

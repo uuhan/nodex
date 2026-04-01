@@ -446,7 +446,7 @@ pub trait NapiValueT: NapiValueCheck + Sized {
         match status {
             NapiStatus::Ok => match value {
                 Some(value) => unsafe { Ok(Some(&*(value as *const T))) },
-                None => Err(NapiStatus::GenericFailure),
+                None => Ok(None),
             },
             NapiStatus::InvalidArg => Ok(None),
             err => Err(err),
@@ -459,7 +459,7 @@ pub trait NapiValueT: NapiValueCheck + Sized {
         match status {
             NapiStatus::Ok => match value {
                 Some(value) => unsafe { Ok(Some(&mut *(value as *mut T))) },
-                None => Err(NapiStatus::GenericFailure),
+                None => Ok(None),
             },
             NapiStatus::InvalidArg => Ok(None),
             err => Err(err),
