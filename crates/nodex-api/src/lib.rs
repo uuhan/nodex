@@ -55,6 +55,8 @@ pub enum NapiTypedarrayType {
     Float64Array = api::napi_typedarray_type_napi_float64_array,
     Bigint64Array = api::napi_typedarray_type_napi_bigint64_array,
     Biguint64Array = api::napi_typedarray_type_napi_biguint64_array,
+    #[cfg(feature = "v10")]
+    Float16Array = api::napi_typedarray_type_napi_float16_array,
 }
 
 /// napi_key_collection_mode
@@ -155,6 +157,14 @@ pub mod prelude {
     pub use api::napi_async_cleanup_hook_handle;
     #[cfg(feature = "v4")]
     pub use api::napi_threadsafe_function;
+    #[cfg(feature = "v10")]
+    pub use api::node_api_basic_env;
+    #[cfg(feature = "v10")]
+    pub use api::node_api_basic_finalize;
+    #[cfg(feature = "v10")]
+    pub use api::node_api_nogc_env;
+    #[cfg(feature = "v10")]
+    pub use api::node_api_nogc_finalize;
     pub use api::{
         napi_async_context, napi_async_work, napi_callback, napi_callback_info,
         napi_callback_scope, napi_deferred, napi_env, napi_escapable_handle_scope, napi_finalize,
@@ -167,6 +177,10 @@ pub mod prelude {
 }
 
 pub const fn napi_version_guard() -> u32 {
+    #[cfg(feature = "v10")]
+    return 10;
+    #[cfg(feature = "v9")]
+    return 9;
     #[cfg(feature = "v8")]
     return 8;
     #[cfg(feature = "v7")]

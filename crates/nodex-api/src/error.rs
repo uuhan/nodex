@@ -48,6 +48,12 @@ pub enum NapiStatus {
     DetachableArraybufferExpected = api::napi_status_napi_detachable_arraybuffer_expected,
     #[error("napi error: would deadlock")]
     WouldDeadlock = api::napi_status_napi_would_deadlock,
+    #[cfg(feature = "v10")]
+    #[error("napi error: no external buffers allowed")]
+    NoExternalBuffersAllowed = api::napi_status_napi_no_external_buffers_allowed,
+    #[cfg(feature = "v10")]
+    #[error("napi error: cannot run js")]
+    CannotRunJs = api::napi_status_napi_cannot_run_js,
 }
 
 impl NapiStatus {

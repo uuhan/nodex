@@ -49,6 +49,10 @@ pub fn main() {
 
 #[cfg(feature = "gen-api")]
 fn api_version<'a>() -> &'a [&'a str] {
+    #[cfg(feature = "v10")]
+    return &["-DNAPI_VERSION=10"];
+    #[cfg(feature = "v9")]
+    return &["-DNAPI_VERSION=9"];
     #[cfg(feature = "v8")]
     return &["-DNAPI_VERSION=8"];
     #[cfg(feature = "v7")]

@@ -16,6 +16,10 @@ pub struct napi_env__ {
     _unused: [u8; 0],
 }
 pub type napi_env = *mut napi_env__;
+#[cfg(any(feature = "v9", feature = "v10"))]
+pub type node_api_nogc_env = *mut napi_env__;
+#[cfg(any(feature = "v9", feature = "v10"))]
+pub type node_api_basic_env = node_api_nogc_env;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct napi_value__ {
@@ -82,6 +86,8 @@ pub const napi_typedarray_type_napi_float32_array: napi_typedarray_type = 7;
 pub const napi_typedarray_type_napi_float64_array: napi_typedarray_type = 8;
 pub const napi_typedarray_type_napi_bigint64_array: napi_typedarray_type = 9;
 pub const napi_typedarray_type_napi_biguint64_array: napi_typedarray_type = 10;
+#[cfg(feature = "v10")]
+pub const napi_typedarray_type_napi_float16_array: napi_typedarray_type = 11;
 pub type napi_typedarray_type = ::std::os::raw::c_uint;
 pub const napi_status_napi_ok: napi_status = 0;
 pub const napi_status_napi_invalid_arg: napi_status = 1;
@@ -105,6 +111,10 @@ pub const napi_status_napi_date_expected: napi_status = 18;
 pub const napi_status_napi_arraybuffer_expected: napi_status = 19;
 pub const napi_status_napi_detachable_arraybuffer_expected: napi_status = 20;
 pub const napi_status_napi_would_deadlock: napi_status = 21;
+#[cfg(feature = "v10")]
+pub const napi_status_napi_no_external_buffers_allowed: napi_status = 22;
+#[cfg(feature = "v10")]
+pub const napi_status_napi_cannot_run_js: napi_status = 23;
 pub type napi_status = ::std::os::raw::c_uint;
 pub type napi_callback = ::std::option::Option<
     unsafe extern "C" fn(env: NapiEnv, info: napi_callback_info) -> napi_value,
@@ -116,6 +126,10 @@ pub type napi_finalize = ::std::option::Option<
         finalize_hint: *mut ::std::os::raw::c_void,
     ),
 >;
+#[cfg(feature = "v10")]
+pub type node_api_nogc_finalize = napi_finalize;
+#[cfg(feature = "v10")]
+pub type node_api_basic_finalize = node_api_nogc_finalize;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct napi_property_descriptor {
@@ -222,10 +236,70 @@ extern "C" {
         result: *mut napi_value,
     ) -> NapiStatus;
 }
+#[cfg(feature = "v10")]
+extern "C" {
+    pub fn node_api_create_external_string_latin1(
+        env: NapiEnv,
+        str_: *mut ::std::os::raw::c_char,
+        length: size_t,
+        finalize_callback: node_api_basic_finalize,
+        finalize_hint: *mut ::std::os::raw::c_void,
+        result: *mut napi_value,
+        copied: *mut bool,
+    ) -> NapiStatus;
+}
+#[cfg(feature = "v10")]
+extern "C" {
+    pub fn node_api_create_external_string_utf16(
+        env: NapiEnv,
+        str_: *mut char16_t,
+        length: size_t,
+        finalize_callback: node_api_basic_finalize,
+        finalize_hint: *mut ::std::os::raw::c_void,
+        result: *mut napi_value,
+        copied: *mut bool,
+    ) -> NapiStatus;
+}
+#[cfg(feature = "v10")]
+extern "C" {
+    pub fn node_api_create_property_key_latin1(
+        env: NapiEnv,
+        str_: *const ::std::os::raw::c_char,
+        length: size_t,
+        result: *mut napi_value,
+    ) -> NapiStatus;
+}
+#[cfg(feature = "v10")]
+extern "C" {
+    pub fn node_api_create_property_key_utf8(
+        env: NapiEnv,
+        str_: *const ::std::os::raw::c_char,
+        length: size_t,
+        result: *mut napi_value,
+    ) -> NapiStatus;
+}
+#[cfg(feature = "v10")]
+extern "C" {
+    pub fn node_api_create_property_key_utf16(
+        env: NapiEnv,
+        str_: *const char16_t,
+        length: size_t,
+        result: *mut napi_value,
+    ) -> NapiStatus;
+}
 extern "C" {
     pub fn napi_create_symbol(
         env: NapiEnv,
         description: napi_value,
+        result: *mut napi_value,
+    ) -> NapiStatus;
+}
+#[cfg(any(feature = "v9", feature = "v10"))]
+extern "C" {
+    pub fn node_api_symbol_for(
+        env: NapiEnv,
+        utf8description: *const ::std::os::raw::c_char,
+        length: size_t,
         result: *mut napi_value,
     ) -> NapiStatus;
 }
@@ -257,6 +331,15 @@ extern "C" {
 }
 extern "C" {
     pub fn napi_create_range_error(
+        env: NapiEnv,
+        code: napi_value,
+        msg: napi_value,
+        result: *mut napi_value,
+    ) -> NapiStatus;
+}
+#[cfg(any(feature = "v9", feature = "v10"))]
+extern "C" {
+    pub fn node_api_create_syntax_error(
         env: NapiEnv,
         code: napi_value,
         msg: napi_value,
@@ -633,6 +716,14 @@ extern "C" {
 }
 extern "C" {
     pub fn napi_throw_range_error(
+        env: NapiEnv,
+        code: *const ::std::os::raw::c_char,
+        msg: *const ::std::os::raw::c_char,
+    ) -> NapiStatus;
+}
+#[cfg(any(feature = "v9", feature = "v10"))]
+extern "C" {
+    pub fn node_api_throw_syntax_error(
         env: NapiEnv,
         code: *const ::std::os::raw::c_char,
         msg: *const ::std::os::raw::c_char,
@@ -1066,6 +1157,17 @@ extern "C" {
         result: *mut napi_value,
     ) -> NapiStatus;
 }
+#[cfg(any(feature = "v9", feature = "v10"))]
+extern "C" {
+    pub fn node_api_create_buffer_from_arraybuffer(
+        env: NapiEnv,
+        arraybuffer: napi_value,
+        byte_offset: size_t,
+        byte_length: size_t,
+        result_data: *mut *mut ::std::os::raw::c_void,
+        result: *mut napi_value,
+    ) -> NapiStatus;
+}
 extern "C" {
     pub fn napi_is_buffer(env: NapiEnv, value: napi_value, result: *mut bool) -> NapiStatus;
 }
@@ -1101,6 +1203,13 @@ extern "C" {
     pub fn napi_get_node_version(
         env: NapiEnv,
         version: *mut *const napi_node_version,
+    ) -> NapiStatus;
+}
+#[cfg(any(feature = "v9", feature = "v10"))]
+extern "C" {
+    pub fn node_api_get_module_file_name(
+        env: node_api_basic_env,
+        result: *mut *const ::std::os::raw::c_char,
     ) -> NapiStatus;
 }
 
