@@ -29,7 +29,7 @@ features = ["v8"]
 
 The default napi version is set to v1, you can use other version with your need.
 
-We have v1,v2,v3,...v8 versions.
+We have v1,v2,v3,...v10 versions.
 
 **Currently, nodex just reexports nodex-api:**
 
@@ -71,6 +71,22 @@ features = ["v8"]
 ### v8
 
 * NapiEnv::add_async_cleanup_hook() - Do the cleanup when nodejs environment exits, asynchronous.
+
+### v9
+
+* api::node_api_symbol_for() - Looks up a symbol in the global registry.
+* api::node_api_create_syntax_error() - Creates a JavaScript SyntaxError.
+* api::node_api_throw_syntax_error() - Throws a JavaScript SyntaxError.
+* api::node_api_get_module_file_name() - Gets the full path of the current addon.
+
+### v10
+
+* api::node_api_create_external_string_latin1() - Creates an external latin1 string.
+* api::node_api_create_external_string_utf16() - Creates an external utf16 string.
+* api::node_api_create_property_key_latin1() - Creates an interned latin1 property key.
+* api::node_api_create_property_key_utf8() - Creates an interned utf8 property key.
+* api::node_api_create_property_key_utf16() - Creates an interned utf16 property key.
+* api::node_api_create_buffer_from_arraybuffer() - Creates a Buffer view from an ArrayBuffer.
 
 ## Examples
 
