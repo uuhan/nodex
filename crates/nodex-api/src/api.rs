@@ -1157,7 +1157,7 @@ extern "C" {
         result: *mut napi_value,
     ) -> NapiStatus;
 }
-#[cfg(any(feature = "v9", feature = "v10"))]
+#[cfg(feature = "v10")]
 extern "C" {
     pub fn node_api_create_buffer_from_arraybuffer(
         env: NapiEnv,
