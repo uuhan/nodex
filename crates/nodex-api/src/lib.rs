@@ -179,7 +179,7 @@ pub mod prelude {
 pub const fn napi_version_guard() -> u32 {
     #[cfg(feature = "v10")]
     return 10;
-    #[cfg(feature = "v9")]
+    #[cfg(all(feature = "v9", not(feature = "v10")))]
     return 9;
     #[cfg(feature = "v8")]
     return 8;
