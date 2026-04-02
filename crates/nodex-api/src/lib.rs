@@ -222,4 +222,10 @@ pub fn fatal_error(msg: impl AsRef<str>, loc: Option<impl AsRef<str>>) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(all(feature = "v9", feature = "v10"))]
+    #[test]
+    fn napi_version_guard_prefers_v10_when_v9_and_v10_are_enabled() {
+        assert_eq!(napi_version_guard(), 10);
+    }
 }
